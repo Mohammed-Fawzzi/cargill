@@ -77,11 +77,19 @@ export async function loadHomePage() {
       return { ...section, items: resolveSelection(events, selectedIds, limit), contact };
     }
     if (section.id === "product_categories") {
-      return {
-        ...section,
-        items: resolveSelection(categories, selectedIds, limit),
-        contact,
-      };
+      const items = resolveSelection(categories, selectedIds, limit).map(
+        (category) => {
+          const cover = products.find(
+            (product) =>
+              product.sectionId === category.id && product.imageUrl,
+          );
+          return {
+            ...category,
+            imageUrl: cover?.imageUrl || "",
+          };
+        },
+      );
+      return { ...section, items, contact };
     }
     if (section.id === "contact" || section.id === "footer") {
       return { ...section, contact };

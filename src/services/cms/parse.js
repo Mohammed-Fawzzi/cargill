@@ -56,16 +56,22 @@ export function parseCta(value) {
   };
 }
 
-export function parseSlide(value) {
+export function parseSlide(value, index = 0) {
   if (!value || typeof value !== "object") return null;
-  const id = asString(value.id);
-  if (!id) return null;
+  const id = asString(value.id) || `slide-${index + 1}`;
+  const ctaSource =
+    value.cta && typeof value.cta === "object"
+      ? value.cta
+      : {
+          label: value.buttonText ?? value.buttonLabel,
+          href: value.buttonUrl ?? value.href ?? value.url,
+        };
   return {
     id,
     title: parseLocalized(value.title),
-    body: parseLocalized(value.body),
-    imageUrl: asString(value.imageUrl),
-    cta: parseCta(value.cta),
+    body: parseLocalized(value.body ?? value.description),
+    imageUrl: asString(value.imageUrl || value.image),
+    cta: parseCta(ctaSource),
   };
 }
 
@@ -82,7 +88,9 @@ export function parseHomepageSection(id, data = {}) {
       ? data.selectedIds.filter((item) => typeof item === "string")
       : [],
     slides: Array.isArray(data.slides)
-      ? data.slides.map(parseSlide).filter(Boolean)
+      ? data.slides
+          .map((item, index) => parseSlide(item, index))
+          .filter(Boolean)
       : [],
     updatedAt: data.updatedAt ?? null,
   };
