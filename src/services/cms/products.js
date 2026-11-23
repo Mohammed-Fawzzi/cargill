@@ -1,0 +1,157 @@
+import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { toMillis } from "@/lib/time";
+import {
+  asString,
+  parseLocalized,
+  readLocalized,
+} from "@/services/cms/parse";
+
+const DEFAULT_COLUMNS = [
+  { id: "crop", name: { ar: "المحصول", en: "Crop" } },
+  { id: "disease", name: { ar: "المرض", en: "Disease" } },
+  { id: "dose", name: { ar: "الجرعة", en: "Dose" } },
+  { id: "phi", name: { ar: "PHI", en: "PHI" } },
+];
+
+function parseSection(item) {
+  if (!item || typeof item !== "object") return null;
+  const id = asString(item.id);
+  const name = parseLocalized(item.name);
+  if (!id || !name.ar) return null;
+  const subcategories = Array.isArray(item.subcategories)
+    ? item.subcategories
+        .map((sub) => {
+          const subId = asString(sub?.id);
+          const subName = parseLocalized(sub?.name);
+          if (!subId || !subName.ar) return null;
+          return {
+            id: subId,
+            name: subName,
+            order: typeof sub.order === "number" ? sub.order : 0,
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.order - b.order)
+    : [];
+
+  return {
+    id,
+    name,
+    order: typeof item.order === "number" ? item.order : 0,
+    subcategories,
+    _sort: typeof item.order === "number" ? item.order : 0,
+  };
+}
+
+export async function getCategories() {
+  const snap = await getDoc(doc(db, "product_categories", "page"));
+  const sections = Array.isArray(snap.data()?.sections) ? snap.data().sections : [];
+  return sections.map(parseSection).filter(Boolean).sort((a, b) => a.order - b.order);
+}
+
+function parseFeature(item, index) {
+  if (!item || typeof item !== "object") return null;
+  const text = item.text
+    ? parseLocalized(item.text)
+    : {
+        ar: asString(item.textAr),
+        en: asString(item.textEn),
+      };
+  return {
+    id: asString(item.id) || `feature-${index}`,
+    text,
+  };
+}
+
+function parseIngredient(item, index) {
+  if (!item || typeof item !== "object") return null;
+  return {
+    id: asString(item.id) || `ing-${index}`,
+    name: parseLocalized(item.name),
+    percentage: asString(item.percentage),
+  };
+}
+
+function parseColumn(item, index) {
+  if (!item || typeof item !== "object") return null;
+  const id = asString(item.id) || `col-${index}`;
+  return { id, name: parseLocalized(item.name) };
+}
+
+function parseUse(item, index, columns) {
+  if (!item || typeof item !== "object") return null;
+  const cells = {};
+  const source = item.cells && typeof item.cells === "object" ? item.cells : {};
+  for (const column of columns) {
+    cells[column.id] =
+      source[column.id] !== undefined
+        ? parseLocalized(source[column.id])
+        : parseLocalized(item[column.id]);
+  }
+  return {
+    id: asString(item.id) || `use-${index}`,
+    cells,
+  };
+}
+
+export function mapProduct(id, data = {}) {
+  const columns = Array.isArray(data.agriculturalColumns)
+    ? data.agriculturalColumns.map(parseColumn).filter(Boolean)
+    : [];
+  const agriculturalColumns = columns.length > 0 ? columns : DEFAULT_COLUMNS;
+  const createdAt = toMillis(data.createdAt);
+
+  return {
+    id,
+    name: readLocalized(data, "name"),
+    sectionId: asString(data.sectionId),
+    subcategoryId: asString(data.subcategoryId),
+    imageUrl: asString(data.imageUrl),
+    originCountry: readLocalized(data, "originCountry"),
+    activeIngredients: Array.isArray(data.activeIngredients)
+      ? data.activeIngredients.map(parseIngredient).filter(Boolean)
+      : [],
+    overview: readLocalized(data, "overview"),
+    details: readLocalized(data, "details"),
+    features: Array.isArray(data.features)
+      ? data.features.map(parseFeature).filter(Boolean)
+      : [],
+    agriculturalColumns,
+    agriculturalUses: Array.isArray(data.agriculturalUses)
+      ? data.agriculturalUses
+          .map((row, index) => parseUse(row, index, agriculturalColumns))
+          .filter(Boolean)
+      : [],
+    createdAt,
+    updatedAt: toMillis(data.updatedAt),
+    _sort: createdAt,
+  };
+}
+
+export async function getProducts() {
+  const snap = await getDocs(collection(db, "products"));
+  return snap.docs
+    .map((item) => mapProduct(item.id, item.data()))
+    .sort((a, b) => b.createdAt - a.createdAt);
+}
+
+export async function getProductsBySection(sectionId) {
+  const snap = await getDocs(
+    query(collection(db, "products"), where("sectionId", "==", sectionId)),
+  );
+  return snap.docs.map((item) => mapProduct(item.id, item.data()));
+}
+
+export async function getProductsBySubcategory(subcategoryId) {
+  const snap = await getDocs(
+    query(collection(db, "products"), where("subcategoryId", "==", subcategoryId)),
+  );
+  return snap.docs.map((item) => mapProduct(item.id, item.data()));
+}
+
+export async function getProduct(productId) {
+  const snap = await getDoc(doc(db, "products", productId));
+  if (!snap.exists()) return null;
+  return mapProduct(snap.id, snap.data());
+}

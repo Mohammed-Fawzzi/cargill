@@ -1,0 +1,17 @@
+{
+  "name": "كارجيل",
+  "short_name": "كارجيل",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c120e",
+  "theme_color": "#0c120e",
+  "icons": [
+    {
+      "src": "/icon.webp",
+      "sizes": "512x512",
+      "type": "image/webp"
+    }
+  ]
+}
