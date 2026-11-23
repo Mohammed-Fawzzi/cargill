@@ -92,7 +92,7 @@ function NavItem({ to, end, label, children, onNavigate }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
             transition={{ duration: 0.18 }}
-            className="absolute start-1/2 top-full z-40 mt-1 min-w-[14rem] -translate-x-1/2 overflow-hidden border border-white/10 bg-[#111111] py-2 shadow-[0_18px_40px_rgba(0,0,0,0.4)] rtl:translate-x-1/2"
+            className="absolute start-1/2 top-full z-40 mt-1 min-w-[14rem] -translate-x-1/2 overflow-hidden border border-white/10 bg-brand-forest-deep py-2 shadow-[0_18px_40px_rgba(0,0,0,0.4)] rtl:translate-x-1/2"
           >
             {children}
           </motion.div>
@@ -170,7 +170,7 @@ export default function Navbar() {
 
   return (
     <nav className="fixed inset-x-0 top-0 z-30 text-white">
-      <div className="bg-black">
+      <div className="bg-brand-forest-deep">
         <div className="mx-auto flex min-h-[38px] max-w-[1400px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
           <div className="hidden lg:block">
             <LanguageSwitch variant="menu" />
@@ -216,7 +216,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      <div className="relative bg-[#111111]">
+      <div className="relative bg-brand-forest-deep">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-10">
           <div className="relative z-10 hidden min-h-[70px] grid-cols-[1fr_220px_1fr] items-center gap-4 lg:grid">
             <ul className="flex items-center justify-end gap-x-8 xl:gap-x-11">
@@ -316,7 +316,7 @@ export default function Navbar() {
         </div>
 
         <svg
-          className="pointer-events-none absolute inset-x-0 top-[calc(100%-1px)] hidden h-[58px] w-full text-[#111111] lg:block"
+          className="pointer-events-none absolute inset-x-0 top-[calc(100%-1px)] hidden h-[58px] w-full text-brand-forest-deep lg:block"
           viewBox="0 0 1440 58"
           preserveAspectRatio="none"
           aria-hidden="true"
