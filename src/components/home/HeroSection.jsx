@@ -70,22 +70,37 @@ export default function HeroSection({ section }) {
       <AnimatePresence initial={false}>
         <motion.div
           key={slide.id}
-          className="absolute inset-0"
+          className="absolute inset-0 overflow-hidden"
           style={{ y: imageY }}
-          initial={{ opacity: 0, scale: 1.14 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.96 }}
-          transition={{ duration: 0.5, ease: easeOut }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.55, ease: easeOut }}
         >
           {slide.imageUrl ? (
-            <SafeImage
-              src={slide.imageUrl}
-              alt={title || t(UI.heroImage, locale)}
-              className="absolute inset-0 h-[118%] w-full object-cover"
-              loading="eager"
-              fetchPriority="high"
-              width={1920}
-            />
+            <motion.div
+              className="absolute inset-0 will-change-transform"
+              initial={{ scale: 1 }}
+              animate={
+                multi
+                  ? { scale: 1.12 }
+                  : { scale: [1, 1.12, 1] }
+              }
+              transition={
+                multi
+                  ? { duration: AUTOPLAY_MS / 1000, ease: "linear" }
+                  : { duration: 14, ease: "easeInOut", repeat: Infinity }
+              }
+            >
+              <SafeImage
+                src={slide.imageUrl}
+                alt={title || t(UI.heroImage, locale)}
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="eager"
+                fetchPriority="high"
+                width={1920}
+              />
+            </motion.div>
           ) : (
             <div
               className="absolute inset-0 bg-gradient-to-br from-brand-forest via-brand-forest-deep to-brand-black"
