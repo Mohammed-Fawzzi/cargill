@@ -7,6 +7,7 @@ import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
+import SiteLogo from "@/components/ui/SiteLogo";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getProducts } from "@/services/cms/products";
 import { useLocale } from "@/context/LocaleContext";
@@ -59,6 +60,8 @@ export default function About() {
             title={t(UI.nav.about, locale)}
             subtitle={t(UI.aboutIntro, locale)}
             imageUrl={heroImage}
+            variant="editorial"
+            eyebrow={t(UI.ourCompany, locale)}
           />
 
           {!hasContent ? (
@@ -69,17 +72,12 @@ export default function About() {
                 <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
                   <Reveal>
                     <div className="overflow-hidden rounded-3xl border border-black/5 bg-surface-muted p-8 sm:p-10">
-                      {contact?.logoUrl ? (
-                        <img
-                          src={contact.logoUrl}
+                      <div className="mb-8 inline-flex rounded-2xl bg-white p-4 shadow-[0_10px_30px_rgba(24,16,96,0.08)]">
+                        <SiteLogo
                           alt={name || t(UI.nav.about, locale)}
-                          className="mb-8 h-24 w-auto max-w-full object-contain sm:h-28"
+                          className="h-20 w-auto max-w-full object-contain sm:h-24"
                         />
-                      ) : (
-                        <div className="mb-8 inline-flex rounded-2xl bg-brand-forest-deep px-5 py-4 text-lg font-extrabold text-brand-lime">
-                          {name || t(UI.nav.about, locale)}
-                        </div>
-                      )}
+                      </div>
                       <p className="text-sm font-bold uppercase tracking-[0.18em] text-brand-moss">
                         {t(UI.ourCompany, locale)}
                       </p>

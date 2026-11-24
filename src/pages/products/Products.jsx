@@ -163,6 +163,8 @@ export default function Products() {
             title={t(UI.nav.products, locale)}
             subtitle={t(UI.productsIntro, locale)}
             imageUrl={bannerImage}
+            variant="immersive"
+            eyebrow={t(UI.nav.products, locale)}
           />
 
           <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
@@ -199,8 +201,8 @@ export default function Products() {
                   onClick={() => setCategory("")}
                   className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 ${
                     !sectionId
-                      ? "bg-brand-forest-deep text-white shadow-[0_8px_20px_rgba(14,31,19,0.2)]"
-                      : "bg-surface-muted text-brand-ink hover:bg-brand-lime hover:text-brand-black"
+                      ? "bg-brand-forest-deep text-white shadow-[0_8px_20px_rgba(24,16,96,0.22)]"
+                      : "bg-surface-muted text-brand-ink hover:bg-brand-lime hover:text-brand-ink"
                   }`}
                 >
                   {t(UI.allProducts, locale)}
@@ -212,8 +214,8 @@ export default function Products() {
                     onClick={() => setCategory(item.id)}
                     className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 ${
                       sectionId === item.id
-                        ? "bg-brand-forest-deep text-white shadow-[0_8px_20px_rgba(14,31,19,0.2)]"
-                        : "bg-surface-muted text-brand-ink hover:bg-brand-lime hover:text-brand-black"
+                        ? "bg-brand-forest-deep text-white shadow-[0_8px_20px_rgba(24,16,96,0.22)]"
+                        : "bg-surface-muted text-brand-ink hover:bg-brand-lime hover:text-brand-ink"
                     }`}
                   >
                     {t(item.name, locale)}

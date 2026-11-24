@@ -1,10 +1,14 @@
 import React, { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import { IoArrowBack } from "react-icons/io5";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import Reveal from "@/components/ui/Reveal";
+import ReadingProgress from "@/components/ui/ReadingProgress";
+import OrganicFloat from "@/components/ui/OrganicFloat";
+import SafeImage from "@/components/ui/SafeImage";
 import ArticleCard from "@/components/articles/ArticleCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getArticle, getArticles } from "@/services/cms/articles";
@@ -12,6 +16,7 @@ import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { formatMillis } from "@/lib/time";
+import { easeOut } from "@/lib/motion";
 
 export default function ArticleDetails() {
   const { id } = useParams();
@@ -53,12 +58,13 @@ export default function ArticleDetails() {
       ) : null}
       {!articleQuery.isPending && article ? (
         <main className="min-h-screen bg-white">
-          <section className="relative isolate min-h-[46vh] overflow-hidden bg-brand-forest-deep text-white sm:min-h-[52vh]">
+          <ReadingProgress />
+          <section className="relative isolate min-h-[56vh] overflow-hidden bg-brand-forest-deep text-white sm:min-h-[62vh]">
             {article.imageUrl ? (
-              <img
+              <SafeImage
                 src={article.imageUrl}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full scale-105 object-cover"
                 aria-hidden="true"
               />
             ) : null}
@@ -66,17 +72,23 @@ export default function ArticleDetails() {
               className="absolute inset-0 bg-gradient-to-t from-brand-forest-deep via-brand-forest-deep/80 to-brand-black/40"
               aria-hidden="true"
             />
+            <OrganicFloat className="opacity-50 mix-blend-screen" />
             <div className="relative container mx-auto flex min-h-[inherit] items-end px-4 pb-12 pt-[calc(var(--navbar-height)+3rem)] lg:px-8 lg:pb-16">
-              <Reveal className="max-w-3xl">
+              <motion.div
+                className="max-w-3xl"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: easeOut }}
+              >
                 <p className="mb-3 text-sm font-bold text-brand-lime">
                   {formatMillis(article.createdAt, locale)}
                 </p>
                 {title ? (
-                  <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+                  <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl xl:text-6xl">
                     {title}
                   </h1>
                 ) : null}
-              </Reveal>
+              </motion.div>
             </div>
           </section>
 
@@ -90,7 +102,7 @@ export default function ArticleDetails() {
                 {t(UI.backToArticles, locale)}
               </Link>
               {excerpt ? (
-                <p className="mb-8 text-lg leading-9 text-brand-ink/80 sm:text-xl sm:leading-10">
+                <p className="mb-8 border-s-4 border-brand-lime ps-5 text-lg leading-9 text-brand-ink/85 sm:text-xl sm:leading-10">
                   {excerpt}
                 </p>
               ) : null}

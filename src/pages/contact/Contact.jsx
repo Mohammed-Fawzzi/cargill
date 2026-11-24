@@ -3,6 +3,7 @@ import { MdEmail, MdLocationOn } from "react-icons/md";
 import { FaMobile } from "react-icons/fa6";
 import Seo from "@/components/seo/Seo";
 import PageBanner from "@/components/ui/PageBanner";
+import Reveal from "@/components/ui/Reveal";
 import { PageShell } from "@/components/ui/StatusMessage";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
@@ -51,7 +52,7 @@ export default function Contact() {
   };
 
   const inputClass =
-    "w-full rounded-2xl border border-black/5 bg-white px-4 py-3 text-sm shadow-sm outline-none transition-colors focus:border-brand-lime";
+    "w-full rounded-2xl border border-brand-ink/10 bg-white px-4 py-3.5 text-sm shadow-sm outline-none transition-all focus:border-brand-lime focus:shadow-[0_0_0_3px_rgba(136,196,60,0.18)]";
 
   return (
     <>
@@ -61,9 +62,11 @@ export default function Contact() {
           title={heading}
           subtitle={subtitle || description}
           imageUrl={contact?.bannerUrl}
+          variant="center"
+          eyebrow={t(UI.getInTouch, locale)}
         />
-        <div className="container mx-auto grid gap-10 px-4 py-12 lg:grid-cols-2 lg:px-8">
-          <div>
+        <div className="container mx-auto grid gap-10 px-4 py-12 lg:grid-cols-2 lg:px-8 lg:py-16">
+          <Reveal>
             {description ? (
               <p className="mb-8 whitespace-pre-wrap leading-8 text-text-muted">
                 {description}
@@ -112,7 +115,7 @@ export default function Contact() {
               {targetEmail ? (
                 <button
                   type="submit"
-                  className="sm:col-span-2 rounded-2xl bg-brand-black px-6 py-3 font-extrabold text-white transition-colors hover:bg-brand-forest"
+                  className="sm:col-span-2 rounded-2xl bg-brand-forest-deep px-6 py-3.5 font-extrabold text-white transition-all hover:bg-brand-lime hover:text-brand-ink"
                 >
                   {t(UI.send, locale)}
                 </button>
@@ -127,9 +130,9 @@ export default function Contact() {
                 </p>
               ) : null}
             </form>
-          </div>
+          </Reveal>
 
-          <div className="space-y-4">
+          <Reveal delay={0.08} className="space-y-4">
             {phones.map((phone) => (
               <a
                 key={phone}
@@ -168,14 +171,14 @@ export default function Contact() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={link.label}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-black text-white hover:bg-brand-lime hover:text-brand-black"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-forest-deep text-white transition-colors hover:bg-brand-lime hover:text-brand-ink"
                   >
                     <link.Icon />
                   </a>
                 ))}
               </div>
             ) : null}
-          </div>
+          </Reveal>
         </div>
 
         {mapSrc ? (

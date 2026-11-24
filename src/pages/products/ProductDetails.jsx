@@ -1,20 +1,25 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
-import { EmptyState, ErrorState, PageShell } from "@/components/ui/StatusMessage";
-import { getCategories, getProduct } from "@/services/cms/products";
+import Reveal from "@/components/ui/Reveal";
+import SafeImage from "@/components/ui/SafeImage";
+import ProductCard from "@/components/products/ProductCard";
+import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
+import { getCategories, getProduct, getProducts } from "@/services/cms/products";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
+import { easeOut } from "@/lib/motion";
 
 function UsageTable({ columns, rows, locale }) {
   if (!columns?.length || !rows?.length) return null;
   return (
-    <div className="overflow-x-auto rounded-2xl border border-black/5">
+    <div className="overflow-x-auto rounded-2xl border border-black/5 shadow-[0_10px_30px_rgba(24,16,96,0.05)]">
       <table className="min-w-full text-sm">
-        <thead className="bg-brand-forest text-white">
+        <thead className="bg-brand-forest-deep text-white">
           <tr>
             {columns.map((col) => (
               <th key={col.id} className="px-4 py-3 text-start font-bold">
@@ -51,6 +56,11 @@ export default function ProductDetails() {
     queryKey: ["cms", "categories"],
     queryFn: getCategories,
   });
+  const productsQuery = useQuery({
+    queryKey: ["cms", "products"],
+    queryFn: getProducts,
+    staleTime: 1000 * 60 * 2,
+  });
 
   const product = productQuery.data;
   const categories = categoriesQuery.data || [];
@@ -60,6 +70,13 @@ export default function ProductDetails() {
   );
   const name = t(product?.name, locale);
 
+  const related = useMemo(() => {
+    const list = productsQuery.data || [];
+    return list
+      .filter((item) => item.id !== id && item.sectionId === product?.sectionId)
+      .slice(0, 3);
+  }, [productsQuery.data, id, product?.sectionId]);
+
   return (
     <>
       <Seo title={name || t(UI.nav.products, locale)} path={`/products/${id}`} />
@@ -68,94 +85,171 @@ export default function ProductDetails() {
         <ErrorState onRetry={productQuery.refetch} />
       ) : null}
       {!productQuery.isPending && !productQuery.isError && !product ? (
-        <PageShell>
+        <main className="pt-navbar min-h-screen bg-white">
           <EmptyState message={t(UI.missingProduct, locale)} />
-        </PageShell>
+        </main>
       ) : null}
       {!productQuery.isPending && product ? (
-        <PageShell>
-          <div className="container mx-auto grid gap-10 px-4 py-12 lg:grid-cols-2 lg:px-8">
-            <div className="overflow-hidden rounded-3xl bg-surface-muted">
-              {product.imageUrl ? (
-                <img src={product.imageUrl} alt={name} className="h-full w-full object-cover" />
-              ) : null}
-            </div>
-            <div>
-              <p className="mb-2 text-sm font-bold text-brand-moss">
-                {[t(section?.name, locale), t(subcategory?.name, locale)]
-                  .filter(Boolean)
-                  .join(" / ")}
-              </p>
-              <h1 className="mb-4 text-3xl font-extrabold text-brand-ink">{name}</h1>
-              {t(product.originCountry, locale) ? (
-                <p className="mb-4 text-sm text-text-muted">
-                  {t(UI.origin, locale)}: {t(product.originCountry, locale)}
-                </p>
-              ) : null}
-              {t(product.overview, locale) ? (
-                <p className="whitespace-pre-wrap leading-8 text-text-muted">
-                  {t(product.overview, locale)}
-                </p>
-              ) : null}
-            </div>
-          </div>
+        <main className="min-h-screen bg-white">
+          <section className="relative overflow-hidden bg-brand-forest-deep pt-[calc(var(--navbar-height)+1.5rem)] text-white">
+            <div className="container mx-auto grid items-center gap-10 px-4 py-12 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-16">
+              <motion.div
+                className="relative overflow-hidden rounded-[1.75rem] bg-white/5 shadow-[0_24px_60px_rgba(0,0,0,0.28)] ring-1 ring-white/10"
+                initial={{ opacity: 0, scale: 0.94, rotateY: -8 }}
+                animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                transition={{ duration: 0.7, ease: easeOut }}
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                {product.imageUrl ? (
+                  <SafeImage
+                    src={product.imageUrl}
+                    alt={name}
+                    className="aspect-[4/3] h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex aspect-[4/3] items-center justify-center text-brand-lime">
+                    {name}
+                  </div>
+                )}
+              </motion.div>
 
-          <div className="container mx-auto space-y-10 px-4 pb-16 lg:px-8">
+              <motion.div
+                initial={{ opacity: 0, y: 28 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.65, ease: easeOut, delay: 0.1 }}
+              >
+                <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-brand-lime">
+                  {[t(section?.name, locale), t(subcategory?.name, locale)]
+                    .filter(Boolean)
+                    .join(" / ")}
+                </p>
+                <h1 className="mb-5 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+                  {name}
+                </h1>
+                {t(product.originCountry, locale) ? (
+                  <p className="mb-5 text-sm text-white/75">
+                    {t(UI.origin, locale)}: {t(product.originCountry, locale)}
+                  </p>
+                ) : null}
+                {t(product.overview, locale) ? (
+                  <p className="mb-8 whitespace-pre-wrap text-base leading-8 text-white/85 sm:text-lg sm:leading-9">
+                    {t(product.overview, locale)}
+                  </p>
+                ) : null}
+                <Link
+                  to="/contact"
+                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-brand-lime px-7 py-3 text-sm font-extrabold text-brand-ink transition-all hover:bg-brand-lime-hover"
+                >
+                  {t(UI.nav.contact, locale)}
+                </Link>
+              </motion.div>
+            </div>
+          </section>
+
+          <div className="container mx-auto space-y-12 px-4 py-14 lg:px-8 lg:py-16">
             {t(product.details, locale) ? (
-              <section>
-                <h2 className="mb-3 text-xl font-extrabold">{t(UI.details, locale)}</h2>
-                <p className="whitespace-pre-wrap leading-8 text-text-muted">
+              <Reveal>
+                <h2 className="mb-4 text-2xl font-extrabold text-brand-ink">
+                  {t(UI.details, locale)}
+                </h2>
+                <p className="whitespace-pre-wrap text-base leading-9 text-text-muted sm:text-lg">
                   {t(product.details, locale)}
                 </p>
-              </section>
+              </Reveal>
             ) : null}
 
             {product.activeIngredients?.length ? (
-              <section>
-                <h2 className="mb-3 text-xl font-extrabold">
+              <Reveal>
+                <h2 className="mb-4 text-2xl font-extrabold text-brand-ink">
                   {t(UI.ingredients, locale)}
                 </h2>
-                <ul className="space-y-2">
+                <ul className="grid gap-3 sm:grid-cols-2">
                   {product.activeIngredients.map((item) => (
-                    <li key={item.id} className="rounded-xl bg-surface-muted px-4 py-3">
+                    <li
+                      key={item.id}
+                      className="rounded-2xl border border-brand-ink/5 bg-surface-muted px-5 py-4 text-brand-ink"
+                    >
                       {t(item.name, locale)}
                       {item.percentage ? ` — ${item.percentage}` : ""}
                     </li>
                   ))}
                 </ul>
-              </section>
+              </Reveal>
             ) : null}
 
             {product.features?.length ? (
-              <section>
-                <h2 className="mb-3 text-xl font-extrabold">{t(UI.features, locale)}</h2>
-                <ul className="list-disc space-y-2 ps-5 text-text-muted">
+              <Reveal>
+                <h2 className="mb-4 text-2xl font-extrabold text-brand-ink">
+                  {t(UI.features, locale)}
+                </h2>
+                <ul className="grid gap-3 sm:grid-cols-2">
                   {product.features.map((item) => (
-                    <li key={item.id}>{t(item.text, locale)}</li>
+                    <li
+                      key={item.id}
+                      className="rounded-2xl border border-brand-lime/20 bg-brand-lime/10 px-5 py-4 text-brand-ink"
+                    >
+                      {t(item.text, locale)}
+                    </li>
                   ))}
                 </ul>
-              </section>
+              </Reveal>
             ) : null}
 
             {product.agriculturalUses?.length ? (
-              <section>
-                <h2 className="mb-3 text-xl font-extrabold">{t(UI.usage, locale)}</h2>
+              <Reveal>
+                <h2 className="mb-4 text-2xl font-extrabold text-brand-ink">
+                  {t(UI.usage, locale)}
+                </h2>
                 <UsageTable
                   columns={product.agriculturalColumns}
                   rows={product.agriculturalUses}
                   locale={locale}
                 />
-              </section>
+              </Reveal>
             ) : null}
 
-            <Link
-              to="/products"
-              className="inline-flex font-bold text-brand-moss hover:text-brand-lime"
-            >
-              {t(UI.nav.products, locale)}
-            </Link>
+            <Reveal>
+              <Link
+                to="/products"
+                className="inline-flex font-bold text-brand-moss transition-colors hover:text-brand-lime"
+              >
+                ← {t(UI.nav.products, locale)}
+              </Link>
+            </Reveal>
           </div>
-        </PageShell>
+
+          {related.length > 0 ? (
+            <section className="border-t border-black/5 bg-surface-muted py-14 lg:py-16">
+              <div className="container mx-auto px-4 lg:px-8">
+                <Reveal className="mb-8">
+                  <h2 className="text-2xl font-extrabold text-brand-ink sm:text-3xl">
+                    {t(UI.nav.products, locale)}
+                  </h2>
+                </Reveal>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
+                  {related.map((item, index) => {
+                    const category = categories.find((c) => c.id === item.sectionId);
+                    const sub = category?.subcategories?.find(
+                      (s) => s.id === item.subcategoryId,
+                    );
+                    return (
+                      <Reveal key={item.id} delay={Math.min(index * 0.05, 0.15)}>
+                        <ProductCard
+                          to={`/products/${item.id}`}
+                          imageUrl={item.imageUrl}
+                          title={t(item.name, locale)}
+                          category={t(category?.name, locale)}
+                          subcategory={t(sub?.name, locale)}
+                          origin={t(item.originCountry, locale)}
+                        />
+                      </Reveal>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          ) : null}
+        </main>
       ) : null}
     </>
   );

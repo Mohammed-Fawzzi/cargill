@@ -5,6 +5,7 @@ import { IoArrowBack } from "react-icons/io5";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import Reveal from "@/components/ui/Reveal";
+import SafeImage from "@/components/ui/SafeImage";
 import EventCard from "@/components/events/EventCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getEvent, getEvents } from "@/services/cms/events";
@@ -53,12 +54,12 @@ export default function EventDetails() {
       ) : null}
       {!eventQuery.isPending && event ? (
         <main className="min-h-screen bg-white">
-          <section className="relative isolate min-h-[46vh] overflow-hidden bg-brand-forest-deep text-white sm:min-h-[52vh]">
+          <section className="relative isolate min-h-[56vh] overflow-hidden bg-brand-forest-deep text-white sm:min-h-[62vh]">
             {event.imageUrl ? (
-              <img
+              <SafeImage
                 src={event.imageUrl}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full scale-105 object-cover"
                 aria-hidden="true"
               />
             ) : null}
@@ -73,7 +74,7 @@ export default function EventDetails() {
                     className={`rounded-full px-3 py-1 text-xs font-bold ${
                       isEnded
                         ? "bg-white/15 text-white"
-                        : "bg-brand-lime text-brand-black"
+                        : "bg-brand-lime text-brand-ink"
                     }`}
                   >
                     {isEnded ? t(UI.ended, locale) : t(UI.upcoming, locale)}

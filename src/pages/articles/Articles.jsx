@@ -114,6 +114,8 @@ export default function Articles() {
             title={t(UI.nav.articles, locale)}
             subtitle={t(UI.articlesIntro, locale)}
             imageUrl={bannerImage}
+            variant="editorial"
+            eyebrow={t(UI.media, locale)}
           />
 
           <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">

@@ -92,6 +92,8 @@ export default function Events() {
             title={t(UI.nav.events, locale)}
             subtitle={t(UI.eventsIntro, locale)}
             imageUrl={bannerImage}
+            variant="immersive"
+            eyebrow={t(UI.nav.events, locale)}
           />
 
           <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
@@ -105,7 +107,7 @@ export default function Events() {
                     className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 ${
                       filter === key
                         ? "bg-brand-forest-deep text-white shadow-[0_8px_20px_rgba(14,31,19,0.2)]"
-                        : "bg-surface-muted text-brand-ink hover:bg-brand-lime hover:text-brand-black"
+                        : "bg-surface-muted text-brand-ink hover:bg-brand-lime hover:text-brand-ink"
                     }`}
                   >
                     {t(label, locale)}

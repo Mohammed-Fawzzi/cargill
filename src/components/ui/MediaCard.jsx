@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import SafeImage from "@/components/ui/SafeImage";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { useLocale } from "@/context/LocaleContext";
@@ -19,7 +20,7 @@ export default function MediaCard({
       <Link to={to} className="block">
         <div className="relative aspect-[16/10] overflow-hidden bg-surface-muted">
           {imageUrl ? (
-            <img
+            <SafeImage
               src={imageUrl}
               alt={title}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
