@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import Reveal from "@/components/ui/Reveal";
+import StatValue from "@/components/home/StatValue";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { getArticles } from "@/services/cms/articles";
@@ -10,12 +11,6 @@ import { getCategories, getProducts } from "@/services/cms/products";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
-
-function formatStat(value) {
-  if (value <= 0) return "0";
-  if (value >= 1000) return `+${value}`;
-  return String(value);
-}
 
 export default function ImpactStrip({ title: titleProp, eyebrow: eyebrowProp } = {}) {
   const { locale } = useLocale();
@@ -101,9 +96,10 @@ export default function ImpactStrip({ title: titleProp, eyebrow: eyebrowProp } =
                   viewport={{ once: true, amount: 0.2 }}
                   transition={{ duration: 0.28, ease: easeOut, delay: index * 0.04 }}
                 >
-                  <p className="mb-2 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-                    {formatStat(item.value)}
-                  </p>
+                  <StatValue
+                    value={item.value}
+                    className="mb-2 text-4xl font-extrabold tracking-tight text-white sm:text-5xl"
+                  />
                   <p className="text-sm leading-7 text-white/70 sm:text-base">{item.label}</p>
                 </motion.div>
               ))}

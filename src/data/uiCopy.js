@@ -166,4 +166,55 @@ export const UI = {
   productHighlights: { ar: "أبرز المزايا", en: "Product highlights" },
   cropsCovered: { ar: "محاصيل", en: "Crops" },
   learnMoreProduct: { ar: "اعرف المزيد", en: "Learn more" },
+  valuesEyebrow: { ar: "قيمنا في الحقل", en: "Our field values" },
+  valuesTitle: {
+    ar: "زراعة مسؤولة، وشراكة تدوم.",
+    en: "Responsible agronomy, lasting partnership.",
+  },
+  valuesTagField: { ar: "خبرة ميدانية", en: "Field expertise" },
+  valuesTagVision: { ar: "توجه مستدام", en: "Sustainable direction" },
+  valuesTagMission: { ar: "التزام بالجودة", en: "Quality commitment" },
+  learnMoreAbout: { ar: "اعرف المزيد عن الشركة", en: "Learn more about us" },
+  whyEyebrow: { ar: "لماذا نحن", en: "Why choose us" },
+  whyTitle: { ar: "لماذا {brand}", en: "Why {brand}" },
+  whyBody: {
+    ar: "نساعد المزارع والتاجر على اختيار مدخلات موثوقة بدعم فني واضح واستمرارية في التوريد.",
+    en: "We help growers and traders choose reliable inputs with clear technical support and steady supply.",
+  },
+  whyQualityTitle: { ar: "جودة وفق معايير دقيقة", en: "Quality to exact standards" },
+  whyQualityBody: {
+    ar: "منتجات مختارة بعناية ومطابقة للمتطلبات الفنية والبيئية في الحقل المصري.",
+    en: "Carefully selected products aligned with technical and environmental needs in Egyptian fields.",
+  },
+  whyRangeTitle: { ar: "تشكيلة حلول متكاملة", en: "An integrated product range" },
+  whyRangeBody: {
+    ar: "حلول تغطية وحماية وتغذية نباتية تناسب مواسم ومحاصيل متعددة.",
+    en: "Crop protection and nutrition solutions suited to multiple seasons and crops.",
+  },
+  whyRangeBodyCount: {
+    ar: "أكثر من {count} منتجًا لدعم قرارات أوضح في الموسم.",
+    en: "More than {count} products to support clearer seasonal decisions.",
+  },
+  whyFieldTitle: { ar: "قرب من احتياج الحقل", en: "Close to field needs" },
+  whyFieldBody: {
+    ar: "تصنيفات واضحة ودعم عملي يختصر وقت الاختيار للمزارع والشريك التجاري.",
+    en: "Clear categories and practical support that shorten selection time for growers and trade partners.",
+  },
+  whyFieldBodyCount: {
+    ar: "تغطية عبر {count} تصنيفًا لتسهيل الوصول للحل المناسب بسرعة.",
+    en: "Coverage across {count} categories to reach the right solution faster.",
+  },
+  exploreProducts: { ar: "استكشف المنتجات", en: "Explore products" },
+  commitQuality: {
+    ar: "مدخلات مختارة وفق معايير فنية واضحة",
+    en: "Inputs selected to clear technical standards",
+  },
+  commitSupport: {
+    ar: "دعم فني عملي طوال الموسم",
+    en: "Practical technical support through the season",
+  },
+  commitField: {
+    ar: "فهم عميق لتربة ومحاصيل وظروف الحقل المحلي",
+    en: "Deep understanding of local soil, crops, and field conditions",
+  },
 };

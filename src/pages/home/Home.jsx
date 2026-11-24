@@ -12,6 +12,8 @@ import KnowledgeHub from "@/components/home/KnowledgeHub";
 import ArticlesSection from "@/components/home/ArticlesSection";
 import MediaStrip from "@/components/home/MediaStrip";
 import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
+import ValuesTrio from "@/components/home/ValuesTrio";
+import WhyCargill from "@/components/home/WhyCargill";
 import EventsSection from "@/components/home/EventsSection";
 import ContactSection from "@/components/home/ContactSection";
 import { useHomePage } from "@/hooks/useHomePage";
@@ -60,9 +62,17 @@ export default function Home() {
                 ) : null}
                 {section.id === "contact" ? <GrowTogetherBanner /> : null}
                 <Component section={section} />
-                {section.id === "hero" ? <ImpactStrip /> : null}
+                {section.id === "hero" ? (
+                  <>
+                    <ImpactStrip />
+                    <ValuesTrio />
+                  </>
+                ) : null}
                 {section.id === "product_categories" ? (
-                  <MarqueeBand items={section.items} />
+                  <>
+                    <MarqueeBand items={section.items} />
+                    <WhyCargill />
+                  </>
                 ) : null}
                 {section.id === "articles" ? (
                   <MediaStrip items={section.items} />

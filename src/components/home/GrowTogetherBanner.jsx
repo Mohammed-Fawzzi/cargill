@@ -4,14 +4,17 @@ import Reveal from "@/components/ui/Reveal";
 import MagneticButton from "@/components/ui/MagneticButton";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
+import { toTelHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
+
+const COMMITMENTS = [UI.commitQuality, UI.commitSupport, UI.commitField];
 
 export default function GrowTogetherBanner() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
   const phone = contact?.phones?.[0] || "";
-  const phoneHref = phone ? `tel:${phone.replace(/\s+/g, "")}` : "";
+  const phoneHref = toTelHref(phone);
 
   return (
     <section className="relative overflow-hidden bg-surface-muted py-16 lg:py-20">
@@ -30,6 +33,18 @@ export default function GrowTogetherBanner() {
           <p className="mx-auto mb-8 max-w-xl text-sm leading-8 text-text-muted sm:text-base">
             {t(UI.growTogetherBody, locale)}
           </p>
+
+          <ul className="mx-auto mb-9 flex max-w-2xl flex-col gap-2 text-start sm:text-center">
+            {COMMITMENTS.map((item) => (
+              <li
+                key={item.en}
+                className="text-sm font-semibold leading-7 text-brand-ink/80 sm:text-base"
+              >
+                • {t(item, locale)}
+              </li>
+            ))}
+          </ul>
+
           <div className="flex flex-wrap items-center justify-center gap-3">
             <MagneticButton>
               <Link
@@ -37,6 +52,14 @@ export default function GrowTogetherBanner() {
                 className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-md bg-brand-ink px-7 text-sm font-bold text-white transition-colors hover:bg-brand-lime hover:text-brand-ink"
               >
                 {t(UI.nav.contact, locale)}
+              </Link>
+            </MagneticButton>
+            <MagneticButton>
+              <Link
+                to="/products"
+                className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-md border border-brand-ink/15 bg-white px-7 text-sm font-bold text-brand-ink transition-colors hover:border-brand-lime hover:bg-brand-lime"
+              >
+                {t(UI.exploreProducts, locale)}
               </Link>
             </MagneticButton>
             {phoneHref ? (
