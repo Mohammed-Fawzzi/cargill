@@ -1,19 +1,37 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useLocale } from "@/context/LocaleContext";
+import { getCategories, getProducts } from "@/services/cms/products";
 import { t } from "@/lib/i18n";
-import { UI } from "@/data/uiCopy";
 
 export default function MarqueeBand() {
   const { locale } = useLocale();
-  const items = [
-    t(UI.nav.products, locale),
-    t(UI.impactFarmers, locale),
-    t(UI.nav.events, locale),
-    t(UI.impactProducts, locale),
-    t(UI.nav.articles, locale),
-    t(UI.impactRegions, locale),
-  ];
+  const categoriesQuery = useQuery({
+    queryKey: ["cms", "categories"],
+    queryFn: getCategories,
+    staleTime: 1000 * 60 * 5,
+  });
+  const productsQuery = useQuery({
+    queryKey: ["cms", "products"],
+    queryFn: getProducts,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const items = useMemo(() => {
+    const categories = (categoriesQuery.data || [])
+      .map((item) => t(item.name, locale))
+      .filter(Boolean);
+    const products = (productsQuery.data || [])
+      .map((item) => t(item.name, locale))
+      .filter(Boolean)
+      .slice(0, 8);
+    const merged = [...categories, ...products];
+    return merged.length ? merged : null;
+  }, [categoriesQuery.data, productsQuery.data, locale]);
+
+  if (!items?.length) return null;
+
   const loop = [...items, ...items];
 
   return (
