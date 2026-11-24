@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import { FaPhoneAlt } from "react-icons/fa";
 import { motion, useScroll, useTransform } from "framer-motion";
 import CtaLink from "@/components/ui/CtaLink";
 import MagneticButton from "@/components/ui/MagneticButton";
 import Reveal from "@/components/ui/Reveal";
 import { useLocale } from "@/context/LocaleContext";
-import { FALLBACK_IMAGE, normalizeImageUrl } from "@/lib/image";
+import { normalizeImageUrl } from "@/lib/image";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 
@@ -16,22 +16,16 @@ export default function CompanyCtaSection({ section }) {
   const body = t(data?.body, locale);
   const ctaLabel = t(data?.cta?.label, locale) || t(UI.nav.contact, locale);
   const href = data?.cta?.href || "/contact";
-  const cmsImageUrl = normalizeImageUrl(data?.imageUrl || "");
-  const preferred =
-    !cmsImageUrl || /placeholder|via\.placeholder/i.test(cmsImageUrl)
-      ? FALLBACK_IMAGE
-      : cmsImageUrl;
-  const [imageUrl, setImageUrl] = useState(preferred);
+  const imageUrl = normalizeImageUrl(data?.imageUrl || "", {
+    width: 1920,
+    quality: 72,
+  });
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
   });
   const imageY = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
-
-  useEffect(() => {
-    setImageUrl(preferred);
-  }, [preferred]);
 
   if (!title && !body && !imageUrl) return null;
 
@@ -47,9 +41,8 @@ export default function CompanyCtaSection({ section }) {
           style={{ y: imageY }}
           className="absolute inset-0 h-[120%] w-full object-cover will-change-transform"
           aria-hidden="true"
-          onError={() => {
-            if (imageUrl !== FALLBACK_IMAGE) setImageUrl(FALLBACK_IMAGE);
-          }}
+          loading="lazy"
+          decoding="async"
         />
       ) : null}
       <div className="absolute inset-0 bg-brand-forest-deep/72" aria-hidden="true" />

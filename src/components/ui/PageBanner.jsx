@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import OrganicFloat from "@/components/ui/OrganicFloat";
-import { FALLBACK_IMAGE, normalizeImageUrl } from "@/lib/image";
+import { normalizeImageUrl } from "@/lib/image";
 import { easeOut } from "@/lib/motion";
 
 export default function PageBanner({
@@ -13,8 +13,7 @@ export default function PageBanner({
 }) {
   const { scrollY } = useScroll();
   const imageY = useTransform(scrollY, [0, 420], [0, 70]);
-  const normalized = normalizeImageUrl(imageUrl, { width: 1920, quality: 72 });
-  const [src, setSrc] = useState(normalized || FALLBACK_IMAGE);
+  const src = normalizeImageUrl(imageUrl, { width: 1920, quality: 72 });
   const tall = variant === "editorial" || variant === "immersive";
   const minH =
     variant === "immersive"
@@ -23,15 +22,11 @@ export default function PageBanner({
         ? "min-h-[52vh] sm:min-h-[58vh]"
         : "min-h-[42vh] sm:min-h-[48vh]";
 
-  useEffect(() => {
-    setSrc(normalized || FALLBACK_IMAGE);
-  }, [normalized]);
-
   return (
     <section
       className={`relative isolate overflow-hidden bg-brand-forest-deep text-white ${minH}`}
     >
-      {imageUrl || src ? (
+      {src ? (
         <motion.img
           src={src}
           alt=""
@@ -41,9 +36,6 @@ export default function PageBanner({
           loading="eager"
           decoding="async"
           fetchPriority="high"
-          onError={() => {
-            if (src !== FALLBACK_IMAGE) setSrc(FALLBACK_IMAGE);
-          }}
         />
       ) : (
         <div
