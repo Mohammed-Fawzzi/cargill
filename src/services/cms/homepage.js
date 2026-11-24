@@ -52,6 +52,12 @@ export async function getFooterSection() {
   return parseHomepageSection(snap.id, snap.data());
 }
 
+export async function getHomepageSection(id) {
+  const snap = await getDoc(doc(db, "homepage", id));
+  if (!snap.exists()) return parseHomepageSection(id);
+  return parseHomepageSection(snap.id, snap.data());
+}
+
 export async function loadHomePage() {
   const [home, products, articles, events, categories, contact] =
     await Promise.all([
