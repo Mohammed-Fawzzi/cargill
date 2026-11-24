@@ -3,6 +3,8 @@ import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import HeroSection from "@/components/home/HeroSection";
+import ImpactStrip from "@/components/home/ImpactStrip";
+import MarqueeBand from "@/components/home/MarqueeBand";
 import FeaturedProductsSection from "@/components/home/FeaturedProductsSection";
 import CompanyCtaSection from "@/components/home/CompanyCtaSection";
 import ProductCategoriesSection from "@/components/home/ProductCategoriesSection";
@@ -48,7 +50,13 @@ export default function Home() {
           {sections.map((section) => {
             const Component = SECTION_COMPONENTS[section.id];
             if (!Component) return null;
-            return <Component key={section.id} section={section} />;
+            return (
+              <React.Fragment key={section.id}>
+                <Component section={section} />
+                {section.id === "hero" ? <ImpactStrip /> : null}
+                {section.id === "product_categories" ? <MarqueeBand /> : null}
+              </React.Fragment>
+            );
           })}
         </main>
       ) : null}

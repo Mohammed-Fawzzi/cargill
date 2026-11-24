@@ -119,4 +119,13 @@ export const UI = {
     ar: "لا يتوفر بريد إلكتروني للإرسال حالياً.",
     en: "No email address is available to send a message.",
   },
+  impactEyebrow: { ar: "أثرنا في الحقل", en: "Our field impact" },
+  impactTitle: {
+    ar: "خبرة زراعية تُترجم إلى نتائج على أرض الواقع.",
+    en: "Agronomy expertise that turns into real field results.",
+  },
+  impactYears: { ar: "سنوات خبرة", en: "Years of experience" },
+  impactProducts: { ar: "حلول ومنتجات", en: "Products & solutions" },
+  impactRegions: { ar: "مناطق تغطية", en: "Coverage regions" },
+  impactFarmers: { ar: "مزارع وشريك", en: "Growers & partners" },
 };

@@ -23,7 +23,7 @@ export default function ContactSection({ section }) {
   return (
     <section className="bg-white">
       <div className="grid grid-cols-1 lg:grid-cols-2">
-        <Reveal className="relative min-h-[360px] bg-surface-muted lg:min-h-[520px]">
+        <Reveal className="relative min-h-[380px] bg-surface-muted lg:min-h-[540px]">
           {mapSrc ? (
             <iframe
               title={title || t(UI.address, locale)}
@@ -33,7 +33,7 @@ export default function ContactSection({ section }) {
               referrerPolicy="no-referrer-when-downgrade"
             />
           ) : (
-            <div className="flex h-full min-h-[360px] items-center justify-center px-6 text-center text-text-muted lg:min-h-[520px]">
+            <div className="flex h-full min-h-[380px] items-center justify-center px-6 text-center text-text-muted lg:min-h-[540px]">
               {t(UI.address, locale)}
             </div>
           )}
@@ -41,10 +41,21 @@ export default function ContactSection({ section }) {
 
         <Reveal
           delay={0.08}
-          className="flex items-center bg-brand-black px-6 py-14 text-white sm:px-10 lg:px-14 lg:py-16"
+          className="relative flex items-center overflow-hidden bg-brand-forest-deep px-6 py-14 text-white sm:px-10 lg:px-14 lg:py-16"
         >
-          <div className="w-full max-w-lg">
-            <h2 className="mb-4 text-3xl font-extrabold text-brand-lime sm:text-4xl">
+          <div
+            className="pointer-events-none absolute -end-10 -top-10 h-40 w-40 rounded-full bg-brand-lime/15 blur-2xl"
+            aria-hidden="true"
+          />
+          <div
+            className="pointer-events-none absolute -start-8 bottom-0 h-32 w-32 rounded-full bg-brand-moss/20 blur-2xl"
+            aria-hidden="true"
+          />
+          <div className="relative w-full max-w-lg">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-brand-lime">
+              {t(UI.contactInfo, locale)}
+            </p>
+            <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
               {title}
             </h2>
             {body ? (
@@ -56,7 +67,7 @@ export default function ContactSection({ section }) {
             <ul className="space-y-5 text-sm leading-7 text-white/85 sm:text-base">
               {address ? (
                 <li className="flex items-start gap-3">
-                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-lime/15 text-brand-lime">
+                  <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-lime/15 text-brand-lime">
                     <MdLocationOn aria-hidden="true" />
                   </span>
                   <span>{address}</span>
@@ -64,7 +75,7 @@ export default function ContactSection({ section }) {
               ) : null}
               {phones.map((phone) => (
                 <li key={phone} className="flex items-start gap-3">
-                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-lime/15 text-brand-lime">
+                  <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-lime/15 text-brand-lime">
                     <FaMobile aria-hidden="true" />
                   </span>
                   <a
@@ -78,7 +89,7 @@ export default function ContactSection({ section }) {
               ))}
               {emails.map((email) => (
                 <li key={email} className="flex items-start gap-3">
-                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-lime/15 text-brand-lime">
+                  <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-lime/15 text-brand-lime">
                     <MdEmail aria-hidden="true" />
                   </span>
                   <a
@@ -94,7 +105,7 @@ export default function ContactSection({ section }) {
             {ctaLabel ? (
               <CtaLink
                 href={href}
-                className="mt-10 inline-flex min-h-12 items-center justify-center rounded-md bg-brand-lime px-7 py-3 text-sm font-extrabold text-brand-black transition-colors hover:bg-brand-lime-hover"
+                className="mt-10 inline-flex min-h-12 items-center justify-center rounded-md bg-brand-lime px-7 py-3 text-sm font-extrabold text-brand-ink transition-all duration-300 hover:bg-brand-lime-hover hover:shadow-[0_12px_28px_rgba(136,196,60,0.35)]"
               >
                 {ctaLabel}
               </CtaLink>
