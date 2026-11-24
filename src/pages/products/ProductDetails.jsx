@@ -8,7 +8,9 @@ import Reveal from "@/components/ui/Reveal";
 import SafeImage from "@/components/ui/SafeImage";
 import ProductCard from "@/components/products/ProductCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
+import MagneticButton from "@/components/ui/MagneticButton";
 import { getCategories, getProduct, getProducts } from "@/services/cms/products";
+import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
@@ -47,6 +49,7 @@ function UsageTable({ columns, rows, locale }) {
 export default function ProductDetails() {
   const { id } = useParams();
   const { locale } = useLocale();
+  const featuredQuery = useHomepageSection("featured_products");
   const productQuery = useQuery({
     queryKey: ["cms", "product", id],
     queryFn: () => getProduct(id),
@@ -69,13 +72,21 @@ export default function ProductDetails() {
     (item) => item.id === product?.subcategoryId,
   );
   const name = t(product?.name, locale);
+  const relatedTitle =
+    t(featuredQuery.data?.title, locale) || t(UI.nav.products, locale);
 
   const related = useMemo(() => {
     const list = productsQuery.data || [];
+    const selected = featuredQuery.data?.selectedIds || [];
+    const byId = new Map(list.map((item) => [item.id, item]));
+    const preferred = selected
+      .map((itemId) => byId.get(itemId))
+      .filter((item) => item && item.id !== id);
+    if (preferred.length) return preferred.slice(0, 3);
     return list
       .filter((item) => item.id !== id && item.sectionId === product?.sectionId)
       .slice(0, 3);
-  }, [productsQuery.data, id, product?.sectionId]);
+  }, [productsQuery.data, featuredQuery.data?.selectedIds, id, product?.sectionId]);
 
   return (
     <>
@@ -136,12 +147,14 @@ export default function ProductDetails() {
                     {t(product.overview, locale)}
                   </p>
                 ) : null}
-                <Link
-                  to="/contact"
-                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-brand-lime px-7 py-3 text-sm font-extrabold text-brand-ink transition-all hover:bg-brand-lime-hover"
-                >
-                  {t(UI.nav.contact, locale)}
-                </Link>
+                <MagneticButton className="inline-flex">
+                  <Link
+                    to="/contact"
+                    className="inline-flex min-h-12 items-center justify-center rounded-md bg-brand-lime px-7 py-3 text-sm font-extrabold text-brand-ink transition-all hover:bg-brand-lime-hover"
+                  >
+                    {t(UI.nav.contact, locale)}
+                  </Link>
+                </MagneticButton>
               </motion.div>
             </div>
           </section>
@@ -223,7 +236,7 @@ export default function ProductDetails() {
               <div className="container mx-auto px-4 lg:px-8">
                 <Reveal className="mb-8">
                   <h2 className="text-2xl font-extrabold text-brand-ink sm:text-3xl">
-                    {t(UI.nav.products, locale)}
+                    {relatedTitle}
                   </h2>
                 </Reveal>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">

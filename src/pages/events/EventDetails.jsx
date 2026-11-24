@@ -8,7 +8,9 @@ import Reveal from "@/components/ui/Reveal";
 import SafeImage from "@/components/ui/SafeImage";
 import EventCard from "@/components/events/EventCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
+import OrganicFloat from "@/components/ui/OrganicFloat";
 import { getEvent, getEvents } from "@/services/cms/events";
+import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
@@ -17,6 +19,7 @@ import { formatDay } from "@/lib/time";
 export default function EventDetails() {
   const { id } = useParams();
   const { locale } = useLocale();
+  const sectionQuery = useHomepageSection("events");
 
   const eventQuery = useQuery({
     queryKey: ["cms", "event", id],
@@ -34,11 +37,21 @@ export default function EventDetails() {
   const title = t(event?.title, locale);
   const details = t(event?.details, locale);
   const isEnded = event?.status === "ended";
+  const relatedTitle =
+    t(sectionQuery.data?.title, locale) || t(UI.relatedEvents, locale);
 
   const related = useMemo(() => {
     const list = eventsQuery.data || [];
-    return list.filter((item) => item.id !== id).slice(0, 3);
-  }, [eventsQuery.data, id]);
+    const selected = sectionQuery.data?.selectedIds || [];
+    const byId = new Map(list.map((item) => [item.id, item]));
+    const preferred = selected
+      .map((itemId) => byId.get(itemId))
+      .filter((item) => item && item.id !== id);
+    const pool = preferred.length
+      ? preferred
+      : list.filter((item) => item.id !== id);
+    return pool.slice(0, 3);
+  }, [eventsQuery.data, sectionQuery.data?.selectedIds, id]);
 
   return (
     <>
@@ -67,6 +80,7 @@ export default function EventDetails() {
               className="absolute inset-0 bg-gradient-to-t from-brand-forest-deep via-brand-forest-deep/80 to-brand-black/40"
               aria-hidden="true"
             />
+            <OrganicFloat className="opacity-50 mix-blend-screen" />
             <div className="relative container mx-auto flex min-h-[inherit] items-end px-4 pb-12 pt-[calc(var(--navbar-height)+3rem)] lg:px-8 lg:pb-16">
               <Reveal className="max-w-3xl">
                 <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -118,7 +132,7 @@ export default function EventDetails() {
               <div className="container mx-auto px-4 lg:px-8">
                 <Reveal className="mb-8">
                   <h2 className="text-2xl font-extrabold text-brand-ink sm:text-3xl">
-                    {t(UI.relatedEvents, locale)}
+                    {relatedTitle}
                   </h2>
                 </Reveal>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">

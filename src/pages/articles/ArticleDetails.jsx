@@ -12,6 +12,7 @@ import SafeImage from "@/components/ui/SafeImage";
 import ArticleCard from "@/components/articles/ArticleCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getArticle, getArticles } from "@/services/cms/articles";
+import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
@@ -21,6 +22,7 @@ import { easeOut } from "@/lib/motion";
 export default function ArticleDetails() {
   const { id } = useParams();
   const { locale } = useLocale();
+  const sectionQuery = useHomepageSection("articles");
 
   const articleQuery = useQuery({
     queryKey: ["cms", "article", id],
@@ -38,11 +40,21 @@ export default function ArticleDetails() {
   const title = t(article?.title, locale);
   const excerpt = t(article?.excerpt, locale);
   const content = t(article?.content, locale);
+  const relatedTitle =
+    t(sectionQuery.data?.title, locale) || t(UI.relatedArticles, locale);
 
   const related = useMemo(() => {
     const list = articlesQuery.data || [];
-    return list.filter((item) => item.id !== id).slice(0, 3);
-  }, [articlesQuery.data, id]);
+    const selected = sectionQuery.data?.selectedIds || [];
+    const byId = new Map(list.map((item) => [item.id, item]));
+    const preferred = selected
+      .map((itemId) => byId.get(itemId))
+      .filter((item) => item && item.id !== id);
+    const pool = preferred.length
+      ? preferred
+      : list.filter((item) => item.id !== id);
+    return pool.slice(0, 3);
+  }, [articlesQuery.data, sectionQuery.data?.selectedIds, id]);
 
   return (
     <>
@@ -122,7 +134,7 @@ export default function ArticleDetails() {
               <div className="container mx-auto px-4 lg:px-8">
                 <Reveal className="mb-8">
                   <h2 className="text-2xl font-extrabold text-brand-ink sm:text-3xl">
-                    {t(UI.relatedArticles, locale)}
+                    {relatedTitle}
                   </h2>
                 </Reveal>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
