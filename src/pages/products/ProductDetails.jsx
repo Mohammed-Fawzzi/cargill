@@ -74,6 +74,42 @@ export default function ProductDetails() {
   const name = t(product?.name, locale);
   const relatedTitle =
     t(featuredQuery.data?.title, locale) || t(UI.nav.products, locale);
+  const origin = t(product?.originCountry, locale);
+  const firstIngredient = product?.activeIngredients?.[0]
+    ? [
+        t(product.activeIngredients[0].name, locale),
+        product.activeIngredients[0].percentage,
+      ]
+        .filter(Boolean)
+        .join(" — ")
+    : "";
+  const cropColumn = product?.agriculturalColumns?.find((col) => col.id === "crop");
+  const crops = useMemo(() => {
+    if (!product?.agriculturalUses?.length || !cropColumn) return [];
+    return [
+      ...new Set(
+        product.agriculturalUses
+          .map((row) => t(row.cells?.[cropColumn.id], locale))
+          .filter(Boolean),
+      ),
+    ];
+  }, [product?.agriculturalUses, cropColumn, locale]);
+
+  const specs = [
+    origin ? { label: t(UI.origin, locale), value: origin } : null,
+    firstIngredient
+      ? { label: t(UI.ingredients, locale), value: firstIngredient }
+      : null,
+    t(section?.name, locale)
+      ? { label: t(UI.relatedCategory, locale), value: t(section?.name, locale) }
+      : null,
+    crops.length
+      ? {
+          label: t(UI.cropsCovered, locale),
+          value: String(crops.length),
+        }
+      : null,
+  ].filter(Boolean);
 
   const related = useMemo(() => {
     const list = productsQuery.data || [];
@@ -101,15 +137,14 @@ export default function ProductDetails() {
         </main>
       ) : null}
       {!productQuery.isPending && product ? (
-        <main className="min-h-screen bg-white">
+        <main className="min-h-screen bg-white pb-24 md:pb-0">
           <section className="relative overflow-hidden bg-brand-forest-deep pt-[calc(var(--navbar-height)+1.5rem)] text-white">
             <div className="container mx-auto grid items-center gap-10 px-4 py-12 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-16">
               <motion.div
                 className="relative overflow-hidden rounded-[1.75rem] bg-white/5 shadow-[0_24px_60px_rgba(0,0,0,0.28)] ring-1 ring-white/10"
-                initial={{ opacity: 0, scale: 0.94, rotateY: -8 }}
-                animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-                transition={{ duration: 0.7, ease: easeOut }}
-                style={{ transformStyle: "preserve-3d" }}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: easeOut }}
               >
                 {product.imageUrl ? (
                   <SafeImage
@@ -125,9 +160,9 @@ export default function ProductDetails() {
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, y: 28 }}
+                initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.65, ease: easeOut, delay: 0.1 }}
+                transition={{ duration: 0.35, ease: easeOut, delay: 0.06 }}
               >
                 <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-brand-lime">
                   {[t(section?.name, locale), t(subcategory?.name, locale)]
@@ -137,11 +172,6 @@ export default function ProductDetails() {
                 <h1 className="mb-5 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
                   {name}
                 </h1>
-                {t(product.originCountry, locale) ? (
-                  <p className="mb-5 text-sm text-white/75">
-                    {t(UI.origin, locale)}: {t(product.originCountry, locale)}
-                  </p>
-                ) : null}
                 {t(product.overview, locale) ? (
                   <p className="mb-8 whitespace-pre-wrap text-base leading-8 text-white/85 sm:text-lg sm:leading-9">
                     {t(product.overview, locale)}
@@ -150,14 +180,33 @@ export default function ProductDetails() {
                 <MagneticButton className="inline-flex">
                   <Link
                     to="/contact"
-                    className="inline-flex min-h-12 items-center justify-center rounded-md bg-brand-lime px-7 py-3 text-sm font-extrabold text-brand-ink transition-all hover:bg-brand-lime-hover"
+                    className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-md bg-brand-lime px-7 py-3 text-sm font-extrabold text-brand-ink transition-all hover:bg-brand-lime-hover"
                   >
-                    {t(UI.nav.contact, locale)}
+                    {t(UI.imInterested, locale)}
                   </Link>
                 </MagneticButton>
               </motion.div>
             </div>
           </section>
+
+          {specs.length ? (
+            <section className="relative z-10 -mt-6 px-4 lg:px-8">
+              <div className="container mx-auto overflow-hidden rounded-2xl border border-brand-ink/8 bg-white shadow-[0_18px_44px_rgba(24,16,96,0.1)]">
+                <div className="grid grid-cols-2 divide-x divide-brand-ink/8 rtl:divide-x-reverse md:grid-cols-4">
+                  {specs.map((item) => (
+                    <div key={item.label} className="px-4 py-5 text-center sm:px-6 sm:py-6">
+                      <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-brand-moss">
+                        {item.label}
+                      </p>
+                      <p className="text-sm font-extrabold leading-6 text-brand-ink sm:text-base">
+                        {item.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          ) : null}
 
           <div className="container mx-auto space-y-12 px-4 py-14 lg:px-8 lg:py-16">
             {t(product.details, locale) ? (
@@ -192,19 +241,24 @@ export default function ProductDetails() {
 
             {product.features?.length ? (
               <Reveal>
-                <h2 className="mb-4 text-2xl font-extrabold text-brand-ink">
-                  {t(UI.features, locale)}
+                <h2 className="mb-8 text-2xl font-extrabold text-brand-ink">
+                  {t(UI.productHighlights, locale)}
                 </h2>
-                <ul className="grid gap-3 sm:grid-cols-2">
-                  {product.features.map((item) => (
-                    <li
+                <div className="grid gap-5 sm:grid-cols-2">
+                  {product.features.map((item, index) => (
+                    <article
                       key={item.id}
-                      className="rounded-2xl border border-brand-lime/20 bg-brand-lime/10 px-5 py-4 text-brand-ink"
+                      className="rounded-[1.5rem] border border-brand-ink/8 bg-white p-6 shadow-[0_10px_30px_rgba(24,16,96,0.04)]"
                     >
-                      {t(item.text, locale)}
-                    </li>
+                      <p className="mb-3 text-3xl font-extrabold tracking-tight text-brand-lime">
+                        {String(index + 1).padStart(2, "0")}.
+                      </p>
+                      <p className="text-base font-semibold leading-8 text-brand-ink">
+                        {t(item.text, locale)}
+                      </p>
+                    </article>
                   ))}
-                </ul>
+                </div>
               </Reveal>
             ) : null}
 
@@ -224,7 +278,7 @@ export default function ProductDetails() {
             <Reveal>
               <Link
                 to="/products"
-                className="inline-flex font-bold text-brand-moss transition-colors hover:text-brand-lime"
+                className="inline-flex cursor-pointer font-bold text-brand-moss transition-colors hover:text-brand-lime"
               >
                 ← {t(UI.nav.products, locale)}
               </Link>
