@@ -153,9 +153,9 @@ export const UI = {
   mediaTagUpdate: { ar: "تحديث", en: "Update" },
   mediaTagInsight: { ar: "معرفة", en: "Insight" },
   growTogetherEyebrow: { ar: "شراكة ونمو", en: "Partnership & growth" },
-  growTogetherTitle: { ar: "نكبّر مع بعض؟", en: "Shall we grow together?" },
+  growTogetherTitle: { ar: "هل ننمو معًا؟", en: "Shall we grow together?" },
   growTogetherBody: {
-    ar: "فريق كارجيل جاهز يساعدك تختار الحل الأنسب لمحصولك وموسمك.",
+    ar: "فريق كارجيل مستعد لمساعدتكم في اختيار الحل الأنسب لمحصولكم وموسمكم.",
     en: "Cargill’s team is ready to help you choose the right solution for your crop and season.",
   },
   whatsapp: { ar: "واتساب", en: "WhatsApp" },
