@@ -40,7 +40,10 @@ function readSocial(raw, socialLinks) {
 export function emptyCompanyContact() {
   return {
     companyName: emptyLocalized(),
+    aboutHeading: emptyLocalized(),
     about: emptyLocalized(),
+    vision: emptyLocalized(),
+    mission: emptyLocalized(),
     logoUrl: "",
     bannerUrl: "",
     heading: emptyLocalized(),
@@ -69,7 +72,10 @@ export async function getCompanyContact() {
 
   return {
     companyName: readLocalized(data, "companyName"),
+    aboutHeading: readLocalized(data, "aboutHeading"),
     about: readLocalized(data, "about"),
+    vision: readLocalized(data, "vision"),
+    mission: readLocalized(data, "mission"),
     logoUrl: asString(data.logoUrl),
     bannerUrl: asString(data.bannerUrl),
     heading: readLocalized(data, "heading"),
