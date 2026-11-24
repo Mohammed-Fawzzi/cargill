@@ -151,10 +151,8 @@ export default function Products() {
     fallbackImage,
   });
 
-  const pending =
-    productsQuery.isPending || categoriesQuery.isPending || sectionQuery.isPending;
-  const error =
-    productsQuery.isError || categoriesQuery.isError || sectionQuery.isError;
+  const pending = productsQuery.isPending || categoriesQuery.isPending;
+  const error = productsQuery.isError || categoriesQuery.isError;
 
   return (
     <>

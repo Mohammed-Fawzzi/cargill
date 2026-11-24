@@ -72,8 +72,8 @@ export default function Contact() {
   const inputClass =
     "w-full rounded-2xl border border-brand-ink/10 bg-white px-4 py-3.5 text-sm shadow-sm outline-none transition-all focus:border-brand-lime focus:shadow-[0_0_0_3px_rgba(136,196,60,0.18)]";
 
-  const pending = isPending || sectionQuery.isPending;
-  const error = isError || sectionQuery.isError;
+  const pending = isPending;
+  const error = isError;
 
   return (
     <>

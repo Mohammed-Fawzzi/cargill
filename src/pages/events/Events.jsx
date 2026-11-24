@@ -88,8 +88,8 @@ export default function Events() {
     fallbackImage,
   });
 
-  const pending = eventsQuery.isPending || sectionQuery.isPending;
-  const error = eventsQuery.isError || sectionQuery.isError;
+  const pending = eventsQuery.isPending;
+  const error = eventsQuery.isError;
 
   return (
     <>

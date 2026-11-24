@@ -1,13 +1,9 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
 
 const SHAPES = [
-  { top: "10%", left: "6%", size: 38, delay: 0, duration: 8, kind: "leaf" },
-  { top: "24%", right: "8%", size: 54, delay: 0.7, duration: 10, kind: "orb" },
-  { top: "58%", left: "12%", size: 30, delay: 1.3, duration: 7.5, kind: "leaf" },
-  { top: "68%", right: "16%", size: 44, delay: 0.35, duration: 9.5, kind: "leaf" },
-  { top: "40%", left: "48%", size: 18, delay: 1, duration: 6.2, kind: "orb" },
-  { top: "78%", left: "38%", size: 26, delay: 1.6, duration: 8.8, kind: "orb" },
+  { top: "12%", left: "8%", size: 34, delay: "0s", duration: "7s", kind: "leaf" },
+  { top: "28%", right: "10%", size: 46, delay: "0.8s", duration: "9s", kind: "orb" },
+  { top: "68%", right: "18%", size: 38, delay: "0.4s", duration: "8s", kind: "leaf" },
 ];
 
 function Leaf({ size }) {
@@ -37,7 +33,7 @@ function Leaf({ size }) {
 function Orb({ size }) {
   return (
     <span
-      className="block rounded-full bg-brand-lime/35 blur-[1px]"
+      className="block rounded-full bg-brand-lime/35"
       style={{ width: size, height: size }}
       aria-hidden="true"
     />
@@ -45,37 +41,44 @@ function Orb({ size }) {
 }
 
 export default function OrganicFloat({ className = "" }) {
+  const [enabled, setEnabled] = useState(false);
+
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const wide = window.matchMedia("(min-width: 768px)");
+    const sync = () => setEnabled(!reduced.matches && wide.matches);
+    sync();
+    reduced.addEventListener("change", sync);
+    wide.addEventListener("change", sync);
+    return () => {
+      reduced.removeEventListener("change", sync);
+      wide.removeEventListener("change", sync);
+    };
+  }, []);
+
+  if (!enabled) return null;
+
   return (
     <div
       className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
       aria-hidden="true"
     >
       {SHAPES.map((shape, index) => (
-        <motion.div
+        <div
           key={index}
-          className="absolute text-brand-lime"
+          className="absolute animate-soft-float text-brand-lime"
           style={{
             top: shape.top,
             left: shape.left,
             right: shape.right,
             width: shape.size,
             height: shape.size,
-          }}
-          animate={{
-            y: [0, -18, 10, 0],
-            x: [0, 12, -8, 0],
-            rotate: [0, 14, -10, 0],
-            scale: [1, 1.08, 0.96, 1],
-          }}
-          transition={{
-            duration: shape.duration,
-            delay: shape.delay,
-            repeat: Infinity,
-            ease: "easeInOut",
+            animationDelay: shape.delay,
+            animationDuration: shape.duration,
           }}
         >
           {shape.kind === "orb" ? <Orb size={shape.size} /> : <Leaf size={shape.size} />}
-        </motion.div>
+        </div>
       ))}
     </div>
   );

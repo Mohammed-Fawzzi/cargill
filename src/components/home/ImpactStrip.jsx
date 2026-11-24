@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import Reveal from "@/components/ui/Reveal";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
-import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { getArticles } from "@/services/cms/articles";
 import { getEvents } from "@/services/cms/events";
 import { getCategories, getProducts } from "@/services/cms/products";
@@ -12,11 +11,9 @@ import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 
-export default function ImpactStrip() {
+export default function ImpactStrip({ title: titleProp, eyebrow: eyebrowProp } = {}) {
   const { locale } = useLocale();
-  const { contact } = useSiteData();
-  const footerQuery = useHomepageSection("footer");
-  const ctaQuery = useHomepageSection("company_cta");
+  const { contact, footer } = useSiteData();
   const productsQuery = useQuery({
     queryKey: ["cms", "products"],
     queryFn: getProducts,
@@ -39,12 +36,13 @@ export default function ImpactStrip() {
   });
 
   const eyebrow =
+    eyebrowProp ||
     t(contact?.companyName, locale) ||
-    t(footerQuery.data?.title, locale) ||
+    t(footer?.title, locale) ||
     t(UI.nav.about, locale);
   const title =
-    t(footerQuery.data?.body, locale) ||
-    t(ctaQuery.data?.body, locale) ||
+    titleProp ||
+    t(footer?.body, locale) ||
     t(contact?.about, locale) ||
     t(UI.impactTitle, locale);
 
@@ -95,11 +93,10 @@ export default function ImpactStrip() {
               <motion.div
                 key={item.label}
                 className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm sm:p-6"
-                initial={{ opacity: 0, y: 28, rotateX: 18 }}
-                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.55, ease: easeOut, delay: index * 0.08 }}
-                style={{ transformStyle: "preserve-3d" }}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.3, ease: easeOut, delay: index * 0.04 }}
               >
                 <p className="mb-2 text-3xl font-extrabold text-brand-lime sm:text-4xl">
                   {item.value}

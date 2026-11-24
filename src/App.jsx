@@ -5,6 +5,7 @@ import { MotionConfig } from "framer-motion";
 import { router } from "@/routes/routes";
 import { LocaleProvider } from "@/context/LocaleContext";
 import { getCompanyContact } from "@/services/cms/contact";
+import { getFooterSection } from "@/services/cms/homepage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,6 +20,12 @@ const queryClient = new QueryClient({
 queryClient.prefetchQuery({
   queryKey: ["cms", "contact"],
   queryFn: getCompanyContact,
+  staleTime: 1000 * 60 * 30,
+});
+
+queryClient.prefetchQuery({
+  queryKey: ["cms", "homepage", "footer"],
+  queryFn: getFooterSection,
   staleTime: 1000 * 60 * 30,
 });
 

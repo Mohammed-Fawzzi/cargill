@@ -13,7 +13,7 @@ export default function PageBanner({
 }) {
   const { scrollY } = useScroll();
   const imageY = useTransform(scrollY, [0, 420], [0, 70]);
-  const normalized = normalizeImageUrl(imageUrl);
+  const normalized = normalizeImageUrl(imageUrl, { width: 1920, quality: 72 });
   const [src, setSrc] = useState(normalized || FALLBACK_IMAGE);
   const tall = variant === "editorial" || variant === "immersive";
   const minH =
@@ -38,6 +38,9 @@ export default function PageBanner({
           style={{ y: imageY }}
           className="absolute inset-0 h-[120%] w-full object-cover will-change-transform"
           aria-hidden="true"
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
           onError={() => {
             if (src !== FALLBACK_IMAGE) setSrc(FALLBACK_IMAGE);
           }}

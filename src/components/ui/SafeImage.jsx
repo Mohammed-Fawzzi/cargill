@@ -7,9 +7,12 @@ export default function SafeImage({
   className = "",
   fallback = FALLBACK_IMAGE,
   loading = "lazy",
+  width,
   ...props
 }) {
-  const normalized = normalizeImageUrl(src);
+  const normalized = normalizeImageUrl(src, {
+    width: typeof width === "number" ? width : 1600,
+  });
   const [current, setCurrent] = useState(normalized || fallback);
 
   useEffect(() => {
@@ -22,6 +25,7 @@ export default function SafeImage({
       alt={alt}
       className={className}
       loading={loading}
+      decoding="async"
       onError={() => {
         if (current !== fallback) setCurrent(fallback);
       }}

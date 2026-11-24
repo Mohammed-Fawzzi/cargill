@@ -69,7 +69,7 @@ export async function loadHomePage() {
       getCompanyContact(),
     ]);
 
-  return home.map((section) => {
+  const sections = home.map((section) => {
     const selectedIds = section.data?.selectedIds ?? [];
     const limit = typeof section.data?.limit === "number" ? section.data.limit : 0;
 
@@ -102,4 +102,14 @@ export async function loadHomePage() {
     }
     return { ...section, contact };
   });
+
+  return {
+    sections,
+    products,
+    articles,
+    events,
+    categories,
+    contact,
+    sectionData: Object.fromEntries(home.map((section) => [section.id, section.data])),
+  };
 }

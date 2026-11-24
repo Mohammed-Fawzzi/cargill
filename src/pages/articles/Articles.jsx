@@ -114,8 +114,8 @@ export default function Articles() {
     !queryText && currentPage === 1 && pageItems.length > 0 ? pageItems[0] : null;
   const gridItems = featured ? pageItems.slice(1) : pageItems;
 
-  const pending = articlesQuery.isPending || sectionQuery.isPending;
-  const error = articlesQuery.isError || sectionQuery.isError;
+  const pending = articlesQuery.isPending;
+  const error = articlesQuery.isError;
 
   return (
     <>

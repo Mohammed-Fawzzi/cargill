@@ -1,24 +1,29 @@
 import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import { useLocale } from "@/context/LocaleContext";
 import { getCategories, getProducts } from "@/services/cms/products";
 import { t } from "@/lib/i18n";
 
-export default function MarqueeBand() {
+export default function MarqueeBand({ items: itemsProp } = {}) {
   const { locale } = useLocale();
+  const needsFetch = !itemsProp?.length;
   const categoriesQuery = useQuery({
     queryKey: ["cms", "categories"],
     queryFn: getCategories,
     staleTime: 1000 * 60 * 5,
+    enabled: needsFetch,
   });
   const productsQuery = useQuery({
     queryKey: ["cms", "products"],
     queryFn: getProducts,
     staleTime: 1000 * 60 * 5,
+    enabled: needsFetch,
   });
 
   const items = useMemo(() => {
+    if (itemsProp?.length) {
+      return itemsProp.map((item) => t(item.name, locale) || item).filter(Boolean);
+    }
     const categories = (categoriesQuery.data || [])
       .map((item) => t(item.name, locale))
       .filter(Boolean);
@@ -28,7 +33,7 @@ export default function MarqueeBand() {
       .slice(0, 8);
     const merged = [...categories, ...products];
     return merged.length ? merged : null;
-  }, [categoriesQuery.data, productsQuery.data, locale]);
+  }, [itemsProp, categoriesQuery.data, productsQuery.data, locale]);
 
   if (!items?.length) return null;
 
@@ -36,11 +41,7 @@ export default function MarqueeBand() {
 
   return (
     <section className="overflow-hidden border-y border-brand-ink/5 bg-brand-lime py-4">
-      <motion.div
-        className="flex w-max gap-10 whitespace-nowrap"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 28, ease: "linear", repeat: Infinity }}
-      >
+      <div className="flex w-max animate-marquee gap-10 whitespace-nowrap">
         {loop.map((item, index) => (
           <span
             key={`${item}-${index}`}
@@ -50,7 +51,7 @@ export default function MarqueeBand() {
             <span className="h-2 w-2 rounded-full bg-brand-ink/40" aria-hidden="true" />
           </span>
         ))}
-      </motion.div>
+      </div>
     </section>
   );
 }

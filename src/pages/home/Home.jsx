@@ -54,7 +54,9 @@ export default function Home() {
               <React.Fragment key={section.id}>
                 <Component section={section} />
                 {section.id === "hero" ? <ImpactStrip /> : null}
-                {section.id === "product_categories" ? <MarqueeBand /> : null}
+                {section.id === "product_categories" ? (
+                  <MarqueeBand items={section.items} />
+                ) : null}
               </React.Fragment>
             );
           })}

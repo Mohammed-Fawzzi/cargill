@@ -21,23 +21,15 @@ function isUsableSlide(slide, locale) {
 }
 
 function AnimatedTitle({ text }) {
-  const words = String(text || "").split(/\s+/).filter(Boolean);
   return (
-    <h1 className="mb-6 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-[4.6rem]">
-      {words.map((word, index) => (
-        <motion.span
-          key={`${word}-${index}`}
-          className="inline-block"
-          initial={{ opacity: 0, y: 42, rotateX: 40 }}
-          animate={{ opacity: 1, y: 0, rotateX: 0 }}
-          transition={{ duration: 0.55, ease: easeOut, delay: 0.08 + index * 0.06 }}
-          style={{ transformOrigin: "bottom" }}
-        >
-          {word}
-          {index < words.length - 1 ? "\u00A0" : ""}
-        </motion.span>
-      ))}
-    </h1>
+    <motion.h1
+      className="mb-6 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-[4.6rem]"
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: easeOut }}
+    >
+      {text}
+    </motion.h1>
   );
 }
 
@@ -64,7 +56,7 @@ export default function HeroSection({ section }) {
       setIndex((current) => (current + 1) % slides.length);
     }, AUTOPLAY_MS);
     return () => window.clearInterval(timer);
-  }, [multi, paused, slides.length, index]);
+  }, [multi, paused, slides.length]);
 
   if (!slides.length) return null;
 
@@ -101,6 +93,8 @@ export default function HeroSection({ section }) {
               alt={title || t(UI.heroImage, locale)}
               className="absolute inset-0 h-[118%] w-full object-cover"
               loading="eager"
+              fetchPriority="high"
+              width={1920}
             />
           ) : (
             <div
@@ -147,9 +141,9 @@ export default function HeroSection({ section }) {
             {body ? (
               <motion.p
                 className="mb-9 max-w-xl text-base leading-8 text-white/88 sm:text-lg lg:text-xl lg:leading-9"
-                initial={{ opacity: 0, y: 18 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, ease: easeOut, delay: 0.28 }}
+                transition={{ duration: 0.3, ease: easeOut, delay: 0.08 }}
               >
                 {body}
               </motion.p>
