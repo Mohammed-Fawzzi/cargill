@@ -118,7 +118,7 @@ export default function HeroSection({ section }) {
 
       <motion.div
         style={{ y: contentY }}
-        className="relative container mx-auto flex min-h-[100svh] items-end px-4 pb-28 pt-[calc(var(--navbar-height)+3rem)] sm:items-center lg:px-8 lg:pb-32"
+        className="relative container mx-auto flex min-h-[100svh] items-end px-4 pb-32 pt-[calc(var(--navbar-height)+2rem)] sm:items-center sm:pb-28 lg:px-8 lg:pb-32"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -134,7 +134,7 @@ export default function HeroSection({ section }) {
             </p>
             {title ? (
               <motion.h1
-                className="mb-5 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-[4.4rem]"
+                className="mb-4 text-[1.85rem] font-extrabold leading-[1.15] tracking-tight sm:mb-5 sm:text-5xl lg:text-6xl xl:text-[4.4rem]"
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, ease: easeOut }}
@@ -164,8 +164,8 @@ export default function HeroSection({ section }) {
 
       {multi ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10">
-          <div className="container mx-auto flex items-end justify-between gap-4 px-4 pb-24 lg:px-8 lg:pb-28">
-            <div className="pointer-events-auto flex items-center gap-2.5">
+          <div className="container mx-auto flex items-end justify-between gap-3 px-4 pb-28 sm:pb-24 lg:px-8 lg:pb-28">
+            <div className="pointer-events-auto flex items-center gap-2 sm:gap-2.5">
               {slides.map((item, itemIndex) => {
                 const active = itemIndex === safeIndex;
                 return (
@@ -177,20 +177,20 @@ export default function HeroSection({ section }) {
                     onClick={() => goTo(itemIndex)}
                     className={`rounded-full transition-all duration-300 ${
                       active
-                        ? "h-2.5 w-8 bg-brand-lime"
-                        : "h-2.5 w-2.5 bg-white/50 hover:bg-white"
+                        ? "h-2 w-7 bg-brand-lime sm:h-2.5 sm:w-8"
+                        : "h-2 w-2 bg-white/50 hover:bg-white sm:h-2.5 sm:w-2.5"
                     }`}
                   />
                 );
               })}
             </div>
 
-            <div className="pointer-events-auto flex items-center gap-3">
+            <div className="pointer-events-auto flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => goTo(safeIndex - 1)}
                 aria-label={t(UI.prevSlide, locale)}
-                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/70 bg-white/5 text-white backdrop-blur-sm transition-all duration-300 hover:bg-brand-lime hover:text-brand-ink"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/70 bg-white/5 text-white backdrop-blur-sm transition-all duration-300 hover:bg-brand-lime hover:text-brand-ink sm:h-12 sm:w-12"
               >
                 <IoChevronBack className="text-xl rtl:rotate-180" aria-hidden="true" />
               </button>
@@ -198,7 +198,7 @@ export default function HeroSection({ section }) {
                 type="button"
                 onClick={() => goTo(safeIndex + 1)}
                 aria-label={t(UI.nextSlide, locale)}
-                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/70 bg-white/5 text-white backdrop-blur-sm transition-all duration-300 hover:bg-brand-lime hover:text-brand-ink"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/70 bg-white/5 text-white backdrop-blur-sm transition-all duration-300 hover:bg-brand-lime hover:text-brand-ink sm:h-12 sm:w-12"
               >
                 <IoChevronForward className="text-xl rtl:rotate-180" aria-hidden="true" />
               </button>

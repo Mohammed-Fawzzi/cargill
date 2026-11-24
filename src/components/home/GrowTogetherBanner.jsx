@@ -27,7 +27,7 @@ export default function GrowTogetherBanner() {
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-brand-moss">
             {t(UI.growTogetherEyebrow, locale)}
           </p>
-          <h2 className="mb-5 text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-5xl">
+          <h2 className="mb-5 text-2xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-5xl">
             {t(UI.growTogetherTitle, locale)}
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-sm leading-8 text-text-muted sm:text-base">

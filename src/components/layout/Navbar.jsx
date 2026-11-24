@@ -29,8 +29,8 @@ function linkClass({ isActive }) {
   }`;
 }
 
-function CircleIcon({ children, href, label, className = "" }) {
-  const classes = `inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/45 text-white transition-all duration-300 hover:border-brand-lime hover:bg-brand-lime hover:text-brand-ink ${className}`;
+function CircleIcon({ children, href, label, className = "inline-flex" }) {
+  const classes = `${className} h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/45 text-white transition-all duration-300 hover:border-brand-lime hover:bg-brand-lime hover:text-brand-ink`;
   if (!href) {
     return (
       <span className={classes} aria-hidden="true">
@@ -194,23 +194,27 @@ export default function Navbar() {
             <LanguageSwitch variant="menu" />
           </div>
 
-          <div className="ms-auto flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-[12px] text-white/90 sm:gap-x-4 sm:text-[13px]">
+          <div className="ms-auto flex flex-nowrap items-center justify-end gap-x-2 overflow-hidden text-[12px] text-white/90 sm:gap-x-4 sm:text-[13px]">
             {phoneHref ? (
               <a
                 href={phoneHref}
-                className="inline-flex cursor-pointer items-center gap-2 transition-colors duration-300 hover:text-brand-lime"
+                className="inline-flex max-w-full cursor-pointer items-center gap-2 transition-colors duration-300 hover:text-brand-lime"
                 dir="ltr"
               >
                 <CircleIcon>
                   <IoCallOutline className="text-[13px]" aria-hidden="true" />
                 </CircleIcon>
-                <span>
+                <span className="hidden truncate sm:inline">
                   {t(UI.phone, locale)}: {phone}
                 </span>
               </a>
             ) : null}
             {waHref ? (
-              <CircleIcon href={waHref} label={t(UI.whatsapp, locale)}>
+              <CircleIcon
+                href={waHref}
+                label={t(UI.whatsapp, locale)}
+                className="hidden lg:inline-flex"
+              >
                 <IoLogoWhatsapp className="text-[13px]" aria-hidden="true" />
               </CircleIcon>
             ) : null}
@@ -218,7 +222,7 @@ export default function Navbar() {
               <CircleIcon
                 href={`mailto:${email}`}
                 label={email}
-                className="hidden sm:inline-flex"
+                className="hidden lg:inline-flex"
               >
                 <IoMailOutline className="text-[13px]" aria-hidden="true" />
               </CircleIcon>
@@ -228,7 +232,7 @@ export default function Navbar() {
                 key={platform.id}
                 href={platform.url}
                 label={platform.label}
-                className="hidden sm:inline-flex"
+                className="hidden lg:inline-flex"
               >
                 {React.createElement(platform.Icon, {
                   className: "text-[11px]",
@@ -279,11 +283,11 @@ export default function Navbar() {
             </ul>
           </div>
 
-          <div className="flex min-h-[68px] items-center justify-between gap-2 py-2 lg:hidden">
+          <div className="flex min-h-[64px] items-center justify-between gap-3 py-2 lg:hidden">
             <button
               type="button"
               onClick={() => setIsMenuOpen((open) => !open)}
-              className="inline-flex h-10 w-10 cursor-pointer items-center justify-center text-brand-ink transition-colors hover:text-brand-lime"
+              className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center text-brand-ink transition-colors hover:text-brand-lime"
               aria-label={isMenuOpen ? t(UI.closeMenu, locale) : t(UI.openMenu, locale)}
               aria-expanded={isMenuOpen}
             >
@@ -294,34 +298,14 @@ export default function Navbar() {
               )}
             </button>
 
-            <Link to="/" onClick={closeMenu} className="shrink-0">
+            <Link to="/" onClick={closeMenu} className="min-w-0 flex-1 text-center">
               <SiteLogo
                 alt={companyName}
-                className="h-10 w-auto max-w-[150px] object-contain"
+                className="mx-auto h-9 w-auto max-w-[140px] object-contain sm:h-10 sm:max-w-[160px]"
               />
             </Link>
 
-            <div className="flex items-center gap-1">
-              {waHref ? (
-                <a
-                  href={waHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-10 w-10 cursor-pointer items-center justify-center text-[#25D366]"
-                  aria-label={t(UI.whatsapp, locale)}
-                >
-                  <IoLogoWhatsapp className="text-xl" aria-hidden="true" />
-                </a>
-              ) : null}
-              {phoneHref ? (
-                <a
-                  href={phoneHref}
-                  className="inline-flex h-10 w-10 cursor-pointer items-center justify-center text-brand-ink"
-                  aria-label={t(UI.phone, locale)}
-                >
-                  <IoCallOutline className="text-xl" aria-hidden="true" />
-                </a>
-              ) : null}
+            <div className="flex w-[5.5rem] shrink-0 items-center justify-end gap-0.5 sm:w-auto sm:gap-1">
               <Link
                 to="/products"
                 className="inline-flex h-10 w-10 cursor-pointer items-center justify-center text-brand-ink"

@@ -63,7 +63,7 @@ export default function KnowledgeHub({ items = [] }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.35, ease: easeOut }}
-            className="group relative min-h-[420px] overflow-hidden rounded-[1.75rem] bg-brand-black shadow-[0_24px_60px_rgba(0,0,0,0.28)] sm:min-h-[520px]"
+            className="group relative min-h-[300px] overflow-hidden rounded-[1.75rem] bg-brand-black shadow-[0_24px_60px_rgba(0,0,0,0.28)] sm:min-h-[420px] lg:min-h-[520px]"
           >
             <Link to={`/articles/${featured.id}`} className="absolute inset-0 block cursor-pointer">
               {featured.imageUrl ? (

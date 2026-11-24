@@ -50,7 +50,7 @@ export default function ProductCategoriesSection({ section }) {
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-brand-moss">
             {t(UI.produceEfficiently, locale)}
           </p>
-          <h2 className="mb-3 text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
+          <h2 className="mb-3 text-2xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
             <span className="block">{t(UI.discoverEyebrow, locale)}</span>
             <span className="block text-brand-lime">{brand}</span>
           </h2>
@@ -75,7 +75,7 @@ export default function ProductCategoriesSection({ section }) {
                   type="button"
                   onClick={goPrev}
                   aria-label={t(UI.prevSlide, locale)}
-                  className="absolute start-0 top-[42%] z-10 inline-flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink shadow-sm transition-colors hover:border-brand-lime hover:bg-brand-lime"
+                  className="absolute start-0 top-[38%] z-10 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink shadow-sm transition-colors hover:border-brand-lime hover:bg-brand-lime sm:inline-flex"
                 >
                   <IoChevronBack className="text-xl rtl:rotate-180" aria-hidden="true" />
                 </button>
@@ -83,14 +83,14 @@ export default function ProductCategoriesSection({ section }) {
                   type="button"
                   onClick={goNext}
                   aria-label={t(UI.nextSlide, locale)}
-                  className="absolute end-0 top-[42%] z-10 inline-flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink shadow-sm transition-colors hover:border-brand-lime hover:bg-brand-lime"
+                  className="absolute end-0 top-[38%] z-10 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink shadow-sm transition-colors hover:border-brand-lime hover:bg-brand-lime sm:inline-flex"
                 >
                   <IoChevronForward className="text-xl rtl:rotate-180" aria-hidden="true" />
                 </button>
               </>
             ) : null}
 
-            <div className="flex flex-col items-center px-14 sm:px-20">
+            <div className="flex flex-col items-center px-2 sm:px-16 md:px-20">
               <Link
                 to={`/products?section=${encodeURIComponent(current.id)}`}
                 className="group relative mb-8 block aspect-square w-full max-w-[22rem] cursor-pointer overflow-hidden rounded-full shadow-[0_20px_50px_rgba(24,16,96,0.16)]"
@@ -124,26 +124,46 @@ export default function ProductCategoriesSection({ section }) {
               </Link>
 
               {items.length > 1 ? (
-                <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-                  {items.map((item, itemIndex) => {
-                    const name = t(item.name, locale);
-                    const active = itemIndex === safeIndex;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        aria-label={name}
-                        aria-current={active ? "true" : undefined}
-                        onClick={() => setIndex(itemIndex)}
-                        className={`cursor-pointer rounded-full transition-all ${
-                          active
-                            ? "h-2.5 w-8 bg-brand-lime"
-                            : "h-2.5 w-2.5 bg-brand-ink/20 hover:bg-brand-ink/40"
-                        }`}
-                      />
-                    );
-                  })}
-                </div>
+                <>
+                  <div className="mt-6 flex justify-center gap-3 sm:hidden">
+                    <button
+                      type="button"
+                      onClick={goPrev}
+                      aria-label={t(UI.prevSlide, locale)}
+                      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-brand-ink/15 text-brand-ink"
+                    >
+                      <IoChevronBack className="rtl:rotate-180" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={goNext}
+                      aria-label={t(UI.nextSlide, locale)}
+                      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-brand-ink/15 text-brand-ink"
+                    >
+                      <IoChevronForward className="rtl:rotate-180" aria-hidden="true" />
+                    </button>
+                  </div>
+                  <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:mt-8">
+                    {items.map((item, itemIndex) => {
+                      const name = t(item.name, locale);
+                      const active = itemIndex === safeIndex;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          aria-label={name}
+                          aria-current={active ? "true" : undefined}
+                          onClick={() => setIndex(itemIndex)}
+                          className={`cursor-pointer rounded-full transition-all ${
+                            active
+                              ? "h-2.5 w-8 bg-brand-lime"
+                              : "h-2.5 w-2.5 bg-brand-ink/20 hover:bg-brand-ink/40"
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                </>
               ) : null}
             </div>
           </div>

@@ -56,7 +56,7 @@ export default function ArticlesSection({ section }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.6, ease: easeOut }}
-                className="group relative min-h-[420px] overflow-hidden rounded-[1.75rem] bg-brand-forest-deep shadow-[0_20px_50px_rgba(24,16,96,0.14)]"
+                className="group relative min-h-[320px] overflow-hidden rounded-[1.75rem] bg-brand-forest-deep shadow-[0_20px_50px_rgba(24,16,96,0.14)] sm:min-h-[420px]"
               >
                 <Link to={`/articles/${featured.id}`} className="absolute inset-0 block">
                   <SafeImage
@@ -94,10 +94,10 @@ export default function ArticlesSection({ section }) {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, amount: 0.25 }}
                   transition={{ duration: 0.55, ease: easeOut, delay: 0.08 + index * 0.08 }}
-                  className="group flex min-h-[190px] overflow-hidden rounded-[1.5rem] border border-brand-ink/8 bg-white shadow-[0_10px_30px_rgba(24,16,96,0.05)]"
+                  className="group flex min-h-[170px] overflow-hidden rounded-[1.5rem] border border-brand-ink/8 bg-white shadow-[0_10px_30px_rgba(24,16,96,0.05)] sm:min-h-[190px]"
                 >
                   <Link to={`/articles/${item.id}`} className="flex w-full">
-                    <div className="relative w-[42%] shrink-0 overflow-hidden bg-surface-muted">
+                    <div className="relative w-[36%] shrink-0 overflow-hidden bg-surface-muted sm:w-[42%]">
                       <SafeImage
                         src={item.imageUrl}
                         alt={t(item.title, locale)}

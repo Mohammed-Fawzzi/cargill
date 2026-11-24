@@ -79,7 +79,7 @@ export default function ImpactStrip({ title: titleProp, eyebrow: eyebrowProp } =
               <span className="hidden h-px w-16 bg-brand-lime/50 sm:block" aria-hidden="true" />
             </p>
             {title ? (
-              <h2 className="mx-auto max-w-3xl text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl">
+              <h2 className="mx-auto max-w-3xl text-xl font-extrabold tracking-tight line-clamp-4 sm:text-3xl sm:line-clamp-none lg:text-4xl">
                 {title}
               </h2>
             ) : null}

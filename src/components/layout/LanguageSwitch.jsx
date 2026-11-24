@@ -84,7 +84,9 @@ export default function LanguageSwitch({
   }
 
   const buttonClass = (active) =>
-    `rounded-md px-2 py-1 text-xs font-bold transition-colors sm:text-sm ${
+    `rounded-md font-bold transition-colors ${
+      compact ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-1 text-xs sm:text-sm"
+    } ${
       active
         ? "bg-brand-lime text-brand-ink"
         : light
@@ -94,7 +96,9 @@ export default function LanguageSwitch({
 
   return (
     <div
-      className={`inline-flex items-center gap-1 rounded-lg p-0.5 ${
+      className={`inline-flex items-center rounded-lg ${
+        compact ? "gap-0.5 p-0.5" : "gap-1 p-0.5"
+      } ${
         light
           ? "border border-brand-ink/10 bg-brand-ink/5"
           : "border border-white/10 bg-white/5"

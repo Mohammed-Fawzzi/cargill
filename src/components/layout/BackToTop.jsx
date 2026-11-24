@@ -43,10 +43,11 @@ export default function BackToTop() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.9 }}
           transition={{ duration: 0.2 }}
-          className="fixed z-40 inline-flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-brand-ink text-white shadow-[0_12px_32px_rgba(24,16,96,0.28)] transition-colors hover:bg-brand-lime hover:text-brand-ink"
+          className="fixed z-40 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-brand-ink text-white shadow-[0_12px_32px_rgba(24,16,96,0.28)] transition-colors hover:bg-brand-lime hover:text-brand-ink sm:h-12 sm:w-12"
           style={{
-            bottom: "max(5.5rem, calc(env(safe-area-inset-bottom, 0px) + 5rem))",
-            insetInlineEnd: "max(1rem, env(safe-area-inset-right, 0px))",
+            bottom:
+              "max(6.25rem, calc(env(safe-area-inset-bottom, 0px) + 5.75rem))",
+            insetInlineEnd: "max(0.75rem, env(safe-area-inset-right, 0px))",
           }}
         >
           <IoChevronUp className="text-xl" aria-hidden="true" />

@@ -41,7 +41,7 @@ export default function MediaStrip({ items = [] }) {
               <Link
                 key={item.id}
                 to={`/articles/${item.id}`}
-                className="group grid cursor-pointer gap-4 py-5 transition-colors hover:bg-surface-muted/70 sm:grid-cols-[7.5rem_7rem_9rem_1fr_auto] sm:items-center sm:gap-5 sm:px-2"
+                className="group grid cursor-pointer grid-cols-[5.5rem_1fr] items-center gap-3 py-4 transition-colors hover:bg-surface-muted/70 sm:grid-cols-[6.5rem_1fr_auto] sm:gap-5 sm:px-2 sm:py-5 lg:grid-cols-[7.5rem_6.5rem_8.5rem_1fr_auto]"
               >
                 <div className="overflow-hidden rounded-xl bg-surface-muted">
                   {item.imageUrl ? (
@@ -56,14 +56,23 @@ export default function MediaStrip({ items = [] }) {
                     </div>
                   )}
                 </div>
-                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-lime">
-                  {tag}
-                </p>
-                <p className="text-sm font-bold text-brand-moss">{date || "—"}</p>
-                <h3 className="text-base font-extrabold leading-7 text-brand-ink transition-colors group-hover:text-brand-lime sm:text-lg">
-                  {title}
-                </h3>
-                <span className="text-sm font-bold text-brand-ink transition-all group-hover:text-brand-lime sm:justify-self-end">
+
+                <div className="min-w-0 lg:contents">
+                  <p className="mb-1 text-xs font-extrabold uppercase tracking-[0.16em] text-brand-lime lg:mb-0">
+                    {tag}
+                  </p>
+                  <p className="mb-1 hidden text-sm font-bold text-brand-moss sm:mb-0 lg:block">
+                    {date || "—"}
+                  </p>
+                  <h3 className="text-base font-extrabold leading-7 text-brand-ink transition-colors group-hover:text-brand-lime sm:text-lg">
+                    {title}
+                  </h3>
+                  <p className="mt-1 text-xs font-bold text-brand-moss lg:hidden">
+                    {date || "—"}
+                  </p>
+                </div>
+
+                <span className="col-span-2 text-sm font-bold text-brand-ink transition-all group-hover:text-brand-lime sm:col-span-1 sm:justify-self-end">
                   {t(UI.findOutMore, locale)} →
                 </span>
               </Link>
