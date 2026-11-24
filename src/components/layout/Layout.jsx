@@ -1,9 +1,9 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import FloatingCta from "./FloatingCta";
 import ScrollToTop from "@/components/layout/ScrollToTop";
+import PageTransition from "@/components/layout/PageTransition";
 import { SiteDataProvider } from "@/context/SiteDataContext";
 
 export default function Layout() {
@@ -12,7 +12,7 @@ export default function Layout() {
       <div className="App">
         <ScrollToTop />
         <Navbar />
-        <Outlet />
+        <PageTransition />
         <Footer />
         <FloatingCta />
       </div>
