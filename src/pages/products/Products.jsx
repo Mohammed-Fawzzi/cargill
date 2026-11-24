@@ -9,8 +9,10 @@ import Reveal from "@/components/ui/Reveal";
 import ProductCard from "@/components/products/ProductCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories, getProducts } from "@/services/cms/products";
+import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
+import { resolvePageHero } from "@/lib/pageHero";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 
@@ -19,6 +21,7 @@ const PAGE_SIZE = 9;
 export default function Products() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
+  const sectionQuery = useHomepageSection("product_categories");
   const [params, setParams] = useSearchParams();
   const sectionId = params.get("section") || "";
   const subcategoryId = params.get("sub") || "";
@@ -137,34 +140,43 @@ export default function Products() {
   };
 
   const hasFilters = Boolean(sectionId || subcategoryId || queryText);
-  const bannerImage =
-    contact?.bannerUrl ||
-    products.find((item) => item.imageUrl)?.imageUrl ||
-    "";
+  const fallbackImage =
+    products.find((item) => item.imageUrl)?.imageUrl || "";
+  const hero = resolvePageHero({
+    section: sectionQuery.data,
+    contact,
+    locale,
+    fallbackTitle: t(UI.nav.products, locale),
+    fallbackSubtitle: t(UI.productsIntro, locale),
+    fallbackImage,
+  });
 
-  const pending = productsQuery.isPending || categoriesQuery.isPending;
-  const error = productsQuery.isError || categoriesQuery.isError;
+  const pending =
+    productsQuery.isPending || categoriesQuery.isPending || sectionQuery.isPending;
+  const error =
+    productsQuery.isError || categoriesQuery.isError || sectionQuery.isError;
 
   return (
     <>
-      <Seo title={t(UI.nav.products, locale)} path="/products" />
+      <Seo title={hero.title} description={hero.subtitle} path="/products" />
       {pending ? <Loading /> : null}
       {!pending && error ? (
         <ErrorState
           onRetry={() => {
             productsQuery.refetch();
             categoriesQuery.refetch();
+            sectionQuery.refetch();
           }}
         />
       ) : null}
       {!pending && !error ? (
         <main className="min-h-screen bg-white">
           <PageBanner
-            title={t(UI.nav.products, locale)}
-            subtitle={t(UI.productsIntro, locale)}
-            imageUrl={bannerImage}
+            title={hero.title}
+            subtitle={hero.subtitle}
+            imageUrl={hero.imageUrl}
             variant="immersive"
-            eyebrow={t(UI.nav.products, locale)}
+            eyebrow={t(contact?.companyName, locale) || hero.title}
           />
 
           <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">

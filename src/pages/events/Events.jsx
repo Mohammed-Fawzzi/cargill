@@ -8,8 +8,10 @@ import Reveal from "@/components/ui/Reveal";
 import EventCard from "@/components/events/EventCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getEvents } from "@/services/cms/events";
+import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
+import { resolvePageHero } from "@/lib/pageHero";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { formatDay } from "@/lib/time";
@@ -24,6 +26,7 @@ const FILTERS = [
 export default function Events() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
+  const sectionQuery = useHomepageSection("events");
   const [params, setParams] = useSearchParams();
   const filter = params.get("status") || "all";
   const pageParam = Number(params.get("page") || "1");
@@ -74,26 +77,40 @@ export default function Events() {
     updateParams({ status: nextFilter, page: "1" });
   };
 
-  const bannerImage =
-    contact?.bannerUrl ||
-    events.find((item) => item.imageUrl)?.imageUrl ||
-    "";
+  const fallbackImage =
+    events.find((item) => item.imageUrl)?.imageUrl || "";
+  const hero = resolvePageHero({
+    section: sectionQuery.data,
+    contact,
+    locale,
+    fallbackTitle: t(UI.nav.events, locale),
+    fallbackSubtitle: t(UI.eventsIntro, locale),
+    fallbackImage,
+  });
+
+  const pending = eventsQuery.isPending || sectionQuery.isPending;
+  const error = eventsQuery.isError || sectionQuery.isError;
 
   return (
     <>
-      <Seo title={t(UI.nav.events, locale)} path="/events" />
-      {eventsQuery.isPending ? <Loading /> : null}
-      {!eventsQuery.isPending && eventsQuery.isError ? (
-        <ErrorState onRetry={eventsQuery.refetch} />
+      <Seo title={hero.title} description={hero.subtitle} path="/events" />
+      {pending ? <Loading /> : null}
+      {!pending && error ? (
+        <ErrorState
+          onRetry={() => {
+            eventsQuery.refetch();
+            sectionQuery.refetch();
+          }}
+        />
       ) : null}
-      {!eventsQuery.isPending && !eventsQuery.isError ? (
+      {!pending && !error ? (
         <main className="min-h-screen bg-white">
           <PageBanner
-            title={t(UI.nav.events, locale)}
-            subtitle={t(UI.eventsIntro, locale)}
-            imageUrl={bannerImage}
+            title={hero.title}
+            subtitle={hero.subtitle}
+            imageUrl={hero.imageUrl}
             variant="immersive"
-            eyebrow={t(UI.nav.events, locale)}
+            eyebrow={t(contact?.companyName, locale) || hero.title}
           />
 
           <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">

@@ -1,16 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { IoSearchOutline, IoClose } from "react-icons/io5";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
+import SafeImage from "@/components/ui/SafeImage";
 import ArticleCard from "@/components/articles/ArticleCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getArticles } from "@/services/cms/articles";
+import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
+import { resolvePageHero } from "@/lib/pageHero";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { formatMillis } from "@/lib/time";
@@ -20,6 +23,7 @@ const PAGE_SIZE = 9;
 export default function Articles() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
+  const sectionQuery = useHomepageSection("articles");
   const [params, setParams] = useSearchParams();
   const queryText = params.get("q") || "";
   const pageParam = Number(params.get("page") || "1");
@@ -96,26 +100,43 @@ export default function Articles() {
     setParams(new URLSearchParams(), { replace: true });
   };
 
-  const bannerImage =
-    contact?.bannerUrl ||
-    articles.find((item) => item.imageUrl)?.imageUrl ||
-    "";
+  const fallbackImage =
+    articles.find((item) => item.imageUrl)?.imageUrl || "";
+  const hero = resolvePageHero({
+    section: sectionQuery.data,
+    contact,
+    locale,
+    fallbackTitle: t(UI.nav.articles, locale),
+    fallbackSubtitle: t(UI.articlesIntro, locale),
+    fallbackImage,
+  });
+  const featured =
+    !queryText && currentPage === 1 && pageItems.length > 0 ? pageItems[0] : null;
+  const gridItems = featured ? pageItems.slice(1) : pageItems;
+
+  const pending = articlesQuery.isPending || sectionQuery.isPending;
+  const error = articlesQuery.isError || sectionQuery.isError;
 
   return (
     <>
-      <Seo title={t(UI.nav.articles, locale)} path="/articles" />
-      {articlesQuery.isPending ? <Loading /> : null}
-      {!articlesQuery.isPending && articlesQuery.isError ? (
-        <ErrorState onRetry={articlesQuery.refetch} />
+      <Seo title={hero.title} description={hero.subtitle} path="/articles" />
+      {pending ? <Loading /> : null}
+      {!pending && error ? (
+        <ErrorState
+          onRetry={() => {
+            articlesQuery.refetch();
+            sectionQuery.refetch();
+          }}
+        />
       ) : null}
-      {!articlesQuery.isPending && !articlesQuery.isError ? (
+      {!pending && !error ? (
         <main className="min-h-screen bg-white">
           <PageBanner
-            title={t(UI.nav.articles, locale)}
-            subtitle={t(UI.articlesIntro, locale)}
-            imageUrl={bannerImage}
+            title={hero.title}
+            subtitle={hero.subtitle}
+            imageUrl={hero.imageUrl}
             variant="editorial"
-            eyebrow={t(UI.media, locale)}
+            eyebrow={t(contact?.companyName, locale) || hero.title}
           />
 
           <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
@@ -159,8 +180,41 @@ export default function Articles() {
               />
             ) : (
               <>
+                {featured ? (
+                  <Reveal className="mb-8">
+                    <Link
+                      to={`/articles/${featured.id}`}
+                      className="group relative flex min-h-[360px] overflow-hidden rounded-[1.75rem] bg-brand-forest-deep shadow-[0_20px_50px_rgba(24,16,96,0.14)] sm:min-h-[420px]"
+                    >
+                      <SafeImage
+                        src={featured.imageUrl}
+                        alt={t(featured.title, locale)}
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div
+                        className="absolute inset-0 bg-gradient-to-t from-brand-forest-deep via-brand-forest-deep/45 to-transparent"
+                        aria-hidden="true"
+                      />
+                      <div className="relative mt-auto p-6 text-white sm:p-8 lg:max-w-2xl">
+                        <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-brand-lime">
+                          {formatMillis(featured.createdAt, locale)}
+                        </p>
+                        <h2 className="mb-3 text-2xl font-extrabold leading-tight sm:text-3xl lg:text-4xl">
+                          {t(featured.title, locale)}
+                        </h2>
+                        <p className="mb-4 line-clamp-2 text-sm leading-7 text-white/80 sm:text-base">
+                          {t(featured.excerpt, locale)}
+                        </p>
+                        <span className="text-sm font-bold text-brand-lime">
+                          {t(UI.readMore, locale)} →
+                        </span>
+                      </div>
+                    </Link>
+                  </Reveal>
+                ) : null}
+
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
-                  {pageItems.map((item, index) => (
+                  {gridItems.map((item, index) => (
                     <Reveal key={item.id} delay={Math.min(index * 0.04, 0.2)}>
                       <ArticleCard
                         to={`/articles/${item.id}`}
