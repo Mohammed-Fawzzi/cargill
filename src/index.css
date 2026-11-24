@@ -59,6 +59,17 @@ body {
   color: var(--color-text);
 }
 
+a,
+button,
+[role="button"],
+summary,
+label[for],
+input[type="submit"],
+input[type="button"],
+input[type="reset"] {
+  cursor: pointer;
+}
+
 .App {
   display: flex;
   flex-direction: column;
