@@ -5,10 +5,15 @@ import { asString, readLocalized } from "@/services/cms/parse";
 
 export function mapArticle(id, data = {}) {
   const createdAt = toMillis(data.createdAt);
+  const excerpt = readLocalized(data, "excerpt");
+  const description = readLocalized(data, "description");
   return {
     id,
     title: readLocalized(data, "title"),
-    excerpt: readLocalized(data, "excerpt"),
+    excerpt: {
+      ar: excerpt.ar || description.ar,
+      en: excerpt.en || description.en,
+    },
     content: readLocalized(data, "content"),
     imageUrl: asString(data.imageUrl),
     createdAt,

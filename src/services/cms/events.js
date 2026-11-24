@@ -5,10 +5,15 @@ import { asString, readLocalized } from "@/services/cms/parse";
 
 export function mapEvent(id, data = {}) {
   const createdAt = toMillis(data.createdAt);
+  const details = readLocalized(data, "details");
+  const description = readLocalized(data, "description");
   return {
     id,
     title: readLocalized(data, "title"),
-    details: readLocalized(data, "details"),
+    details: {
+      ar: details.ar || description.ar,
+      en: details.en || description.en,
+    },
     imageUrl: asString(data.imageUrl),
     date: asString(data.date),
     status: readEventStatus(data.status, data.date),
