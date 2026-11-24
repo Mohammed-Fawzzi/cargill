@@ -8,7 +8,10 @@ import MarqueeBand from "@/components/home/MarqueeBand";
 import FeaturedProductsSection from "@/components/home/FeaturedProductsSection";
 import CompanyCtaSection from "@/components/home/CompanyCtaSection";
 import ProductCategoriesSection from "@/components/home/ProductCategoriesSection";
+import KnowledgeHub from "@/components/home/KnowledgeHub";
 import ArticlesSection from "@/components/home/ArticlesSection";
+import MediaStrip from "@/components/home/MediaStrip";
+import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
 import EventsSection from "@/components/home/EventsSection";
 import ContactSection from "@/components/home/ContactSection";
 import { useHomePage } from "@/hooks/useHomePage";
@@ -52,10 +55,17 @@ export default function Home() {
             if (!Component) return null;
             return (
               <React.Fragment key={section.id}>
+                {section.id === "articles" ? (
+                  <KnowledgeHub items={section.items} />
+                ) : null}
+                {section.id === "contact" ? <GrowTogetherBanner /> : null}
                 <Component section={section} />
                 {section.id === "hero" ? <ImpactStrip /> : null}
                 {section.id === "product_categories" ? (
                   <MarqueeBand items={section.items} />
+                ) : null}
+                {section.id === "articles" ? (
+                  <MediaStrip items={section.items} />
                 ) : null}
               </React.Fragment>
             );

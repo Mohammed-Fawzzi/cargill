@@ -24,6 +24,10 @@ export default function FeaturedProductsSection({ section }) {
   const [perView, setPerView] = useState(2);
   const [paused, setPaused] = useState(false);
 
+  const spotlight = items[0] || null;
+  const mosaic = items.slice(1, 3);
+  const carouselItems = items.slice(3);
+
   useEffect(() => {
     const update = () => {
       setPerView(window.innerWidth < 768 ? 1 : 2);
@@ -35,17 +39,17 @@ export default function FeaturedProductsSection({ section }) {
 
   useEffect(() => {
     setIndex(0);
-  }, [items.length, perView]);
+  }, [carouselItems.length, perView]);
 
-  const maxIndex = Math.max(0, items.length - perView);
+  const maxIndex = Math.max(0, carouselItems.length - perView);
 
   useEffect(() => {
-    if (items.length <= perView || paused) return undefined;
+    if (carouselItems.length <= perView || paused) return undefined;
     const timer = window.setInterval(() => {
       setIndex((current) => (current >= maxIndex ? 0 : current + 1));
     }, AUTOPLAY_MS);
     return () => window.clearInterval(timer);
-  }, [items.length, perView, paused, maxIndex]);
+  }, [carouselItems.length, perView, paused, maxIndex]);
 
   if (!items.length && !title && !body) return null;
 
@@ -56,6 +60,8 @@ export default function FeaturedProductsSection({ section }) {
 
   const goPrev = () => setIndex((current) => Math.max(0, current - 1));
   const goNext = () => setIndex((current) => Math.min(maxIndex, current + 1));
+
+  const spotlightName = spotlight ? t(spotlight.name, locale) : "";
 
   return (
     <section className="relative overflow-hidden bg-surface-muted py-16 lg:py-24">
@@ -83,7 +89,7 @@ export default function FeaturedProductsSection({ section }) {
           <MagneticButton>
             <Link
               to="/products"
-              className="inline-flex min-h-11 items-center justify-center rounded-md border border-brand-ink/15 bg-white px-6 text-sm font-bold text-brand-ink transition-all duration-300 hover:border-brand-lime hover:bg-brand-lime"
+              className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-md border border-brand-ink/15 bg-white px-6 text-sm font-bold text-brand-ink transition-all duration-300 hover:border-brand-lime hover:bg-brand-lime"
             >
               {t(UI.viewAll, locale)}
             </Link>
@@ -93,133 +99,208 @@ export default function FeaturedProductsSection({ section }) {
         {items.length === 0 ? (
           <EmptyState />
         ) : (
-          <Reveal delay={0.08}>
-            <div
-              className="relative"
-              onMouseEnter={() => setPaused(true)}
-              onMouseLeave={() => setPaused(false)}
-            >
-              {pageCount > 1 ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={goPrev}
-                    disabled={safeIndex === 0}
-                    aria-label={t(UI.prevSlide, locale)}
-                    className="absolute start-0 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink/50 shadow-sm transition-all hover:border-brand-lime hover:text-brand-ink disabled:opacity-25 md:inline-flex"
-                  >
-                    <IoChevronBack className="text-xl rtl:rotate-180" aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={goNext}
-                    disabled={safeIndex >= maxIndex}
-                    aria-label={t(UI.nextSlide, locale)}
-                    className="absolute end-0 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink/50 shadow-sm transition-all hover:border-brand-lime hover:text-brand-ink disabled:opacity-25 md:inline-flex"
-                  >
-                    <IoChevronForward className="text-xl rtl:rotate-180" aria-hidden="true" />
-                  </button>
-                </>
-              ) : null}
-
-              <div className="overflow-hidden px-2 md:px-16 lg:px-20">
-                <div
-                  className="flex items-stretch transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                  style={{ transform: `translate3d(${offset}%, 0, 0)` }}
-                >
-                  {items.map((item) => {
-                    const name = t(item.name, locale);
-                    const href = `/products/${item.id}`;
-                    const imageUrl = item.imageUrl || "";
-
-                    return (
-                      <article
-                        key={item.id}
-                        className="shrink-0 px-3 sm:px-4"
-                        style={{ width: `${step}%` }}
-                      >
+          <>
+            {spotlight ? (
+              <Reveal className="mb-12 lg:mb-16">
+                <div className="grid items-center gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <Link
+                      to={`/products/${spotlight.id}`}
+                      className="group col-span-2 cursor-pointer overflow-hidden rounded-[1.5rem] sm:rounded-[1.75rem]"
+                    >
+                      {spotlight.imageUrl ? (
+                        <SafeImage
+                          src={spotlight.imageUrl}
+                          alt={spotlightName}
+                          className="aspect-[16/10] h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex aspect-[16/10] items-center justify-center bg-brand-forest-deep text-brand-lime">
+                          {spotlightName}
+                        </div>
+                      )}
+                    </Link>
+                    {mosaic.map((item) => {
+                      const itemName = t(item.name, locale);
+                      return (
                         <Link
-                          to={href}
-                          className="group relative flex min-h-[340px] overflow-hidden rounded-[1.75rem] bg-brand-forest-deep shadow-[0_16px_44px_rgba(24,16,96,0.14)] sm:min-h-[380px]"
+                          key={item.id}
+                          to={`/products/${item.id}`}
+                          className="group cursor-pointer overflow-hidden rounded-[1.25rem] sm:rounded-[1.5rem]"
                         >
-                          {imageUrl ? (
+                          {item.imageUrl ? (
                             <SafeImage
-                              src={imageUrl}
-                              alt={name}
-                              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                              src={item.imageUrl}
+                              alt={itemName}
+                              className="aspect-[4/3] h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
                           ) : (
-                            <div className="absolute inset-0 bg-gradient-to-br from-brand-moss to-brand-forest-deep" />
+                            <div className="flex aspect-[4/3] items-center justify-center bg-brand-moss/20 text-sm font-bold text-brand-ink">
+                              {itemName}
+                            </div>
                           )}
-                          <div
-                            className="absolute inset-0 bg-gradient-to-t from-brand-forest-deep via-brand-forest-deep/35 to-transparent"
-                            aria-hidden="true"
-                          />
-                          <div
-                            className="absolute inset-x-0 top-0 h-1 origin-start scale-x-0 bg-brand-lime transition-transform duration-500 group-hover:scale-x-100"
-                            aria-hidden="true"
-                          />
-                          <div className="relative mt-auto p-6 text-white sm:p-8">
-                            {name ? (
-                              <h3 className="mb-3 text-xl font-extrabold leading-8 sm:text-2xl">
-                                {name}
-                              </h3>
-                            ) : null}
-                            <span className="inline-flex items-center gap-2 text-sm font-bold text-brand-lime transition-all group-hover:gap-3">
-                              {t(UI.viewDetails, locale)}
-                              <span aria-hidden="true">→</span>
-                            </span>
-                          </div>
                         </Link>
-                      </article>
-                    );
-                  })}
-                </div>
-              </div>
+                      );
+                    })}
+                  </div>
 
-              {pageCount > 1 ? (
-                <div className="mt-9 flex items-center justify-center gap-2">
-                  {Array.from({ length: pageCount }).map((_, pageIndex) => (
-                    <button
-                      key={pageIndex}
-                      type="button"
-                      aria-label={`${pageIndex + 1}`}
-                      aria-current={pageIndex === safeIndex ? "true" : undefined}
-                      onClick={() => setIndex(pageIndex)}
-                      className={`rounded-full transition-all ${
-                        pageIndex === safeIndex
-                          ? "h-2.5 w-7 bg-brand-lime"
-                          : "h-2.5 w-2.5 bg-brand-ink/20 hover:bg-brand-ink/40"
-                      }`}
-                    />
-                  ))}
+                  <div>
+                    <p className="mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-brand-moss">
+                      <span className="h-2 w-2 rounded-full bg-brand-lime" aria-hidden="true" />
+                      {t(UI.newlyLaunched, locale)}
+                    </p>
+                    <h3 className="mb-4 text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl">
+                      {spotlightName}
+                    </h3>
+                    {t(spotlight.overview, locale) ? (
+                      <p className="mb-6 line-clamp-4 text-sm leading-8 text-text-muted sm:text-base">
+                        {t(spotlight.overview, locale)}
+                      </p>
+                    ) : t(spotlight.originCountry, locale) ? (
+                      <p className="mb-6 text-sm leading-8 text-text-muted sm:text-base">
+                        {t(UI.origin, locale)}: {t(spotlight.originCountry, locale)}
+                      </p>
+                    ) : null}
+                    <MagneticButton>
+                      <Link
+                        to={`/products/${spotlight.id}`}
+                        className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-md bg-brand-ink px-7 text-sm font-bold text-white transition-colors hover:bg-brand-lime hover:text-brand-ink"
+                      >
+                        {t(UI.learnMoreProduct, locale)}
+                        <span aria-hidden="true">→</span>
+                      </Link>
+                    </MagneticButton>
+                  </div>
                 </div>
-              ) : null}
+              </Reveal>
+            ) : null}
 
-              {pageCount > 1 ? (
-                <div className="mt-6 flex justify-center gap-3 md:hidden">
-                  <button
-                    type="button"
-                    onClick={goPrev}
-                    disabled={safeIndex === 0}
-                    aria-label={t(UI.prevSlide, locale)}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-brand-ink/15 text-brand-ink disabled:opacity-25"
-                  >
-                    <IoChevronBack className="rtl:rotate-180" aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={goNext}
-                    disabled={safeIndex >= maxIndex}
-                    aria-label={t(UI.nextSlide, locale)}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-brand-ink/15 text-brand-ink disabled:opacity-25"
-                  >
-                    <IoChevronForward className="rtl:rotate-180" aria-hidden="true" />
-                  </button>
+            {carouselItems.length > 0 ? (
+              <Reveal delay={0.08}>
+                <div
+                  className="relative"
+                  onMouseEnter={() => setPaused(true)}
+                  onMouseLeave={() => setPaused(false)}
+                >
+                  {pageCount > 1 ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={goPrev}
+                        disabled={safeIndex === 0}
+                        aria-label={t(UI.prevSlide, locale)}
+                        className="absolute start-0 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink/50 shadow-sm transition-all hover:border-brand-lime hover:text-brand-ink disabled:opacity-25 md:inline-flex"
+                      >
+                        <IoChevronBack className="text-xl rtl:rotate-180" aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={goNext}
+                        disabled={safeIndex >= maxIndex}
+                        aria-label={t(UI.nextSlide, locale)}
+                        className="absolute end-0 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink/50 shadow-sm transition-all hover:border-brand-lime hover:text-brand-ink disabled:opacity-25 md:inline-flex"
+                      >
+                        <IoChevronForward className="text-xl rtl:rotate-180" aria-hidden="true" />
+                      </button>
+                    </>
+                  ) : null}
+
+                  <div className="overflow-hidden px-2 md:px-16 lg:px-20">
+                    <div
+                      className="flex items-stretch transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                      style={{ transform: `translate3d(${offset}%, 0, 0)` }}
+                    >
+                      {carouselItems.map((item) => {
+                        const itemName = t(item.name, locale);
+                        const href = `/products/${item.id}`;
+                        const imageUrl = item.imageUrl || "";
+
+                        return (
+                          <article
+                            key={item.id}
+                            className="shrink-0 px-3 sm:px-4"
+                            style={{ width: `${step}%` }}
+                          >
+                            <Link
+                              to={href}
+                              className="group relative flex min-h-[340px] cursor-pointer overflow-hidden rounded-[1.75rem] bg-brand-forest-deep shadow-[0_16px_44px_rgba(24,16,96,0.14)] sm:min-h-[380px]"
+                            >
+                              {imageUrl ? (
+                                <SafeImage
+                                  src={imageUrl}
+                                  alt={itemName}
+                                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                />
+                              ) : (
+                                <div className="absolute inset-0 bg-gradient-to-br from-brand-moss to-brand-forest-deep" />
+                              )}
+                              <div
+                                className="absolute inset-0 bg-gradient-to-t from-brand-forest-deep via-brand-forest-deep/35 to-transparent"
+                                aria-hidden="true"
+                              />
+                              <div className="relative mt-auto p-6 text-white sm:p-8">
+                                {itemName ? (
+                                  <h3 className="mb-3 text-xl font-extrabold leading-8 sm:text-2xl">
+                                    {itemName}
+                                  </h3>
+                                ) : null}
+                                <span className="inline-flex items-center gap-2 text-sm font-bold text-brand-lime transition-all group-hover:gap-3">
+                                  {t(UI.viewDetails, locale)}
+                                  <span aria-hidden="true">→</span>
+                                </span>
+                              </div>
+                            </Link>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {pageCount > 1 ? (
+                    <div className="mt-9 flex items-center justify-center gap-2">
+                      {Array.from({ length: pageCount }).map((_, pageIndex) => (
+                        <button
+                          key={pageIndex}
+                          type="button"
+                          aria-label={`${pageIndex + 1}`}
+                          aria-current={pageIndex === safeIndex ? "true" : undefined}
+                          onClick={() => setIndex(pageIndex)}
+                          className={`cursor-pointer rounded-full transition-all ${
+                            pageIndex === safeIndex
+                              ? "h-2.5 w-7 bg-brand-lime"
+                              : "h-2.5 w-2.5 bg-brand-ink/20 hover:bg-brand-ink/40"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {pageCount > 1 ? (
+                    <div className="mt-6 flex justify-center gap-3 md:hidden">
+                      <button
+                        type="button"
+                        onClick={goPrev}
+                        disabled={safeIndex === 0}
+                        aria-label={t(UI.prevSlide, locale)}
+                        className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-brand-ink/15 text-brand-ink disabled:opacity-25"
+                      >
+                        <IoChevronBack className="rtl:rotate-180" aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={goNext}
+                        disabled={safeIndex >= maxIndex}
+                        aria-label={t(UI.nextSlide, locale)}
+                        className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-brand-ink/15 text-brand-ink disabled:opacity-25"
+                      >
+                        <IoChevronForward className="rtl:rotate-180" aria-hidden="true" />
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-            </div>
-          </Reveal>
+              </Reveal>
+            ) : null}
+          </>
         )}
       </div>
     </section>

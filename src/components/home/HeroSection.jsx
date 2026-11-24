@@ -6,6 +6,7 @@ import SafeImage from "@/components/ui/SafeImage";
 import MagneticButton from "@/components/ui/MagneticButton";
 import OrganicFloat from "@/components/ui/OrganicFloat";
 import { useLocale } from "@/context/LocaleContext";
+import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
@@ -20,21 +21,9 @@ function isUsableSlide(slide, locale) {
   return Boolean(slide.imageUrl || title || body || (slide.cta?.href && label));
 }
 
-function AnimatedTitle({ text }) {
-  return (
-    <motion.h1
-      className="mb-6 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-[4.6rem]"
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: easeOut }}
-    >
-      {text}
-    </motion.h1>
-  );
-}
-
 export default function HeroSection({ section }) {
   const { locale } = useLocale();
+  const { contact } = useSiteData();
   const slides = useMemo(
     () => (section?.data?.slides || []).filter((slide) => isUsableSlide(slide, locale)),
     [section?.data?.slides, locale],
@@ -45,6 +34,7 @@ export default function HeroSection({ section }) {
   const { scrollY } = useScroll();
   const imageY = useTransform(scrollY, [0, 500], [0, 90]);
   const contentY = useTransform(scrollY, [0, 400], [0, 40]);
+  const brand = t(contact?.companyName, locale) || "Cargill";
 
   useEffect(() => {
     setIndex(0);
@@ -64,8 +54,8 @@ export default function HeroSection({ section }) {
   const slide = slides[safeIndex] || slides[0];
   const title = t(slide.title, locale);
   const body = t(slide.body, locale);
-  const ctaLabel = t(slide.cta?.label, locale);
-  const href = slide.cta?.href;
+  const ctaLabel = t(slide.cta?.label, locale) || t(UI.readTheStory, locale);
+  const href = slide.cta?.href || "/articles";
 
   const goTo = (nextIndex) => {
     setIndex(((nextIndex % slides.length) + slides.length) % slides.length);
@@ -106,18 +96,14 @@ export default function HeroSection({ section }) {
       </AnimatePresence>
 
       <div
-        className="absolute inset-0 bg-gradient-to-t from-brand-forest-deep via-brand-forest-deep/50 to-brand-black/20"
+        className="absolute inset-0 bg-gradient-to-t from-brand-forest-deep via-brand-forest-deep/55 to-brand-black/25"
         aria-hidden="true"
       />
-      <div
-        className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(136,196,60,0.18),transparent_42%),radial-gradient(circle_at_85%_20%,rgba(24,16,96,0.35),transparent_40%)]"
-        aria-hidden="true"
-      />
-      <OrganicFloat className="opacity-70 mix-blend-screen" />
+      <OrganicFloat className="opacity-60 mix-blend-screen" />
 
       <motion.div
         style={{ y: contentY }}
-        className="relative container mx-auto flex min-h-[100svh] items-center px-4 pb-28 pt-[calc(var(--navbar-height)+3rem)] lg:px-8"
+        className="relative container mx-auto flex min-h-[100svh] items-end px-4 pb-28 pt-[calc(var(--navbar-height)+3rem)] sm:items-center lg:px-8 lg:pb-32"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -128,33 +114,32 @@ export default function HeroSection({ section }) {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.28, ease: easeOut }}
           >
-            <motion.p
-              className="mb-4 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-brand-lime sm:text-sm"
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, ease: easeOut, delay: 0.05 }}
-            >
-              <span className="h-px w-10 bg-brand-lime" aria-hidden="true" />
-              Cargill
-            </motion.p>
-            {title ? <AnimatedTitle text={title} /> : null}
-            {body ? (
-              <motion.p
-                className="mb-9 max-w-xl text-base leading-8 text-white/88 sm:text-lg lg:text-xl lg:leading-9"
-                initial={{ opacity: 0, y: 12 }}
+            <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-brand-lime sm:text-sm">
+              {t(UI.storyEyebrow, locale)} · {brand}
+            </p>
+            {title ? (
+              <motion.h1
+                className="mb-5 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-[4.4rem]"
+                initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, ease: easeOut, delay: 0.08 }}
+                transition={{ duration: 0.35, ease: easeOut }}
               >
+                {title}
+              </motion.h1>
+            ) : null}
+            {body ? (
+              <p className="mb-8 max-w-xl text-base leading-8 text-white/88 sm:text-lg lg:text-xl lg:leading-9">
                 {body}
-              </motion.p>
+              </p>
             ) : null}
             {href && ctaLabel ? (
               <MagneticButton className="inline-flex">
                 <CtaLink
                   href={href}
-                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-brand-lime px-8 py-3.5 text-sm font-extrabold text-brand-ink shadow-[0_16px_40px_rgba(136,196,60,0.28)] transition-all duration-300 hover:bg-brand-lime-hover"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-brand-lime px-8 py-3.5 text-sm font-extrabold uppercase tracking-[0.06em] text-brand-ink shadow-[0_16px_40px_rgba(136,196,60,0.28)] transition-all duration-300 hover:bg-brand-lime-hover"
                 >
-                  {ctaLabel}
+                  <span>{ctaLabel}</span>
+                  <span aria-hidden="true">→</span>
                 </CtaLink>
               </MagneticButton>
             ) : null}
@@ -164,7 +149,7 @@ export default function HeroSection({ section }) {
 
       {multi ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10">
-          <div className="container mx-auto flex items-end justify-between gap-4 px-4 pb-7 lg:px-8 lg:pb-10">
+          <div className="container mx-auto flex items-end justify-between gap-4 px-4 pb-24 lg:px-8 lg:pb-28">
             <div className="pointer-events-auto flex items-center gap-2.5">
               {slides.map((item, itemIndex) => {
                 const active = itemIndex === safeIndex;

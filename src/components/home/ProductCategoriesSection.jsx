@@ -1,40 +1,62 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import Reveal from "@/components/ui/Reveal";
 import SafeImage from "@/components/ui/SafeImage";
 import { EmptyState } from "@/components/ui/StatusMessage";
 import { useLocale } from "@/context/LocaleContext";
+import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
-import { easeOut } from "@/lib/motion";
+import { UI } from "@/data/uiCopy";
+
+const AUTOPLAY_MS = 5000;
 
 export default function ProductCategoriesSection({ section }) {
   const { locale } = useLocale();
+  const { contact } = useSiteData();
   const title = t(section?.data?.title, locale);
   const body = t(section?.data?.body, locale);
-  const items = section?.items || [];
+  const items = useMemo(() => (section?.items || []).filter(Boolean), [section?.items]);
+  const brand = t(contact?.companyName, locale) || "Cargill";
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    setIndex(0);
+  }, [items.length]);
+
+  useEffect(() => {
+    if (items.length <= 1 || paused) return undefined;
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % items.length);
+    }, AUTOPLAY_MS);
+    return () => window.clearInterval(timer);
+  }, [items.length, paused]);
+
+  if (!items.length && !title && !body) return null;
+
+  const safeIndex = items.length ? index % items.length : 0;
+  const current = items[safeIndex];
+  const currentName = current ? t(current.name, locale) : "";
+
+  const goPrev = () =>
+    setIndex((currentIndex) => (currentIndex - 1 + items.length) % items.length);
+  const goNext = () => setIndex((currentIndex) => (currentIndex + 1) % items.length);
 
   return (
     <section className="relative overflow-hidden bg-white py-16 lg:py-24">
-      {title ? (
-        <div
-          className="pointer-events-none absolute inset-x-0 top-6 select-none text-center text-[4.5rem] font-black uppercase leading-none tracking-[0.08em] text-brand-ink/[0.045] sm:top-8 sm:text-[7rem] lg:text-[9.5rem]"
-          aria-hidden="true"
-        >
-          {title}
-        </div>
-      ) : null}
-
       <div className="relative container mx-auto px-4 lg:px-8">
-        <Reveal className="mb-10 text-center lg:mb-14">
-          {title ? (
-            <h2 className="mb-3 text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
-              {title}
-            </h2>
-          ) : null}
-          {body ? (
+        <Reveal className="mx-auto mb-10 max-w-3xl text-center lg:mb-14">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-brand-moss">
+            {t(UI.produceEfficiently, locale)}
+          </p>
+          <h2 className="mb-3 text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
+            <span className="block">{t(UI.discoverEyebrow, locale)}</span>
+            <span className="block text-brand-lime">{brand}</span>
+          </h2>
+          {body || title ? (
             <p className="mx-auto max-w-2xl text-sm leading-8 text-text-muted sm:text-base">
-              {body}
+              {body || title}
             </p>
           ) : null}
         </Reveal>
@@ -42,50 +64,88 @@ export default function ProductCategoriesSection({ section }) {
         {items.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-            {items.map((item, itemIndex) => {
-              const name = t(item.name, locale);
-              return (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 36, clipPath: "inset(18% 0 18% 0)" }}
-                  whileInView={{ opacity: 1, y: 0, clipPath: "inset(0% 0 0% 0)" }}
-                  viewport={{ once: true, amount: 0.25 }}
-                  transition={{ duration: 0.7, ease: easeOut, delay: itemIndex * 0.07 }}
+          <div
+            className="relative mx-auto max-w-3xl"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+          >
+            {items.length > 1 ? (
+              <>
+                <button
+                  type="button"
+                  onClick={goPrev}
+                  aria-label={t(UI.prevSlide, locale)}
+                  className="absolute start-0 top-[42%] z-10 inline-flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink shadow-sm transition-colors hover:border-brand-lime hover:bg-brand-lime"
                 >
-                  <Link
-                    to={`/products?section=${encodeURIComponent(item.id)}`}
-                    className="group relative block aspect-[3/4] overflow-hidden bg-brand-forest shadow-[0_14px_40px_rgba(24,16,96,0.12)]"
-                  >
-                    {item.imageUrl ? (
-                      <SafeImage
-                        src={item.imageUrl}
-                        alt={name}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                  <IoChevronBack className="text-xl rtl:rotate-180" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={goNext}
+                  aria-label={t(UI.nextSlide, locale)}
+                  className="absolute end-0 top-[42%] z-10 inline-flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink shadow-sm transition-colors hover:border-brand-lime hover:bg-brand-lime"
+                >
+                  <IoChevronForward className="text-xl rtl:rotate-180" aria-hidden="true" />
+                </button>
+              </>
+            ) : null}
+
+            <div className="flex flex-col items-center px-14 sm:px-20">
+              <Link
+                to={`/products?section=${encodeURIComponent(current.id)}`}
+                className="group relative mb-8 block aspect-square w-full max-w-[22rem] cursor-pointer overflow-hidden rounded-full shadow-[0_20px_50px_rgba(24,16,96,0.16)]"
+              >
+                {current.imageUrl ? (
+                  <SafeImage
+                    src={current.imageUrl}
+                    alt={currentName}
+                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-moss to-brand-forest-deep px-6 text-center text-2xl font-extrabold text-white">
+                    {currentName}
+                  </div>
+                )}
+                <div
+                  className="absolute inset-0 bg-gradient-to-t from-brand-black/55 via-transparent to-transparent opacity-80"
+                  aria-hidden="true"
+                />
+              </Link>
+
+              <h3 className="mb-3 text-center text-2xl font-extrabold uppercase tracking-[0.08em] text-brand-ink sm:text-3xl">
+                {currentName}
+              </h3>
+              <Link
+                to={`/products?section=${encodeURIComponent(current.id)}`}
+                className="inline-flex cursor-pointer items-center gap-2 text-sm font-extrabold uppercase tracking-[0.08em] text-brand-lime transition-all hover:gap-3"
+              >
+                {t(UI.knowMore, locale)}
+                <span aria-hidden="true">→</span>
+              </Link>
+
+              {items.length > 1 ? (
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+                  {items.map((item, itemIndex) => {
+                    const name = t(item.name, locale);
+                    const active = itemIndex === safeIndex;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        aria-label={name}
+                        aria-current={active ? "true" : undefined}
+                        onClick={() => setIndex(itemIndex)}
+                        className={`cursor-pointer rounded-full transition-all ${
+                          active
+                            ? "h-2.5 w-8 bg-brand-lime"
+                            : "h-2.5 w-2.5 bg-brand-ink/20 hover:bg-brand-ink/40"
+                        }`}
                       />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-brand-moss to-brand-forest-deep" />
-                    )}
-                    <div
-                      className="absolute inset-0 bg-gradient-to-t from-brand-black/88 via-brand-black/25 to-brand-black/35 transition-opacity duration-500 group-hover:from-brand-black/92"
-                      aria-hidden="true"
-                    />
-                    <div
-                      className="absolute inset-x-0 top-0 h-1 origin-start scale-x-0 bg-brand-lime transition-transform duration-500 group-hover:scale-x-100"
-                      aria-hidden="true"
-                    />
-                    <div className="absolute inset-x-0 top-0 p-5 sm:p-6">
-                      <h3 className="text-lg font-extrabold uppercase tracking-[0.1em] text-white transition-colors duration-300 group-hover:text-brand-lime sm:text-xl">
-                        {name}
-                      </h3>
-                    </div>
-                    <div className="absolute inset-x-0 bottom-0 translate-y-3 p-5 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 sm:p-6">
-                      <span className="text-sm font-bold text-brand-lime">→</span>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
           </div>
         )}
       </div>
