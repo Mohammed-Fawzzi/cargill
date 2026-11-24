@@ -10,7 +10,7 @@ import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 
-const AUTOPLAY_MS = 7000;
+const AUTOPLAY_MS = 4500;
 
 function isUsableSlide(slide, locale) {
   if (!slide) return false;
@@ -85,15 +85,15 @@ export default function HeroSection({ section }) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <AnimatePresence mode="wait">
+      <AnimatePresence initial={false}>
         <motion.div
           key={slide.id}
           className="absolute inset-0"
           style={{ y: imageY }}
-          initial={{ opacity: 0, scale: 1.08 }}
+          initial={{ opacity: 0, scale: 1.14 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.02 }}
-          transition={{ duration: 1, ease: easeOut }}
+          exit={{ opacity: 0, scale: 0.96 }}
+          transition={{ duration: 0.5, ease: easeOut }}
         >
           {slide.imageUrl ? (
             <SafeImage
@@ -129,10 +129,10 @@ export default function HeroSection({ section }) {
           <motion.div
             key={`${slide.id}-copy`}
             className="max-w-3xl text-white"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, y: -18 }}
-            transition={{ duration: 0.35 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.28, ease: easeOut }}
           >
             <motion.p
               className="mb-4 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-brand-lime sm:text-sm"
