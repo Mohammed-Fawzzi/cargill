@@ -205,6 +205,8 @@ export const UI = {
     en: "Coverage across {count} categories to reach the right solution faster.",
   },
   exploreProducts: { ar: "استكشف المنتجات", en: "Explore products" },
+  backToTop: { ar: "العودة إلى الأعلى", en: "Back to top" },
+
   commitQuality: {
     ar: "مدخلات مختارة وفق معايير فنية واضحة",
     en: "Inputs selected to clear technical standards",

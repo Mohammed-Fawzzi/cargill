@@ -3,6 +3,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import FloatingCta from "./FloatingCta";
 import StickyLeadBar from "./StickyLeadBar";
+import BackToTop from "./BackToTop";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 import PageTransition from "@/components/layout/PageTransition";
 import { SiteDataProvider } from "@/context/SiteDataContext";
@@ -17,6 +18,7 @@ export default function Layout() {
         <Footer />
         <FloatingCta />
         <StickyLeadBar />
+        <BackToTop />
       </div>
     </SiteDataProvider>
   );
