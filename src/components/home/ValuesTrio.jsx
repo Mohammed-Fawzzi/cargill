@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Reveal from "@/components/ui/Reveal";
+import TiltCard from "@/components/ui/TiltCard";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
@@ -51,24 +52,32 @@ export default function ValuesTrio() {
 
         <div className="grid gap-4 md:grid-cols-3 md:gap-5">
           {cards.map((card, index) => (
-            <motion.article
+            <motion.div
               key={card.id}
-              className="flex h-full flex-col rounded-[1.5rem] border border-brand-ink/5 bg-white p-6 shadow-[0_12px_32px_rgba(24,16,96,0.06)] sm:p-7"
+              className="h-full"
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.3, ease: easeOut, delay: index * 0.05 }}
+              transition={{ duration: 0.28, ease: easeOut, delay: index * 0.05 }}
             >
-              <h3 className="mb-3 text-xl font-extrabold text-brand-ink sm:text-2xl">
-                {card.title}
-              </h3>
-              <p className="mb-5 line-clamp-5 flex-1 text-sm leading-8 text-text-muted">
-                {card.body}
-              </p>
-              <span className="inline-flex w-fit rounded-full bg-brand-lime/15 px-3 py-1.5 text-xs font-bold text-brand-moss">
-                {card.tag}
-              </span>
-            </motion.article>
+              <TiltCard className="h-full" maxTilt={5}>
+                <article className="group flex h-full flex-col rounded-[1.5rem] border border-brand-ink/5 bg-white p-6 shadow-[0_12px_32px_rgba(24,16,96,0.06)] sm:p-7">
+                  <div
+                    className="mb-4 h-1 w-10 bg-brand-lime"
+                    aria-hidden="true"
+                  />
+                  <h3 className="mb-3 text-xl font-extrabold text-brand-ink sm:text-2xl">
+                    {card.title}
+                  </h3>
+                  <p className="mb-5 line-clamp-5 flex-1 text-sm leading-8 text-text-muted">
+                    {card.body}
+                  </p>
+                  <span className="inline-flex w-fit rounded-full bg-brand-lime/15 px-3 py-1.5 text-xs font-bold text-brand-moss">
+                    {card.tag}
+                  </span>
+                </article>
+              </TiltCard>
+            </motion.div>
           ))}
         </div>
 
