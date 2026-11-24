@@ -81,12 +81,11 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
           <div>
             <div className="mb-5">
-              <div className="mb-1 inline-flex items-center rounded-xl bg-white px-3 py-2.5">
-                <SiteLogo
-                  alt={companyName || title}
-                  className="h-11 w-auto max-w-[190px] object-contain"
-                />
-              </div>
+              <SiteLogo
+                variant="white"
+                alt={companyName || title}
+                className="h-11 w-auto max-w-[190px] object-contain"
+              />
             </div>
             {title ? (
               <p className="mb-3 text-lg font-bold leading-7">{title}</p>

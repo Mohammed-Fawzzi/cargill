@@ -15,8 +15,9 @@ export default function Loading({ label }) {
       aria-live="polite"
       aria-label={text}
     >
-      <div className="loading-logo-pulse flex h-24 w-56 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white px-4 shadow-[0_12px_40px_rgba(0,0,0,0.28)] sm:h-28 sm:w-64">
+      <div className="loading-logo-pulse flex h-24 w-56 shrink-0 items-center justify-center overflow-hidden px-2 sm:h-28 sm:w-64">
         <SiteLogo
+          variant="white"
           alt={text}
           loading="eager"
           className="h-14 w-auto max-w-full object-contain sm:h-16"
