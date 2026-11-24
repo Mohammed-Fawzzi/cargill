@@ -1,16 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoLogoWhatsapp } from "react-icons/io5";
 import { MdEmail } from "react-icons/md";
 import { HiOutlineChatAlt2 } from "react-icons/hi";
 import { FaMobile } from "react-icons/fa6";
 import { useSiteData } from "@/context/SiteDataContext";
 import { useLocale } from "@/context/LocaleContext";
+import { toTelHref, toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 
 const btnBase =
-  "relative z-[1] inline-flex h-11 w-11 items-center justify-center rounded-full shadow-[0_10px_28px_rgba(0,0,0,0.28)] transition-transform hover:scale-[1.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime/70 sm:h-12 sm:w-12";
+  "relative z-[1] inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full shadow-[0_10px_28px_rgba(0,0,0,0.28)] transition-transform hover:scale-[1.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime/70 sm:h-12 sm:w-12";
 
 export default function FloatingCta() {
   const { contact } = useSiteData();
@@ -19,7 +20,8 @@ export default function FloatingCta() {
   const rootRef = useRef(null);
   const phone = contact?.phones?.[0] || "";
   const email = contact?.emails?.[0] || "";
-  const phoneHref = phone ? `tel:${phone.replace(/\s+/g, "")}` : "";
+  const phoneHref = toTelHref(phone);
+  const waHref = toWhatsAppHref(phone);
   const emailHref = email ? `mailto:${email}` : "";
 
   useEffect(() => {
@@ -38,12 +40,12 @@ export default function FloatingCta() {
     };
   }, [open]);
 
-  if (!phoneHref && !emailHref) return null;
+  if (!phoneHref && !emailHref && !waHref) return null;
 
   return (
     <div
       ref={rootRef}
-      className="pointer-events-none fixed z-40 flex flex-col items-center gap-2.5 sm:gap-3"
+      className="pointer-events-none fixed z-40 hidden flex-col items-center gap-2.5 md:flex sm:gap-3"
       style={{
         bottom: "max(1.25rem, env(safe-area-inset-bottom, 0px))",
         insetInlineStart: "max(1rem, env(safe-area-inset-left, 0px))",
@@ -61,6 +63,21 @@ export default function FloatingCta() {
             aria-label={t(UI.email, locale)}
           >
             <MdEmail className="text-lg" />
+          </motion.a>
+        ) : null}
+        {open && waHref ? (
+          <motion.a
+            key="whatsapp"
+            href={waHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            initial={{ opacity: 0, y: 16, scale: 0.85 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className={`pointer-events-auto ${btnBase} bg-[#25D366] text-white`}
+            aria-label={t(UI.whatsapp, locale)}
+          >
+            <IoLogoWhatsapp className="text-xl" />
           </motion.a>
         ) : null}
       </AnimatePresence>

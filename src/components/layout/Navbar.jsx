@@ -8,6 +8,7 @@ import {
   IoSearchOutline,
   IoChevronDown,
   IoCallOutline,
+  IoLogoWhatsapp,
 } from "react-icons/io5";
 import { RiMenu2Line } from "react-icons/ri";
 import SiteLogo from "@/components/ui/SiteLogo";
@@ -15,6 +16,7 @@ import LanguageSwitch from "@/components/layout/LanguageSwitch";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { getCategories } from "@/services/cms/products";
+import { toTelHref, toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { resolveCompanySocial } from "@/utils/social";
@@ -124,6 +126,8 @@ export default function Navbar() {
   const companyName = t(contact?.companyName, locale);
   const phone = contact?.phones?.[0] || "";
   const email = contact?.emails?.[0] || "";
+  const phoneHref = toTelHref(phone);
+  const waHref = toWhatsAppHref(phone);
   const socials = resolveCompanySocial(contact?.social);
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -191,10 +195,10 @@ export default function Navbar() {
           </div>
 
           <div className="ms-auto flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-[12px] text-white/90 sm:gap-x-4 sm:text-[13px]">
-            {phone ? (
+            {phoneHref ? (
               <a
-                href={`tel:${phone.replace(/\s+/g, "")}`}
-                className="inline-flex items-center gap-2 transition-colors duration-300 hover:text-brand-lime"
+                href={phoneHref}
+                className="inline-flex cursor-pointer items-center gap-2 transition-colors duration-300 hover:text-brand-lime"
                 dir="ltr"
               >
                 <CircleIcon>
@@ -204,6 +208,11 @@ export default function Navbar() {
                   {t(UI.phone, locale)}: {phone}
                 </span>
               </a>
+            ) : null}
+            {waHref ? (
+              <CircleIcon href={waHref} label={t(UI.whatsapp, locale)}>
+                <IoLogoWhatsapp className="text-[13px]" aria-hidden="true" />
+              </CircleIcon>
             ) : null}
             {email ? (
               <CircleIcon
@@ -293,9 +302,29 @@ export default function Navbar() {
             </Link>
 
             <div className="flex items-center gap-1">
+              {waHref ? (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-10 w-10 cursor-pointer items-center justify-center text-[#25D366]"
+                  aria-label={t(UI.whatsapp, locale)}
+                >
+                  <IoLogoWhatsapp className="text-xl" aria-hidden="true" />
+                </a>
+              ) : null}
+              {phoneHref ? (
+                <a
+                  href={phoneHref}
+                  className="inline-flex h-10 w-10 cursor-pointer items-center justify-center text-brand-ink"
+                  aria-label={t(UI.phone, locale)}
+                >
+                  <IoCallOutline className="text-xl" aria-hidden="true" />
+                </a>
+              ) : null}
               <Link
                 to="/products"
-                className="inline-flex h-10 w-10 items-center justify-center text-brand-ink"
+                className="inline-flex h-10 w-10 cursor-pointer items-center justify-center text-brand-ink"
                 aria-label={t(UI.searchProducts, locale)}
               >
                 <IoSearchOutline className="text-xl" aria-hidden="true" />
