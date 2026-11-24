@@ -4,11 +4,16 @@ import { useLocale } from "@/context/LocaleContext";
 import { UI } from "@/data/uiCopy";
 import { t } from "@/lib/i18n";
 
-export default function LanguageSwitch({ compact = false, variant = "pills" }) {
+export default function LanguageSwitch({
+  compact = false,
+  variant = "pills",
+  tone = "dark",
+}) {
   const { locale, setLocale } = useLocale();
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
   const otherLocale = locale === "ar" ? "en" : "ar";
+  const light = tone === "light";
 
   useEffect(() => {
     if (!open) return undefined;
@@ -81,13 +86,19 @@ export default function LanguageSwitch({ compact = false, variant = "pills" }) {
   const buttonClass = (active) =>
     `rounded-md px-2 py-1 text-xs font-bold transition-colors sm:text-sm ${
       active
-        ? "bg-brand-lime text-brand-black"
-        : "text-white/80 hover:text-brand-lime"
+        ? "bg-brand-lime text-brand-ink"
+        : light
+          ? "text-brand-ink/70 hover:text-brand-lime"
+          : "text-white/80 hover:text-brand-lime"
     }`;
 
   return (
     <div
-      className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 p-0.5"
+      className={`inline-flex items-center gap-1 rounded-lg p-0.5 ${
+        light
+          ? "border border-brand-ink/10 bg-brand-ink/5"
+          : "border border-white/10 bg-white/5"
+      }`}
       role="group"
       aria-label="Language"
     >

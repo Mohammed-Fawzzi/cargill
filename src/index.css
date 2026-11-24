@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-lime: #b6d43a;
-  --color-brand-lime-hover: #c6e24c;
-  --color-brand-lime-soft: #e8f4b8;
-  --color-brand-black: #0c120e;
-  --color-brand-ink: #111814;
-  --color-brand-forest: #16321c;
-  --color-brand-forest-deep: #0e1f13;
-  --color-brand-moss: #2f5a38;
+  --color-brand-lime: #88c43c;
+  --color-brand-lime-hover: #9ad14f;
+  --color-brand-lime-soft: #eaf7d6;
+  --color-brand-black: #0b0830;
+  --color-brand-ink: #181060;
+  --color-brand-forest: #221a72;
+  --color-brand-forest-deep: #181060;
+  --color-brand-moss: #6aa32e;
   --color-surface: #ffffff;
-  --color-surface-muted: #f4f7f0;
-  --color-text: #142018;
-  --color-text-muted: #4b5c50;
+  --color-surface-muted: #f3f5fb;
+  --color-text: #181060;
+  --color-text-muted: #5b6282;
 }
 
 @font-face {
@@ -24,21 +24,20 @@
 }
 
 :root {
-  --color-lime: #b6d43a;
-  --color-lime-hover: #c6e24c;
-  --color-black: #0c120e;
-  --color-forest: #16321c;
-  --color-text: #142018;
+  --color-lime: #88c43c;
+  --color-lime-hover: #9ad14f;
+  --color-black: #0b0830;
+  --color-forest: #221a72;
+  --color-text: #181060;
   --color-bg: #ffffff;
   --navbar-height: 6.625rem;
 }
 
 @media (min-width: 1024px) {
   :root {
-    --navbar-height: 6.875rem;
+    --navbar-height: 7.125rem;
   }
 }
-
 
 .pt-navbar {
   padding-top: var(--navbar-height);
@@ -101,7 +100,7 @@ footer {
 @keyframes hero-fade {
   from {
     opacity: 0.35;
-    transform: scale(1.02);
+    transform: scale(1.04);
   }
   to {
     opacity: 1;
@@ -110,13 +109,36 @@ footer {
 }
 
 .hero-fade {
-  animation: hero-fade 0.7s ease;
+  animation: hero-fade 0.85s ease;
+}
+
+@keyframes soft-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.soft-float {
+  animation: soft-float 4.5s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .loading-logo-pulse,
   .loading-dot-pulse,
-  .hero-fade {
+  .hero-fade,
+  .soft-float {
     animation: none !important;
+  }
+
+  .will-change-transform {
+    transform: none !important;
   }
 }

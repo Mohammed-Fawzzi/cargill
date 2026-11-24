@@ -10,6 +10,7 @@ import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { resolveCompanySocial } from "@/utils/social";
 import { toMapLink } from "@/lib/map";
+import { normalizeImageUrl } from "@/lib/image";
 
 function ContactItem({ icon, children, href, dir }) {
   if (!children) return null;
@@ -49,7 +50,7 @@ export default function Footer() {
   const socials = resolveCompanySocial(contact?.social);
   const mapLink = toMapLink(contact?.mapUrl);
   const year = new Date().getFullYear();
-  const background = footer?.imageUrl;
+  const background = normalizeImageUrl(footer?.imageUrl);
 
   return (
     <footer
@@ -66,9 +67,13 @@ export default function Footer() {
       <div
         className={`pointer-events-none absolute inset-0 ${
           background
-            ? "bg-brand-black/85"
+            ? "bg-brand-forest-deep/90"
             : "bg-gradient-to-t from-brand-black via-brand-forest-deep/95 to-brand-forest-deep"
         }`}
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-lime/40 to-transparent"
         aria-hidden="true"
       />
 
@@ -76,10 +81,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
           <div>
             <div className="mb-5">
-              <SiteLogo
-                alt={companyName || title}
-                className="h-14 w-auto max-w-[180px] object-contain"
-              />
+              <div className="mb-1 inline-flex items-center rounded-xl bg-white px-3 py-2.5">
+                <SiteLogo
+                  alt={companyName || title}
+                  className="h-11 w-auto max-w-[190px] object-contain"
+                />
+              </div>
             </div>
             {title ? (
               <p className="mb-3 text-lg font-bold leading-7">{title}</p>
@@ -100,7 +107,7 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={link.label}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-lime/15 text-white transition-colors duration-300 hover:bg-brand-lime hover:text-brand-black"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-lime/15 text-white transition-all duration-300 hover:bg-brand-lime hover:text-brand-ink"
                   >
                     {React.createElement(link.Icon, {
                       className: "text-base",

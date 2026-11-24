@@ -15,11 +15,11 @@ export default function Loading({ label }) {
       aria-live="polite"
       aria-label={text}
     >
-      <div className="loading-logo-pulse flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-[1.75rem] bg-brand-forest shadow-[0_12px_40px_rgba(0,0,0,0.28)] sm:h-32 sm:w-32">
+      <div className="loading-logo-pulse flex h-24 w-56 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white px-4 shadow-[0_12px_40px_rgba(0,0,0,0.28)] sm:h-28 sm:w-64">
         <SiteLogo
           alt={text}
           loading="eager"
-          className="h-[5.5rem] w-auto max-w-[6.5rem] object-contain sm:h-[6.5rem]"
+          className="h-14 w-auto max-w-full object-contain sm:h-16"
         />
       </div>
       <div className="mt-5 flex h-2 items-center gap-1.5" aria-hidden="true">

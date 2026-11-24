@@ -82,7 +82,7 @@ export default function FloatingCta() {
           <a
             href={phoneHref}
             aria-label={t(UI.phone, locale)}
-            className={`${btnBase} bg-brand-lime text-brand-black`}
+            className={`${btnBase} bg-brand-lime text-brand-ink`}
           >
             <FaMobile className="text-lg" />
           </a>
