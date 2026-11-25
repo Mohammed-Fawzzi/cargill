@@ -6,7 +6,7 @@ import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import SafeImage from "@/components/ui/SafeImage";
 import LogoTriangle from "@/components/ui/LogoTriangle";
-import PageBanner from "@/components/ui/PageBanner";
+import PageHero from "@/components/ui/PageHero";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import { useLenis } from "@/components/layout/LenisProvider";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
@@ -94,12 +94,13 @@ function ExperienceCard({ locale, reducedMotion, isMobile }) {
   );
 }
 
-function PillarCard({ index, tag, title, body, reducedMotion }) {
+function PillarCard({ id, index, tag, title, body, reducedMotion }) {
   if (!body) return null;
 
   return (
     <motion.div
-      className="flex flex-col items-start justify-between gap-6 bg-[#1F1D35] p-7 transition-colors hover:bg-[#292740] lg:flex-row lg:items-center lg:p-10"
+      id={id}
+      className="page-anchor-target flex flex-col items-start justify-between gap-6 bg-[#1F1D35] p-7 transition-colors hover:bg-[#292740] lg:flex-row lg:items-center lg:p-10"
       initial={reducedMotion ? false : { opacity: 0, y: 22 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -207,9 +208,17 @@ function AboutStoryPinned({ steps, images, reducedMotion }) {
   return (
     <section
       ref={pinRef}
-      className="relative"
+      className="page-anchor-target relative"
       style={{ height: `${count * 120}vh` }}
     >
+      {steps.map((step, index) => (
+        <div
+          key={step.id}
+          id={`about-${step.id}`}
+          className="page-anchor-target absolute inset-x-0"
+          style={{ top: `${(index / count) * 100}%`, height: `${100 / count}%` }}
+        />
+      ))}
       <div className="sticky top-0 flex h-screen items-center overflow-hidden">
         <div className="pointer-events-none absolute inset-0">
           {cornerImages.map((src, index) => (
@@ -371,6 +380,11 @@ export default function About() {
 
   const hasContent = Boolean(about || vision || mission || categories.length);
   const usePinned = !isMobile && !reducedMotion && storySteps.length > 1;
+  const aboutImage =
+    bannerUrl ||
+    storyImages.find((src) => src && !/\/products\//.test(src)) ||
+    storyImages[0] ||
+    "";
 
   return (
     <>
@@ -383,29 +397,24 @@ export default function About() {
       {!isPending && isError ? <ErrorState /> : null}
       {!isPending && !isError ? (
         <main className="min-h-screen bg-transparent text-white">
-          <PageBanner
+          <PageHero
             title={titleText}
-            subtitle={t(UI.aboutIntro, locale)}
-            label={t(UI.nav.about, locale)}
-            breadcrumbs={[
+            description={about}
+            imageUrl={aboutImage}
+            sideImages={storyImages.filter((src) => src && src !== aboutImage)}
+            crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },
               { label: t(UI.nav.about, locale) },
             ]}
+            anchors={[
+              about ? { id: "about-about", label: t(UI.whoWeAre, locale) } : null,
+              vision ? { id: "about-vision", label: t(UI.ourVision, locale) } : null,
+              mission ? { id: "about-mission", label: t(UI.ourMission, locale) } : null,
+              categories.length
+                ? { id: "about-offer", label: t(UI.whatWeOffer, locale) }
+                : null,
+            ].filter(Boolean)}
           />
-
-          {bannerUrl ? (
-            <div className="mx-auto max-w-6xl px-4 sm:px-6">
-              <div className="relative h-[260px] overflow-hidden bg-[#1B1931] md:h-[340px]">
-                <SafeImage
-                  src={bannerUrl}
-                  alt=""
-                  width={1400}
-                  className="h-full w-full object-cover"
-                />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A0820] via-transparent to-transparent opacity-80" />
-              </div>
-            </div>
-          ) : null}
 
           {!hasContent ? (
             <EmptyState />
@@ -438,7 +447,8 @@ export default function About() {
                 <>
                   {about ? (
                     <motion.section
-                      className="mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20"
+                      id="about-about"
+                      className="page-anchor-target mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20"
                       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, amount: 0.12 }}
@@ -473,6 +483,7 @@ export default function About() {
                     <section className="bg-transparent py-16 md:py-20">
                       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6">
                         <PillarCard
+                          id="about-vision"
                           index={2}
                           tag={t(UI.valuesTagVision, locale)}
                           title={t(UI.ourVision, locale)}
@@ -480,6 +491,7 @@ export default function About() {
                           reducedMotion={reducedMotion}
                         />
                         <PillarCard
+                          id="about-mission"
                           index={3}
                           tag={t(UI.valuesTagMission, locale)}
                           title={t(UI.ourMission, locale)}
@@ -494,7 +506,8 @@ export default function About() {
 
               {categories.length > 0 ? (
                 <motion.section
-                  className="mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20"
+                  id="about-offer"
+                  className="page-anchor-target mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20"
                   initial={reducedMotion ? false : { opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.12 }}

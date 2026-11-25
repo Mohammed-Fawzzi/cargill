@@ -6,7 +6,8 @@ import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import SafeImage from "@/components/ui/SafeImage";
 import LtrText from "@/components/ui/LtrText";
-import RevealHeading from "@/components/ui/RevealHeading";
+import PageHero from "@/components/ui/PageHero";
+import SplitArrowButton from "@/components/ui/SplitArrowButton";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import RegistrationBadge from "@/components/products/RegistrationBadge";
 import ProductCard from "@/components/products/ProductCard";
@@ -14,6 +15,8 @@ import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories, getProduct, getProducts } from "@/services/cms/products";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
+import { useHomepageSection } from "@/hooks/useHomepageSection";
+import { matchCategoryFieldImage } from "@/lib/homeIntro";
 import { toWhatsAppHref } from "@/lib/phone";
 import { easeOut } from "@/lib/motion";
 import { t } from "@/lib/i18n";
@@ -202,7 +205,6 @@ export default function ProductDetails() {
   const mainCtaRef = useRef(null);
   const [showStickyWa, setShowStickyWa] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
-  const [stageHot, setStageHot] = useState(false);
 
   const productQuery = useQuery({
     queryKey: ["cms", "product", id],
@@ -220,6 +222,8 @@ export default function ProductDetails() {
   });
 
   const product = productQuery.data;
+  const fieldQuery = useHomepageSection("hero");
+  const catalogQuery = useHomepageSection("product_categories");
   const categories = categoriesQuery.data || [];
   const section = categories.find((item) => item.id === product?.sectionId);
   const subcategory = section?.subcategories?.find(
@@ -291,6 +295,16 @@ export default function ProductDetails() {
     phone,
     t(UI.askAgronomistMessage, locale),
   );
+  const fieldSlides = fieldQuery.data?.slides || [];
+  const heroImage =
+    matchCategoryFieldImage(section, fieldSlides) ||
+    catalogQuery.data?.imageUrl ||
+    contact?.bannerUrl ||
+    fieldSlides.find((slide) => slide.imageUrl)?.imageUrl ||
+    "";
+  const sideImages = fieldSlides
+    .map((slide) => slide.imageUrl)
+    .filter((src) => src && src !== heroImage);
   const currentImage = images[Math.min(activeImage, Math.max(images.length - 1, 0))];
 
   useEffect(() => {
@@ -306,19 +320,6 @@ export default function ProductDetails() {
     observer.observe(node);
     return () => observer.disconnect();
   }, [waHref, product?.id]);
-
-  const crumbParts = [
-    { label: t(UI.nav.products, locale), to: "/products" },
-    categoryName
-      ? {
-        label: categoryName,
-        to: product?.sectionId
-          ? `/products?section=${encodeURIComponent(product.sectionId)}`
-          : "/products",
-      }
-      : null,
-    subcategoryName ? { label: subcategoryName, current: true } : null,
-  ].filter(Boolean);
 
   const hasFeatures = featureItems.length > 0;
   const hasUsage = Boolean(product?.agriculturalUses?.length);
@@ -344,247 +345,115 @@ export default function ProductDetails() {
       ) : null}
       {!productQuery.isPending && product ? (
         <main className="min-h-screen bg-transparent pb-28 text-white md:pb-0">
-          <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-5 py-6 sm:px-8 lg:px-14">
-            <div className="flex items-center justify-between gap-4 pt-[calc(var(--navbar-height)+0.5rem)]">
-              {crumbParts.length ? (
-                <nav
-                  aria-label="Breadcrumb"
-                  className="flex flex-wrap items-center gap-1 text-[13px] text-white/60"
-                >
-                  {crumbParts.map((item, index) => (
-                    <span key={`${item.label}-${index}`} className="inline-flex items-center gap-1">
-                      {index > 0 ? (
-                        <span className="text-white/30" aria-hidden="true">
-                          /
-                        </span>
-                      ) : null}
-                      {item.to && !item.current ? (
-                        <Link
-                          to={item.to}
-                          className="transition-colors hover:text-brand-lime"
-                        >
-                          {item.label}
-                        </Link>
-                      ) : (
-                        <span
-                          className={
-                            item.current
-                              ? "font-medium text-brand-lime"
-                              : "text-white/60"
-                          }
-                        >
-                          {item.label}
-                        </span>
-                      )}
-                    </span>
-                  ))}
-                </nav>
-              ) : (
-                <span />
-              )}
-              <Link
-                to="/products"
-                className="inline-flex shrink-0 items-center gap-1 text-[13px] text-brand-lime transition-colors hover:text-brand-lime-hover"
-              >
-                <span aria-hidden="true">←</span>
-                <span>{t(UI.backToAllProducts, locale)}</span>
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 items-stretch gap-7 lg:grid-cols-12">
-              <motion.div
-                className={`product-stage group relative order-2 flex flex-col items-center justify-center overflow-hidden rounded-xl bg-[#1B1931] p-7 lg:order-1 lg:col-span-6 ${stageHot ? "is-hot" : ""
-                  }`}
-                initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: easeOut }}
-                onMouseEnter={() => setStageHot(true)}
-                onMouseLeave={() => setStageHot(false)}
-              >
-                {subcategoryName || categoryName ? (
-                  <div className="relative z-10 mb-4 flex w-full items-center justify-between">
-                    <span className="rounded bg-[#292740]/90 px-2 py-1 text-[11px] font-semibold tracking-wide text-brand-lime">
-                      {subcategoryName || categoryName}
-                    </span>
+          <PageHero
+            title={name}
+            description={overview}
+            imageUrl={heroImage}
+            sideImages={sideImages}
+            crumbs={[
+              { label: t(UI.nav.home, locale), to: "/" },
+              { label: t(UI.nav.products, locale), to: "/products" },
+              categoryName ? { label: categoryName } : null,
+            ].filter(Boolean)}
+            actionsRef={mainCtaRef}
+            actions={
+              <>
+                {waHref ? (
+                  <SplitArrowButton href={waHref} variant="primary" className="max-w-full">
+                    {t(UI.askAboutProductWa, locale)}
+                  </SplitArrowButton>
+                ) : null}
+                {visitHref ? (
+                  <SplitArrowButton href={visitHref} variant="secondary" className="max-w-full">
+                    {t(UI.requestFieldVisit, locale)}
+                  </SplitArrowButton>
+                ) : null}
+                {datasheetUrl ? (
+                  <a
+                    href={datasheetUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="self-center border-b border-brand-lime pb-0.5 text-[13px] text-white"
+                  >
+                    {t(UI.downloadDatasheet, locale)}
+                  </a>
+                ) : null}
+              </>
+            }
+            card={
+              <div>
+                {currentImage ? (
+                  <div className="flex h-48 items-center justify-center">
+                    <SafeImage
+                      src={currentImage}
+                      alt={name}
+                      width={480}
+                      className="max-h-44 max-w-full object-contain"
+                    />
                   </div>
                 ) : null}
-
-                <div className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-lg bg-[#0D0B23]">
-                  <AnimatePresence mode="wait" initial={false}>
-                    {currentImage ? (
-                      <motion.div
-                        key={currentImage}
-                        className="absolute inset-0 flex items-center justify-center p-6 sm:p-10"
-                        initial={reducedMotion ? false : { opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={reducedMotion ? undefined : { opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <SafeImage
-                          src={currentImage}
-                          alt={name}
-                          width={900}
-                          className="max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-                        />
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
-                </div>
-
-                {packaging ? (
-                  <div className="mt-4 grid w-full grid-cols-1 gap-1 pt-2">
-                    <div className="rounded bg-[#1F1D35] p-3 text-center">
-                      <span className="block text-[11px] font-medium tracking-wide text-white/55">
-                        {t(UI.packaging, locale)}
-                      </span>
-                      <span className="mt-1 block text-[15px] font-semibold text-white">
-                        <ValueText value={packaging} />
-                      </span>
-                    </div>
-                  </div>
-                ) : null}
-
                 {images.length > 1 ? (
-                  <div className="mt-4 flex w-full flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap gap-2">
                     {images.map((src, index) => (
                       <button
                         key={src}
                         type="button"
                         onClick={() => setActiveImage(index)}
-                        className={`h-14 w-14 overflow-hidden rounded-lg border ${index === activeImage
-                            ? "border-brand-lime"
-                            : "border-white/12"
-                          }`}
+                        className={`h-12 w-12 overflow-hidden rounded-lg border ${
+                          index === activeImage ? "border-brand-lime" : "border-white/12"
+                        }`}
                         aria-label={`${index + 1}`}
                       >
                         <SafeImage
                           src={src}
                           alt=""
-                          width={112}
-                          className="h-full w-full bg-[#0D0B23] object-contain p-1"
+                          width={96}
+                          className="h-full w-full object-contain"
                         />
                       </button>
                     ))}
                   </div>
                 ) : null}
-              </motion.div>
-
-              <motion.div
-                className="order-1 flex flex-col justify-between py-1 lg:order-2 lg:col-span-6"
-                initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.5,
-                  delay: reducedMotion ? 0 : 0.08,
-                  ease: easeOut,
-                }}
+                <div className="mt-3">
+                  <FactRow
+                    label={t(UI.categoryFact, locale)}
+                    value={
+                      [categoryName, subcategoryName]
+                        .filter(Boolean)
+                        .filter((item, index, list) => list.indexOf(item) === index)
+                        .join(" · ") || categoryName
+                    }
+                  />
+                  <FactRow
+                    label={t(UI.ingredients, locale)}
+                    value={compositionSummary}
+                    accent
+                  />
+                  <FactRow label={t(UI.origin, locale)} value={origin} last />
+                </div>
+              </div>
+            }
+          />
+          <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-5 py-10 sm:px-8 lg:px-14">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <Link
+                to="/products"
+                className="inline-flex items-center gap-1 text-sm text-brand-lime"
               >
-                <div className="flex flex-col gap-4">
-                  {categoryName || subcategoryName ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      {categoryName ? (
-                        <span className="rounded bg-[#292740] px-2 py-1 text-[11px] font-semibold tracking-wide text-brand-lime">
-                          {categoryName}
-                        </span>
-                      ) : null}
-                      {subcategoryName && subcategoryName !== categoryName ? (
-                        <>
-                          <span
-                            className="h-1.5 w-1.5 rounded-full bg-white/25"
-                            aria-hidden="true"
-                          />
-                          <span className="text-[13px] text-white/55">
-                            {subcategoryName}
-                          </span>
-                        </>
-                      ) : null}
-                    </div>
-                  ) : null}
-
-                  <div>
-                    {name ? (
-                      <RevealHeading
-                        as="h1"
-                        text={name}
-                        className="font-display text-[clamp(2.25rem,6vw,3.5rem)] font-bold leading-none tracking-tight text-white"
-                      />
-                    ) : null}
-                    {overview ? (
-                      <p className="mt-3 text-[18px] leading-[1.7] text-white/55">
-                        {overview}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  {categoryName || compositionSummary || origin ? (
-                    <div className="mt-2 rounded-lg bg-[#1B1931] px-4 py-1">
-                      <FactRow
-                        label={t(UI.categoryFact, locale)}
-                        value={
-                          [categoryName, subcategoryName]
-                            .filter(Boolean)
-                            .filter(
-                              (item, index, list) => list.indexOf(item) === index,
-                            )
-                            .join(" · ") || categoryName
-                        }
-                      />
-                      <FactRow
-                        label={t(UI.ingredients, locale)}
-                        value={compositionSummary}
-                        accent
-                      />
-                      <FactRow
-                        label={t(UI.origin, locale)}
-                        value={origin}
-                        last
-                      />
-                    </div>
-                  ) : null}
-
-                  {registrationNumber ? (
-                    <RegistrationBadge number={registrationNumber} />
-                  ) : null}
-                </div>
-
-                <div
-                  ref={mainCtaRef}
-                  className="flex flex-col items-stretch gap-3 pt-7 sm:flex-row sm:items-center"
-                >
-                  {waHref ? (
-                    <a
-                      href={waHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex w-full flex-1 items-center justify-center gap-2 rounded bg-brand-lime px-4 py-3 text-[15px] font-semibold text-[#0A0820] transition-colors hover:bg-brand-lime-hover"
-                    >
-                      {t(UI.askAboutProductWa, locale)}
-                    </a>
-                  ) : null}
-                  {visitHref ? (
-                    <a
-                      href={visitHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex w-full items-center justify-center gap-2 rounded bg-[#1F1D35] px-6 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-[#292740] sm:w-auto"
-                    >
-                      {t(UI.requestFieldVisit, locale)}
-                    </a>
-                  ) : null}
-                  {datasheetUrl ? (
-                    <a
-                      href={datasheetUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="border-b border-brand-lime pb-0.5 text-center text-[13px] text-white transition-colors hover:text-brand-lime sm:ms-2"
-                    >
-                      {t(UI.downloadDatasheet, locale)}
-                    </a>
-                  ) : null}
-                </div>
-              </motion.div>
+                <span aria-hidden="true">←</span>
+                <span>{t(UI.backToAllProducts, locale)}</span>
+              </Link>
+              {registrationNumber ? (
+                <RegistrationBadge number={registrationNumber} />
+              ) : null}
             </div>
-
+            {packaging ? (
+              <p className="text-sm text-white/70">
+                <span className="text-white/45">{t(UI.packaging, locale)}</span>
+                <span className="mx-2 text-white/25">/</span>
+                <ValueText value={packaging} />
+              </p>
+            ) : null}
             {hasFeatures ? (
               <motion.section
                 className="flex flex-col gap-4 pt-4"

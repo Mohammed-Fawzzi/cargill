@@ -5,8 +5,7 @@ import { motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import ReadingProgress from "@/components/ui/ReadingProgress";
-import SafeImage from "@/components/ui/SafeImage";
-import RevealHeading from "@/components/ui/RevealHeading";
+import PageHero from "@/components/ui/PageHero";
 import ArticleCard from "@/components/articles/ArticleCard";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
@@ -178,69 +177,33 @@ export default function ArticleDetails() {
         <main className="min-h-screen bg-transparent text-white">
           <ReadingProgress />
 
+          <PageHero
+            title={title}
+            description={excerpt}
+            imageUrl={article.imageUrl}
+            sideImages={(articlesQuery.data || [])
+              .filter((item) => item.id !== id && item.imageUrl)
+              .map((item) => item.imageUrl)}
+            kicker={[dateLabel, categoryLabel || t(UI.nav.articles, locale)]
+              .filter(Boolean)
+              .join(" / ")}
+          />
+
           <article>
-            <header className="mx-auto max-w-4xl px-4 pb-8 pt-[calc(var(--navbar-height)+var(--ticker-height)+2.5rem)] sm:px-6 md:pb-10">
-              <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-white/55">
-                <Link
-                  to="/articles"
-                  className="inline-flex items-center gap-1 text-brand-lime transition-colors hover:text-brand-lime-hover"
-                >
-                  <span aria-hidden="true">←</span>
-                  <span>{t(UI.backToArticles, locale)}</span>
-                </Link>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="bg-[#1F1D35] px-2 py-0.5 text-[11px] font-semibold tracking-wide text-brand-lime">
-                    {categoryLabel || t(UI.nav.articles, locale)}
-                  </span>
-                  {dateLabel ? (
-                    <>
-                      <span className="text-white/30">·</span>
-                      <span>{dateLabel}</span>
-                    </>
-                  ) : null}
-                  {minutesLabel ? (
-                    <>
-                      <span className="text-white/30">·</span>
-                      <span>{minutesLabel}</span>
-                    </>
-                  ) : null}
-                </div>
-              </div>
-
-              {title ? (
-                <RevealHeading
-                  as="h1"
-                  text={title}
-                  className="mt-6 max-w-full break-words font-display text-[clamp(2rem,5vw,3.5rem)] font-bold leading-[1.15] tracking-tight text-white"
-                />
-              ) : null}
-
-              {excerpt ? (
-                <p className="mt-5 max-w-2xl font-ruqaa text-lg leading-relaxed text-brand-lime/90 md:text-xl">
-                  {excerpt}
-                </p>
-              ) : null}
-            </header>
-
-            {article.imageUrl ? (
-              <section className="mx-auto my-6 max-w-6xl px-4 sm:px-6">
-                <figure>
-                  <div className="relative aspect-[21/9] overflow-hidden bg-[#1B1931] sm:aspect-[16/7]">
-                    <SafeImage
-                      src={article.imageUrl}
-                      alt={title}
-                      width={1400}
-                      className="h-full w-full object-cover"
-                    />
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A0820] via-transparent to-transparent opacity-60" />
-                  </div>
-                  {caption ? (
-                    <figcaption className="mt-3 text-[13px] text-white/45">
-                      {caption}
-                    </figcaption>
-                  ) : null}
-                </figure>
-              </section>
+            <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 pt-8 text-sm text-white/55 sm:px-6">
+              <Link
+                to="/articles"
+                className="inline-flex items-center gap-1 text-brand-lime transition-colors hover:text-brand-lime-hover"
+              >
+                <span aria-hidden="true">←</span>
+                <span>{t(UI.backToArticles, locale)}</span>
+              </Link>
+              {minutesLabel ? <span>{minutesLabel}</span> : null}
+            </div>
+            {caption ? (
+              <p className="mx-auto mt-4 max-w-4xl px-4 text-[13px] text-white/45 sm:px-6">
+                {caption}
+              </p>
             ) : null}
 
             <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 md:py-14">

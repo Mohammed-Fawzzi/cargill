@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
-import PageBanner from "@/components/ui/PageBanner";
+import PageHero from "@/components/ui/PageHero";
 import EventAgendaRow from "@/components/events/EventAgendaRow";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
@@ -113,6 +113,10 @@ export default function Events() {
         ? t(UI.noPastEvents, locale)
         : t(UI.noEvents, locale);
 
+  const latestEvent = upcomingItems[0] || pastItems[0] || null;
+  const eventCovers = [...upcomingItems, ...pastItems]
+    .map((item) => item.imageUrl)
+    .filter(Boolean);
   const pending = eventsQuery.isPending;
   const error = eventsQuery.isError;
   const showSplit = filter === "all";
@@ -131,11 +135,13 @@ export default function Events() {
       ) : null}
       {!pending && !error ? (
         <main className="min-h-screen bg-transparent text-white">
-          <PageBanner
+          <PageHero
             title={hero.title}
-            subtitle={hero.subtitle}
-            label={t(UI.nav.events, locale)}
-            breadcrumbs={[
+            description={hero.subtitle}
+            imageUrl={latestEvent?.imageUrl || hero.imageUrl}
+            sideImages={eventCovers.filter((src) => src !== latestEvent?.imageUrl)}
+            size="mid"
+            crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },
               { label: t(UI.nav.events, locale) },
             ]}

@@ -6,7 +6,7 @@ import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import ProductCard from "@/components/products/ProductCard";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
-import PageBanner from "@/components/ui/PageBanner";
+import PageHero from "@/components/ui/PageHero";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories, getProducts } from "@/services/cms/products";
 import { useHomepageSection } from "@/hooks/useHomepageSection";
@@ -57,6 +57,7 @@ export default function Products() {
   const { contact } = useSiteData();
   const { reducedMotion } = useMotionPrefs();
   const sectionQuery = useHomepageSection("product_categories");
+  const fieldQuery = useHomepageSection("hero");
   const [params, setParams] = useSearchParams();
   const sectionId = params.get("section") || "";
   const subcategoryId = params.get("sub") || "";
@@ -189,6 +190,12 @@ export default function Products() {
     fallbackImage: "",
   });
 
+  const fieldSlides = fieldQuery.data?.slides || [];
+  const fieldImage = fieldSlides.find((slide) => slide.imageUrl)?.imageUrl || "";
+  const heroImage = hero.imageUrl || fieldImage;
+  const sideImages = fieldSlides
+    .map((slide) => slide.imageUrl)
+    .filter((src) => src && src !== heroImage);
   const phone = contact?.phones?.[0] || "";
   const askSearchHref = toWhatsAppHref(
     phone,
@@ -216,11 +223,13 @@ export default function Products() {
       ) : null}
       {!pending && !error ? (
         <main className="min-h-screen bg-transparent text-white">
-          <PageBanner
+          <PageHero
             title={hero.title}
-            subtitle={hero.subtitle}
-            label={t(UI.nav.products, locale)}
-            breadcrumbs={[
+            description={hero.subtitle}
+            imageUrl={heroImage}
+            sideImages={sideImages}
+            size="mid"
+            crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },
               { label: t(UI.nav.products, locale) },
             ]}

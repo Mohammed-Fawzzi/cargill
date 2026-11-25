@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import SafeImage from "@/components/ui/SafeImage";
-import PageBanner from "@/components/ui/PageBanner";
+import PageHero from "@/components/ui/PageHero";
 import ArticleCard from "@/components/articles/ArticleCard";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import SplitArrowButton from "@/components/ui/SplitArrowButton";
@@ -107,11 +107,13 @@ export default function Articles() {
       ) : null}
       {!pending && !error ? (
         <main className="min-h-screen bg-transparent text-white">
-          <PageBanner
+          <PageHero
             title={hero.title}
-            subtitle={hero.subtitle}
-            label={t(UI.nav.articles, locale)}
-            breadcrumbs={[
+            description={hero.subtitle}
+            imageUrl={featured?.imageUrl || hero.imageUrl}
+            sideImages={rest.map((item) => item.imageUrl).filter(Boolean)}
+            size="mid"
+            crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },
               { label: t(UI.nav.articles, locale) },
             ]}

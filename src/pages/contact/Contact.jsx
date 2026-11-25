@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
-import PageBanner from "@/components/ui/PageBanner";
+import PageHero from "@/components/ui/PageHero";
 import LogoTriangle from "@/components/ui/LogoTriangle";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
@@ -132,11 +132,12 @@ export default function Contact() {
       {!pending && error ? <ErrorState /> : null}
       {!pending && !error ? (
         <main className="min-h-screen bg-transparent text-white">
-          <PageBanner
+          <PageHero
             title={heading}
-            subtitle={hoursLine || description}
-            label={t(UI.nav.contact, locale)}
-            breadcrumbs={[
+            description={hoursLine || description}
+            imageUrl={section?.imageUrl || contact?.bannerUrl || ""}
+            size="mid"
+            crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },
               { label: t(UI.nav.contact, locale) },
             ]}
