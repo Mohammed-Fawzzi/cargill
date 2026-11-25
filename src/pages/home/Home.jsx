@@ -4,6 +4,7 @@ import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import HeroSection from "@/components/home/HeroSection";
+import CategoryFilm from "@/components/home/CategoryFilm";
 import HomepageIntro from "@/components/home/HomepageIntro";
 import ValuesTrio from "@/components/home/ValuesTrio";
 import FeaturedProductsSection from "@/components/home/FeaturedProductsSection";
@@ -150,6 +151,7 @@ export default function Home() {
           <ValuesTrio />
           {featured ? <FeaturedProductsSection section={featured} /> : null}
           {articles ? <ArticlesSection section={articles} /> : null}
+          <CategoryFilm />
           <GrowTogetherBanner />
         </main>
       ) : null}
