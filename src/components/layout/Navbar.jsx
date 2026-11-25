@@ -136,10 +136,30 @@ function ProductsMegaMenu({ categories, locale, onNavigate }) {
 }
 
 function NavItem({ to, end, label, children, onNavigate, mega, solid }) {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
+  const lockRef = useRef(false);
   const hasMenu = Boolean(children);
   const classes = linkClass(solid);
+
+  const closeMega = () => {
+    setOpen(false);
+    lockRef.current = true;
+    window.setTimeout(() => {
+      lockRef.current = false;
+    }, 400);
+    onNavigate?.();
+  };
+
+  useEffect(() => {
+    setOpen(false);
+    lockRef.current = true;
+    const timer = window.setTimeout(() => {
+      lockRef.current = false;
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -165,17 +185,27 @@ function NavItem({ to, end, label, children, onNavigate, mega, solid }) {
     );
   }
 
+  const menu = hasMenu
+    ? React.Children.map(children, (child) =>
+        React.isValidElement(child)
+          ? React.cloneElement(child, { onNavigate: closeMega })
+          : child,
+      )
+    : null;
+
   return (
     <li
       ref={rootRef}
       className={mega ? "static" : "relative"}
-      onMouseEnter={() => setOpen(true)}
+      onMouseEnter={() => {
+        if (!lockRef.current) setOpen(true);
+      }}
       onMouseLeave={() => setOpen(false)}
     >
       <NavLink
         to={to}
         end={end}
-        onClick={onNavigate}
+        onClick={closeMega}
         className={classes}
         aria-expanded={open}
       >
@@ -193,7 +223,7 @@ function NavItem({ to, end, label, children, onNavigate, mega, solid }) {
       <AnimatePresence>
         {open ? (
           <div className="contents" style={{ visibility: "visible" }}>
-            {children}
+            {menu}
           </div>
         ) : null}
       </AnimatePresence>
@@ -240,7 +270,7 @@ export default function Navbar() {
 
   useEffect(() => {
     closeMenu();
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     if (!isMenuOpen) return undefined;
