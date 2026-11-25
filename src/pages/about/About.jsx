@@ -601,7 +601,7 @@ export default function About() {
     () => homepageSlideImages(heroQuery.data),
     [heroQuery.data],
   );
-  const aboutImage = heroSlides[0] || bannerUrl || "";
+  const aboutImage = contact?.logoUrl || "";
   const heroSides = useMemo(() => {
     const covers = categoryCoverImages(categories, productsQuery.data || []);
     return [...heroSlides.slice(1), bannerUrl, ...storyImages, ...covers].filter(
