@@ -222,7 +222,7 @@ export default function ContactSection({ section }) {
               <iframe
                 title={title || t(UI.address, locale)}
                 src={mapSrc}
-                className="h-[260px] w-full border-0 grayscale contrast-[1.1] md:h-[360px]"
+                className="h-[260px] w-full border-0 md:h-[360px]"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />

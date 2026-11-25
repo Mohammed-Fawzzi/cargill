@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
+import SectionRule from "@/components/ui/SectionRule";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
@@ -37,15 +38,13 @@ export default function MediaStrip({ items = [] }) {
         viewport={{ once: true, amount: 0.12 }}
         transition={{ duration: 0.35, ease: easeOut }}
       >
-        <div className="mb-6 flex items-center gap-4">
-          <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
-            {t(UI.mediaReleases, locale)}
-          </p>
-          <span className="h-px flex-1 bg-brand-ink" aria-hidden="true" />
-          <p className="shrink-0 text-[11px] font-bold tracking-[0.2em] text-brand-ink/55">
-            06
-          </p>
-        </div>
+        <SectionRule
+          label={t(UI.mediaReleases, locale)}
+          number="06"
+          labelClassName="text-brand-ink"
+          numberClassName="text-brand-ink/55"
+          lineClassName="bg-brand-ink"
+        />
 
         <div className="mb-10 flex flex-col gap-4 sm:mb-12 lg:flex-row lg:items-end lg:justify-between">
           <h2 className="text-clip-safe text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">

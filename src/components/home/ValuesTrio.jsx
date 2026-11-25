@@ -1,11 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
+import SectionRule from "@/components/ui/SectionRule";
+import PlantStroke from "@/components/ui/PlantStroke";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
+import useCountUp from "@/hooks/useCountUp";
+import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -105,6 +109,45 @@ function Word({ word, index, total, progress }) {
   );
 }
 
+function ExperienceBlock({ locale }) {
+  const { reducedMotion } = useMotionPrefs();
+  const ref = useRef(null);
+  const [active, setActive] = useState(false);
+  const counted = useCountUp(20, active, 900);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setActive(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.45 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const value = reducedMotion ? 20 : counted;
+
+  return (
+    <div ref={ref} className="flex items-end gap-4 border-t border-brand-lime pt-4">
+      <div className="min-w-0 flex-1">
+        <p className="text-5xl font-extrabold tracking-tight text-brand-ink sm:text-6xl lg:text-7xl">
+          +{value}
+        </p>
+        <p className="mt-3 max-w-[14rem] text-sm leading-6 text-text-muted">
+          {t(UI.experienceBody, locale)}
+        </p>
+      </div>
+      <PlantStroke className="mb-1 h-28 w-14 shrink-0 sm:h-32 sm:w-16" />
+    </div>
+  );
+}
+
 function IndexRow({ number, title, body, tag }) {
   return (
     <div className="group relative border-y border-brand-ink/15 py-7 transition-colors sm:py-8">
@@ -163,15 +206,14 @@ export default function ValuesTrio() {
         viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.35, ease: easeOut }}
       >
-        <div className="mb-8 flex items-center gap-4 sm:mb-10">
-          <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
-            {t(UI.whoWeAre, locale)}
-          </p>
-          <span className="h-px flex-1 bg-brand-ink" aria-hidden="true" />
-          <p className="shrink-0 text-[11px] font-bold tracking-[0.2em] text-brand-ink/55">
-            01
-          </p>
-        </div>
+        <SectionRule
+          className="mb-8 flex items-center gap-4 sm:mb-10"
+          label={t(UI.whoWeAre, locale)}
+          number="01"
+          labelClassName="text-brand-ink"
+          numberClassName="text-brand-ink/55"
+          lineClassName="bg-brand-ink"
+        />
 
         <h2 className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.25rem,6vw,5.5rem)] font-extrabold leading-[1.05] tracking-tight text-brand-ink sm:mb-14">
           {accentLastWord(heading)}
@@ -193,14 +235,7 @@ export default function ValuesTrio() {
           </div>
 
           <div className="lg:col-span-4 lg:col-start-9">
-            <div className="border-t border-brand-lime pt-4">
-              <p className="text-5xl font-extrabold tracking-tight text-brand-ink sm:text-6xl lg:text-7xl">
-                {t(UI.experienceYears, locale)}
-              </p>
-              <p className="mt-3 max-w-[14rem] text-sm leading-6 text-text-muted">
-                {t(UI.experienceBody, locale)}
-              </p>
-            </div>
+            <ExperienceBlock locale={locale} />
           </div>
         </div>
 

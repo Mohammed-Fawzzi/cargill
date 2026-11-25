@@ -1,6 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { motion, useInView } from "framer-motion";
 import SiteLogo from "@/components/ui/SiteLogo";
 import { NAV_LINKS } from "@constants/navLinks";
 import { useLocale } from "@/context/LocaleContext";
@@ -10,9 +11,58 @@ import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { resolveCompanySocial } from "@/utils/social";
 import { toMapLink } from "@/lib/map";
+import useMotionPrefs from "@/hooks/useMotionPrefs";
+import { easeOut } from "@/lib/motion";
+
+function BrandWordReveal({ word, active, reducedMotion }) {
+  const letters = useMemo(() => Array.from(word || ""), [word]);
+  const [joined, setJoined] = useState(Boolean(reducedMotion));
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setJoined(true);
+      return undefined;
+    }
+    if (!active) {
+      setJoined(false);
+      return undefined;
+    }
+    const totalMs = 450 + Math.max(0, letters.length - 1) * 45 + 60;
+    const timer = window.setTimeout(() => setJoined(true), totalMs);
+    return () => window.clearTimeout(timer);
+  }, [active, reducedMotion, letters.length, word]);
+
+  return (
+    <span className="relative inline-block">
+      <span className={joined ? "opacity-100" : "opacity-0"}>{word}</span>
+      {!joined ? (
+        <span className="absolute inset-x-0 top-0 text-center">
+          {letters.map((letter, index) => (
+            <motion.span
+              key={`${letter}-${index}`}
+              className="inline-block"
+              initial={{ opacity: 0, y: 20 }}
+              animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{
+                duration: 0.45,
+                delay: index * 0.045,
+                ease: easeOut,
+              }}
+            >
+              {letter === " " ? "\u00A0" : letter}
+            </motion.span>
+          ))}
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
 export default function Footer() {
   const { locale } = useLocale();
+  const { reducedMotion } = useMotionPrefs();
+  const brandRef = useRef(null);
+  const brandInView = useInView(brandRef, { once: true, amount: 0.4 });
   const { contact, footer } = useSiteData();
   const companyName = t(contact?.companyName, locale);
   const description = t(footer?.body, locale) || t(contact?.about, locale);
@@ -173,10 +223,15 @@ export default function Footer() {
       </div>
 
       <div
-        className="text-clip-safe pointer-events-none relative px-4 pb-6 pt-2 text-center text-[clamp(3.5rem,12vw,9rem)] font-extrabold leading-[1.15] tracking-tight text-white/[0.06] lg:px-8 lg:pb-8"
+        ref={brandRef}
+        className="text-clip-safe pointer-events-none relative px-4 pb-20 pt-2 text-center text-[clamp(3.5rem,12vw,9rem)] font-extrabold leading-[1.15] tracking-tight text-white/[0.06] md:pb-8 lg:px-8"
         aria-hidden="true"
       >
-        {brandWord}
+        <BrandWordReveal
+          word={brandWord}
+          active={brandInView}
+          reducedMotion={reducedMotion}
+        />
       </div>
     </footer>
   );

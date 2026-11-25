@@ -5,6 +5,8 @@ import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
+import SectionRule from "@/components/ui/SectionRule";
+import PlantStroke from "@/components/ui/PlantStroke";
 import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories } from "@/services/cms/products";
@@ -23,15 +25,14 @@ function splitLead(text) {
 
 function SectionLabel({ number, label }) {
   return (
-    <div className="mb-8 flex items-center gap-4">
-      <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
-        {label}
-      </p>
-      <span className="h-px flex-1 bg-brand-ink/15" aria-hidden="true" />
-      <p className="shrink-0 text-[11px] font-bold tracking-[0.2em] text-brand-ink/45">
-        {number}
-      </p>
-    </div>
+    <SectionRule
+      className="mb-8 flex items-center gap-4"
+      label={label}
+      number={number}
+      labelClassName="text-brand-ink"
+      numberClassName="text-brand-ink/45"
+      lineClassName="bg-brand-ink/15"
+    />
   );
 }
 
@@ -125,13 +126,16 @@ export default function About() {
                           ) : null}
                         </div>
                         <div className="lg:col-span-4 lg:col-start-9">
-                          <div className="border-t border-brand-lime pt-4">
-                            <p className="text-5xl font-extrabold tracking-tight text-brand-ink sm:text-6xl lg:text-7xl">
-                              {t(UI.experienceYears, locale)}
-                            </p>
-                            <p className="mt-3 max-w-[14rem] text-sm leading-6 text-text-muted">
-                              {t(UI.experienceBody, locale)}
-                            </p>
+                          <div className="flex items-end gap-4 border-t border-brand-lime pt-4">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-5xl font-extrabold tracking-tight text-brand-ink sm:text-6xl lg:text-7xl">
+                                {t(UI.experienceYears, locale)}
+                              </p>
+                              <p className="mt-3 max-w-[14rem] text-sm leading-6 text-text-muted">
+                                {t(UI.experienceBody, locale)}
+                              </p>
+                            </div>
+                            <PlantStroke className="mb-1 h-28 w-14 shrink-0 sm:h-32 sm:w-16" />
                           </div>
                         </div>
                       </div>

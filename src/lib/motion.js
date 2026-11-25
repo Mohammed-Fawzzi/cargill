@@ -1,4 +1,5 @@
 export const easeOut = [0.22, 1, 0.36, 1];
+export const sproutEase = [0.22, 1, 0.36, 1];
 
 export const pageTransition = {
   initial: { opacity: 0, y: 8 },

@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import SafeImage from "@/components/ui/SafeImage";
+import TiltCard from "@/components/ui/TiltCard";
 
 export default function ContentCard({
   to,
@@ -25,7 +26,7 @@ export default function ContentCard({
             : "flex-col"
         }`}
       >
-        <div
+        <TiltCard
           className={`relative overflow-hidden rounded-md bg-surface-muted ${
             horizontal
               ? "aspect-[4/3] w-full sm:aspect-auto sm:w-[46%] sm:min-h-[280px]"
@@ -47,7 +48,7 @@ export default function ContentCard({
               {title}
             </div>
           )}
-        </div>
+        </TiltCard>
 
         <div
           className={`flex min-w-0 flex-1 flex-col ${

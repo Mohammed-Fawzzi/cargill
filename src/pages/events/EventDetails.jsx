@@ -275,7 +275,7 @@ export default function EventDetails() {
                 <iframe
                   title={location}
                   src={mapSrc}
-                  className="h-[320px] w-full rounded-lg border-0 grayscale contrast-[1.1]"
+                  className="h-[320px] w-full rounded-lg border-0"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />

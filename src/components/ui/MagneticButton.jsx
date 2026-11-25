@@ -1,24 +1,25 @@
 import React, { useRef } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
+import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 export default function MagneticButton({
   children,
   className = "",
   as = "div",
-  strength = 18,
+  strength = 6,
 }) {
   const ref = useRef(null);
+  const { canTilt } = useMotionPrefs();
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const springX = useSpring(x, { stiffness: 220, damping: 18 });
-  const springY = useSpring(y, { stiffness: 220, damping: 18 });
+  const springX = useSpring(x, { stiffness: 220, damping: 24, mass: 0.35 });
+  const springY = useSpring(y, { stiffness: 220, damping: 24, mass: 0.35 });
   const Component = motion[as] || motion.div;
 
   const onMove = (event) => {
+    if (!canTilt) return;
     const node = ref.current;
     if (!node) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
     const rect = node.getBoundingClientRect();
     const dx = event.clientX - (rect.left + rect.width / 2);
     const dy = event.clientY - (rect.top + rect.height / 2);
@@ -35,7 +36,7 @@ export default function MagneticButton({
     <Component
       ref={ref}
       className={className}
-      style={{ x: springX, y: springY }}
+      style={canTilt ? { x: springX, y: springY } : undefined}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
     >

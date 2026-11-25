@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { isExternalHref } from "@/components/ui/CtaLink";
+import MagneticButton from "@/components/ui/MagneticButton";
 
 function Arrow({ className = "" }) {
   return (
@@ -43,14 +44,16 @@ export function PrimaryButton({
   const { Comp, props } = resolveElement({ to, href, type, disabled });
 
   return (
-    <Comp
-      {...props}
-      onClick={onClick}
-      className={`group inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-brand-lime px-6 py-2.5 text-sm font-bold text-brand-ink transition-colors hover:bg-brand-lime-hover disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
-    >
-      <span>{children}</span>
-      <Arrow />
-    </Comp>
+    <MagneticButton strength={6} className="inline-flex">
+      <Comp
+        {...props}
+        onClick={onClick}
+        className={`group inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-brand-lime px-6 py-2.5 text-sm font-bold text-brand-ink transition-colors hover:bg-brand-lime-hover disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
+      >
+        <span>{children}</span>
+        <Arrow />
+      </Comp>
+    </MagneticButton>
   );
 }
 

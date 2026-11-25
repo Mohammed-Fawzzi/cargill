@@ -368,7 +368,7 @@ export default function Contact() {
                       <iframe
                         title={heading}
                         src={mapSrc}
-                        className="h-[280px] w-full border-0 grayscale contrast-[1.1] md:h-[420px]"
+                        className="h-[280px] w-full border-0 md:h-[420px]"
                         loading="lazy"
                         referrerPolicy="no-referrer-when-downgrade"
                       />

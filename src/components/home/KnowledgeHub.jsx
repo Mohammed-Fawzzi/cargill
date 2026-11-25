@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import SafeImage from "@/components/ui/SafeImage";
+import SectionRule from "@/components/ui/SectionRule";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
@@ -51,6 +52,7 @@ function ArticleRailCard({ item, locale, featured }) {
 
   return (
     <article
+      data-rail-card="1"
       className={`group relative w-[80vw] shrink-0 snap-start md:w-[380px] ${
         featured ? "md:w-[560px]" : ""
       }`}
@@ -127,6 +129,7 @@ export default function KnowledgeHub({ items = [], section }) {
   const reducedMotion = usePrefersReducedMotion();
   const railRef = useRef(null);
   const dragRef = useRef({ active: false, startX: 0, scroll: 0 });
+  const inertiaRef = useRef(0);
   const [progress, setProgress] = useState(0);
 
   const cards = useMemo(() => (items || []).filter(Boolean), [items]);
@@ -155,6 +158,7 @@ export default function KnowledgeHub({ items = [], section }) {
     return () => {
       node.removeEventListener("scroll", updateProgress);
       window.removeEventListener("resize", updateProgress);
+      if (inertiaRef.current) cancelAnimationFrame(inertiaRef.current);
     };
   }, [cards.length, updateProgress]);
 
@@ -172,10 +176,17 @@ export default function KnowledgeHub({ items = [], section }) {
     if (event.pointerType === "touch") return;
     const node = railRef.current;
     if (!node) return;
+    if (inertiaRef.current) {
+      cancelAnimationFrame(inertiaRef.current);
+      inertiaRef.current = 0;
+    }
     dragRef.current = {
       active: true,
       startX: event.clientX,
       scroll: node.scrollLeft,
+      lastX: event.clientX,
+      lastT: performance.now(),
+      velocity: 0,
     };
     node.setPointerCapture?.(event.pointerId);
   };
@@ -184,14 +195,62 @@ export default function KnowledgeHub({ items = [], section }) {
     if (!dragRef.current.active) return;
     const node = railRef.current;
     if (!node) return;
+    const now = performance.now();
     const delta = event.clientX - dragRef.current.startX;
+    const dt = Math.max(1, now - dragRef.current.lastT);
+    dragRef.current.velocity =
+      ((event.clientX - dragRef.current.lastX) / dt) * 16;
+    dragRef.current.lastX = event.clientX;
+    dragRef.current.lastT = now;
     node.scrollLeft = dragRef.current.scroll - delta;
+  };
+
+  const snapRail = (node) => {
+    const cards = Array.from(node.children).filter(
+      (child) => child instanceof HTMLElement && child.dataset.railCard === "1",
+    );
+    if (!cards.length) return;
+    const mid = node.scrollLeft + node.clientWidth / 2;
+    let best = cards[0];
+    let bestDist = Infinity;
+    for (const card of cards) {
+      const center = card.offsetLeft + card.offsetWidth / 2;
+      const dist = Math.abs(center - mid);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = card;
+      }
+    }
+    const target =
+      best.offsetLeft - (node.clientWidth - best.offsetWidth) / 2;
+    node.scrollTo({
+      left: Math.max(0, target),
+      behavior: reducedMotion ? "auto" : "smooth",
+    });
   };
 
   const onPointerUp = (event) => {
     if (!dragRef.current.active) return;
     dragRef.current.active = false;
-    railRef.current?.releasePointerCapture?.(event.pointerId);
+    const node = railRef.current;
+    node?.releasePointerCapture?.(event.pointerId);
+    if (!node || reducedMotion) {
+      if (node) snapRail(node);
+      return;
+    }
+
+    let velocity = -dragRef.current.velocity * 18;
+    const step = () => {
+      if (Math.abs(velocity) < 0.35) {
+        snapRail(node);
+        inertiaRef.current = 0;
+        return;
+      }
+      node.scrollLeft += velocity;
+      velocity *= 0.94;
+      inertiaRef.current = requestAnimationFrame(step);
+    };
+    inertiaRef.current = requestAnimationFrame(step);
   };
 
   if (!cards.length) return null;
@@ -201,15 +260,13 @@ export default function KnowledgeHub({ items = [], section }) {
   return (
     <section className="bg-brand-forest-deep py-[4.5rem] text-white lg:py-[7.5rem]">
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="mb-6 flex items-center gap-4">
-          <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
-            {t(UI.knowledgeTitle, locale)}
-          </p>
-          <span className="h-px flex-1 bg-white/20" aria-hidden="true" />
-          <p className="shrink-0 text-[11px] font-bold tracking-[0.2em] text-white/45">
-            05
-          </p>
-        </div>
+        <SectionRule
+          label={t(UI.knowledgeTitle, locale)}
+          number="05"
+          labelClassName="text-brand-lime"
+          numberClassName="text-white/45"
+          lineClassName="bg-white/20"
+        />
 
         <div className="mb-10 flex flex-col gap-5 lg:mb-14 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
@@ -270,13 +327,12 @@ export default function KnowledgeHub({ items = [], section }) {
         <>
           <div
             ref={railRef}
-            className="flex cursor-grab gap-4 overflow-x-auto pe-4 ps-6 pb-2 active:cursor-grabbing sm:ps-8 lg:pe-8 lg:ps-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
+            className="flex cursor-grab gap-4 overflow-x-auto px-5 pb-2 scroll-px-5 active:cursor-grabbing sm:px-8 sm:scroll-px-8 lg:px-12 lg:scroll-px-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
           >
-            <div className="w-2 shrink-0 sm:w-4 lg:w-6" aria-hidden="true" />
             {cards.map((item, index) => (
               <ArticleRailCard
                 key={item.id}
@@ -285,7 +341,6 @@ export default function KnowledgeHub({ items = [], section }) {
                 featured={index === 0}
               />
             ))}
-            <div className="w-[12vw] shrink-0 md:w-[18vw]" aria-hidden="true" />
           </div>
 
           <div className="container mx-auto mt-8 px-4 lg:px-8">

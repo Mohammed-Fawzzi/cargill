@@ -1,29 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TriangleAccent } from "@/components/ui/TriangleMask";
+import SectionRule from "@/components/ui/SectionRule";
+import MagneticButton from "@/components/ui/MagneticButton";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { toTelHref, toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
+import useMotionPrefs from "@/hooks/useMotionPrefs";
+
+const BrandTriangle3D = lazy(() => import("@/components/ui/BrandTriangle3D"));
 
 const COMMITMENTS = [UI.commitQuality, UI.commitSupport, UI.commitField];
-
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReduced(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
-
-  return reduced;
-}
 
 function accentLastWord(text) {
   const parts = String(text || "")
@@ -50,7 +41,7 @@ function accentLastWord(text) {
 export default function GrowTogetherBanner() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
-  const reducedMotion = usePrefersReducedMotion();
+  const { reducedMotion } = useMotionPrefs();
   const phone = contact?.phones?.[0] || "";
   const phoneHref = toTelHref(phone);
   const waHref = toWhatsAppHref(phone, t(UI.askAgronomistMessage, locale));
@@ -62,7 +53,13 @@ export default function GrowTogetherBanner() {
         className="pointer-events-none absolute inset-0 overflow-hidden"
         aria-hidden="true"
       >
-        <TriangleAccent className="absolute -bottom-10 -end-10 z-0 h-40 w-48 opacity-30 sm:-bottom-14 sm:-end-14 sm:h-52 sm:w-64 lg:h-64 lg:w-72" />
+        <Suspense
+          fallback={
+            <TriangleAccent className="absolute -bottom-10 -end-10 z-0 h-40 w-48 opacity-30 sm:-bottom-14 sm:-end-14 sm:h-52 sm:w-64 lg:h-64 lg:w-72" />
+          }
+        >
+          <BrandTriangle3D className="absolute -bottom-10 -end-10 z-0 h-40 w-48 sm:-bottom-14 sm:-end-14 sm:h-52 sm:w-64 lg:h-64 lg:w-72" />
+        </Suspense>
       </div>
 
       <motion.div
@@ -72,15 +69,13 @@ export default function GrowTogetherBanner() {
         viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.35, ease: easeOut }}
       >
-        <div className="mb-6 flex items-center gap-4">
-          <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
-            {t(UI.contactLabel, locale)}
-          </p>
-          <span className="h-px flex-1 bg-white/20" aria-hidden="true" />
-          <p className="shrink-0 text-[11px] font-bold tracking-[0.2em] text-white/45">
-            08
-          </p>
-        </div>
+        <SectionRule
+          label={t(UI.contactLabel, locale)}
+          number="08"
+          labelClassName="text-brand-lime"
+          numberClassName="text-white/45"
+          lineClassName="bg-white/20"
+        />
 
         <h2 className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.75rem,9vw,7.5rem)] font-extrabold leading-[1.05] tracking-tight">
           {accentLastWord(title)}
@@ -106,14 +101,22 @@ export default function GrowTogetherBanner() {
 
         <div className="relative z-10 flex max-w-3xl flex-col gap-5 pe-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-8 lg:pe-8">
           {waHref ? (
-            <a
-              href={waHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-12 w-full items-center justify-center bg-brand-lime px-6 text-sm font-extrabold text-brand-ink transition-colors hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:w-auto"
-            >
-              {t(UI.askAgronomist, locale)}
-            </a>
+            <MagneticButton strength={6}>
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex min-h-12 w-full items-center justify-center gap-2 bg-brand-lime px-6 text-sm font-extrabold text-brand-ink transition-colors hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:w-auto"
+              >
+                <span>{t(UI.askAgronomist, locale)}</span>
+                <span
+                  aria-hidden="true"
+                  className="inline-block transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1"
+                >
+                  →
+                </span>
+              </a>
+            </MagneticButton>
           ) : null}
 
           {phoneHref ? (

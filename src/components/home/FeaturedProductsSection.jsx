@@ -4,6 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
 import { TriangleAccent } from "@/components/ui/TriangleMask";
+import SectionRule from "@/components/ui/SectionRule";
+import TiltCard from "@/components/ui/TiltCard";
+import MagneticButton from "@/components/ui/MagneticButton";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { getCategories } from "@/services/cms/products";
@@ -119,15 +122,13 @@ export default function FeaturedProductsSection({ section }) {
         viewport={{ once: true, amount: 0.12 }}
         transition={{ duration: 0.35, ease: easeOut }}
       >
-        <div className="mb-6 flex items-center gap-4">
-          <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
-            {t(UI.featuredLabel, locale)}
-          </p>
-          <span className="h-px flex-1 bg-brand-ink" aria-hidden="true" />
-          <p className="shrink-0 text-[11px] font-bold tracking-[0.2em] text-brand-ink/55">
-            04
-          </p>
-        </div>
+        <SectionRule
+          label={t(UI.featuredLabel, locale)}
+          number="04"
+          labelClassName="text-brand-ink"
+          numberClassName="text-brand-ink/55"
+          lineClassName="bg-brand-ink"
+        />
 
         <div className="mb-10 flex flex-col gap-4 sm:mb-14 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
@@ -160,22 +161,24 @@ export default function FeaturedProductsSection({ section }) {
                   exit={reducedMotion ? undefined : { opacity: 0 }}
                   transition={{ duration: 0.25, ease: easeOut }}
                 >
-                  <div className="group/image relative mb-6 flex aspect-[4/3] items-center justify-center overflow-hidden bg-surface-muted">
-                    <TriangleAccent className="absolute end-4 top-4 z-10 h-3 w-3.5" />
-                    {active.imageUrl ? (
-                      <SafeImage
-                        src={active.imageUrl}
-                        alt={activeName}
-                        width={1000}
-                        loading="lazy"
-                        className="h-full w-full object-contain p-6 transition-transform duration-700 ease-out group-hover/image:scale-105 motion-reduce:transform-none motion-reduce:transition-none sm:p-10"
-                      />
-                    ) : (
-                      <p className="px-6 text-center text-lg font-bold text-brand-ink/50">
-                        {activeName}
-                      </p>
-                    )}
-                  </div>
+                  <TiltCard className="group/image relative mb-6 aspect-[4/3] overflow-hidden bg-surface-muted">
+                    <div className="relative flex h-full w-full items-center justify-center">
+                      <TriangleAccent className="absolute end-4 top-4 z-10 h-3 w-3.5" />
+                      {active.imageUrl ? (
+                        <SafeImage
+                          src={active.imageUrl}
+                          alt={activeName}
+                          width={1000}
+                          loading="lazy"
+                          className="h-full w-full object-contain p-6 transition-transform duration-700 ease-out group-hover/image:scale-105 motion-reduce:transform-none motion-reduce:transition-none sm:p-10"
+                        />
+                      ) : (
+                        <p className="px-6 text-center text-lg font-bold text-brand-ink/50">
+                          {activeName}
+                        </p>
+                      )}
+                    </div>
+                  </TiltCard>
 
                   {activeCategory ? (
                     <p className="mb-2 text-[11px] font-bold tracking-[0.16em] text-brand-lime">
@@ -192,13 +195,20 @@ export default function FeaturedProductsSection({ section }) {
                   ) : null}
 
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <Link
-                      to={`/products/${active.id}`}
-                      className="inline-flex min-h-11 items-center justify-center gap-2 bg-brand-lime px-5 text-sm font-extrabold text-brand-ink transition-colors hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
-                    >
-                      <span>{t(UI.productDetails, locale)}</span>
-                      <span aria-hidden="true">←</span>
-                    </Link>
+                    <MagneticButton strength={6}>
+                      <Link
+                        to={`/products/${active.id}`}
+                        className="group inline-flex min-h-11 items-center justify-center gap-2 bg-brand-lime px-5 text-sm font-extrabold text-brand-ink transition-colors hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
+                      >
+                        <span>{t(UI.productDetails, locale)}</span>
+                        <span
+                          aria-hidden="true"
+                          className="inline-block transition-transform duration-300 group-hover:-translate-x-1 rtl:group-hover:translate-x-1"
+                        >
+                          ←
+                        </span>
+                      </Link>
+                    </MagneticButton>
                     {waHref ? (
                       <a
                         href={waHref}
