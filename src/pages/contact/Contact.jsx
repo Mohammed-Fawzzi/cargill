@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
@@ -15,6 +15,7 @@ import { toMapEmbedSrc, toMapLink } from "@/lib/map";
 import { toTelHref, toWhatsAppHref } from "@/lib/phone";
 import { resolveCompanySocial } from "@/utils/social";
 import { easeOut } from "@/lib/motion";
+import { homepageSlideImages } from "@/lib/homeIntro";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 const inputClass =
@@ -62,7 +63,14 @@ export default function Contact() {
   const { reducedMotion } = useMotionPrefs();
   const { contact, isPending, isError } = useSiteData();
   const sectionQuery = useHomepageSection("contact");
+  const heroQuery = useHomepageSection("hero");
   const section = sectionQuery.data;
+  const heroSlides = useMemo(
+    () => homepageSlideImages(heroQuery.data),
+    [heroQuery.data],
+  );
+  const contactImage = section?.imageUrl || heroSlides[1] || heroSlides[0] || "";
+  const contactSides = heroSlides.filter((src) => src && src !== contactImage);
 
   const heading =
     t(contact?.heading, locale) ||
@@ -135,7 +143,8 @@ export default function Contact() {
           <PageHero
             title={heading}
             description={hoursLine || description}
-            imageUrl={section?.imageUrl || ""}
+            imageUrl={contactImage}
+            sideImages={contactSides}
             size="mid"
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, useScroll, useTransform } from "framer-motion";
 import MonoLabel from "@/components/ui/MonoLabel";
@@ -13,7 +13,9 @@ import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
-const BrandTriangle3D = lazy(() => import("@/components/ui/BrandTriangle3D"));
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
+
+const BrandTriangle3D = lazyWithRetry(() => import("@/components/ui/BrandTriangle3D"));
 
 export default function TriangleStatsPanel() {
   const { locale } = useLocale();

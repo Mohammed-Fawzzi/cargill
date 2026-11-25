@@ -14,7 +14,7 @@ export default function HomeScrollBg() {
       "--page-bg-transition",
       reducedMotion
         ? "none"
-        : "background-color 700ms cubic-bezier(0.22, 1, 0.36, 1)",
+        : "--page-bg 700ms cubic-bezier(0.22, 1, 0.36, 1)",
     );
     app.style.setProperty("--page-bg", DEFAULT_BG);
 
@@ -23,17 +23,23 @@ export default function HomeScrollBg() {
     let lastKey = "";
 
     const pick = () => {
+      const mid = window.innerHeight * 0.5;
       let best = null;
-      let bestRatio = 0;
+      let bestScore = Infinity;
       for (const [node, ratio] of ratios) {
-        if (!node.isConnected) continue;
-        if (ratio >= 0.4 && ratio > bestRatio) {
-          bestRatio = ratio;
+        if (!node.isConnected || ratio <= 0) continue;
+        const rect = node.getBoundingClientRect();
+        const holdsMid = rect.top <= mid && rect.bottom >= mid;
+        const center = (rect.top + rect.bottom) / 2;
+        const score = Math.abs(center - mid) + (holdsMid ? 0 : window.innerHeight);
+        if (score < bestScore) {
+          bestScore = score;
           best = node;
         }
       }
       const color = best?.getAttribute("data-home-bg") || DEFAULT_BG;
       app.style.setProperty("--page-bg", color);
+      document.documentElement.style.setProperty("--page-bg", color);
       document.documentElement.style.setProperty("--site-scroll-bg", color);
     };
 
@@ -53,7 +59,7 @@ export default function HomeScrollBg() {
           }
           pick();
         },
-        { threshold: [0, 0.25, 0.4, 0.55, 0.7, 1] },
+        { rootMargin: "-42% 0px -42% 0px", threshold: [0, 0.01, 1] },
       );
       nodes.forEach((node) => observer.observe(node));
       pick();
@@ -69,6 +75,7 @@ export default function HomeScrollBg() {
       observer?.disconnect();
       mo.disconnect();
       app.style.setProperty("--page-bg", DEFAULT_BG);
+      document.documentElement.style.setProperty("--page-bg", DEFAULT_BG);
       document.documentElement.style.setProperty("--site-scroll-bg", DEFAULT_BG);
     };
   }, [reducedMotion]);

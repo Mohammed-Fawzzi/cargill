@@ -85,6 +85,12 @@ h3 {
   scroll-margin-top: calc(var(--navbar-height) + var(--ticker-height) + 1.5rem);
 }
 
+@property --page-bg {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #0a0820;
+}
+
 html {
   scroll-behavior: smooth;
   overflow-x: clip;
@@ -107,7 +113,7 @@ body {
   background-color: var(--page-bg, #0a0820);
   transition: var(
     --page-bg-transition,
-    background-color 700ms cubic-bezier(0.22, 1, 0.36, 1)
+    --page-bg 700ms cubic-bezier(0.22, 1, 0.36, 1)
   );
 }
 
@@ -198,8 +204,6 @@ html[data-page-hero="on"] .nav-glass:not(.is-scrolled) {
 
 .page-hero__panel {
   background-color: #181060;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='196' viewBox='0 0 220 196'%3E%3Cpolygon points='110,16 204,180 16,180' fill='%238CC63F' fill-opacity='0.16'/%3E%3C/svg%3E");
-  background-size: 220px 196px;
 }
 
 .page-hero__photo.is-fade,
@@ -490,7 +494,7 @@ input[type="reset"] {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: var(--theme-page);
+  background-color: var(--page-bg, var(--theme-page));
   color: var(--theme-ink);
 }
 

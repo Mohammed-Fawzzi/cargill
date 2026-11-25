@@ -17,6 +17,7 @@ import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import {
   buildHomeIntroTiles,
+  homepageSlideImages,
   markHomeIntroSeen,
   shouldPlayHomeIntro,
 } from "@/lib/homeIntro";
@@ -54,14 +55,14 @@ export default function Home() {
     return () => window.removeEventListener("resize", sync);
   }, []);
 
+  const heroSlides = useMemo(() => homepageSlideImages(hero), [hero]);
+
   const heroImage = useMemo(() => {
-    const slides = hero?.data?.slides || [];
-    const slideImage =
-      slides.map((item) => item?.imageUrl).filter(Boolean)[0] || "";
+    const slideImage = heroSlides[0] || "";
     const sectionImage = hero?.data?.imageUrl || "";
     if (isMobile) return sectionImage || slideImage;
     return slideImage || sectionImage;
-  }, [hero, isMobile]);
+  }, [hero, heroSlides, isMobile]);
 
   const introTiles = useMemo(
     () =>
@@ -69,9 +70,10 @@ export default function Home() {
         categories: categoriesQuery.data || [],
         products: productsQuery.data || [],
         heroImage,
+        heroSlides,
         mobile: isMobile,
       }),
-    [categoriesQuery.data, productsQuery.data, heroImage, isMobile],
+    [categoriesQuery.data, productsQuery.data, heroImage, heroSlides, isMobile],
   );
 
   const catalogReady =

@@ -39,14 +39,23 @@ function lerp(a, b, t) {
 function buildTiles(imageUrl, sideImages, mobile) {
   const count = mobile ? 3 : 5;
   const center = Math.floor(count / 2);
-  const sides = (sideImages || []).filter((src) => src && src !== imageUrl);
+  const pool = [];
+  const push = (src) => {
+    const value = String(src || "").trim();
+    if (value && !pool.includes(value)) pool.push(value);
+  };
+  (sideImages || []).forEach(push);
+  push(imageUrl);
+  const sides = pool.filter((src) => src !== imageUrl);
+  const fallback = sides.length ? sides : pool;
   const tiles = [];
   let side = 0;
   for (let index = 0; index < count; index += 1) {
     if (index === center) {
-      tiles.push({ id: "center", src: imageUrl || "", hero: true });
+      tiles.push({ id: "center", src: imageUrl || fallback[0] || "", hero: true });
     } else {
-      tiles.push({ id: `side-${side}`, src: sides[side] || "", hero: false });
+      const src = fallback.length ? fallback[side % fallback.length] : "";
+      tiles.push({ id: `side-${side}`, src, hero: false });
       side += 1;
     }
   }

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import React, { Suspense } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import { TriangleAccent } from "@/components/ui/TriangleMask";
@@ -8,7 +8,9 @@ import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 
-const BrandTriangle3D = lazy(() => import("@/components/ui/BrandTriangle3D"));
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
+
+const BrandTriangle3D = lazyWithRetry(() => import("@/components/ui/BrandTriangle3D"));
 
 export default function NotFound() {
   const { locale } = useLocale();

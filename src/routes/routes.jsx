@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import Loading from "@/components/loading/Loading";
+import RouteError from "@/components/ui/RouteError";
 import {
   Home,
   About,
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
+    errorElement: <RouteError />,
     children: [
       { index: true, element: withSuspense(<Home />) },
       { path: "products", element: withSuspense(<Products />) },

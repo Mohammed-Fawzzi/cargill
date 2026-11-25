@@ -57,10 +57,54 @@ function pickFallbackSides(categoriesWithImages, usedIds, count) {
     .map((category) => category.imageUrl);
 }
 
+export function homepageSlideImages(source) {
+  const data =
+    source?.data && (Array.isArray(source.data.slides) || source.data.imageUrl)
+      ? source.data
+      : source || {};
+  const list = [];
+  const push = (src) => {
+    const value = String(src || "").trim();
+    if (value && !list.includes(value)) list.push(value);
+  };
+  (data.slides || []).forEach((slide) => push(slide?.imageUrl));
+  push(data.imageUrl);
+  return list;
+}
+
+export function categoryCoverImages(categories, products) {
+  const list = [];
+  (categories || []).forEach((category) => {
+    const cover =
+      (products || []).find(
+        (product) => product.sectionId === category.id && product.imageUrl,
+      )?.imageUrl || "";
+    if (cover && !list.includes(cover)) list.push(cover);
+  });
+  return list;
+}
+
+export function matchedCategoryCover(categories, products, matcherId) {
+  const matcher = CATEGORY_MATCHERS.find((item) => item.id === matcherId);
+  const withImages = (categories || []).map((category) => {
+    const cover =
+      (products || []).find(
+        (product) => product.sectionId === category.id && product.imageUrl,
+      )?.imageUrl || "";
+    return { ...category, imageUrl: cover };
+  });
+  if (matcher) {
+    const found = findCategoryImage(withImages, matcher);
+    if (found) return found;
+  }
+  return withImages.find((item) => item.imageUrl)?.imageUrl || "";
+}
+
 export function buildHomeIntroTiles({
   categories = [],
   products = [],
   heroImage = "",
+  heroSlides = [],
   mobile = false,
 }) {
   if (!heroImage) return [];
@@ -94,13 +138,25 @@ export function buildHomeIntroTiles({
     ),
   );
 
+  const imagePool = [];
+  const pushPool = (src) => {
+    const value = String(src || "").trim();
+    if (value && !imagePool.includes(value)) imagePool.push(value);
+  };
+  heroSlides.forEach(pushPool);
+  categoriesWithImages.forEach((category) => pushPool(category.imageUrl));
+  pushPool(heroImage);
+
   const fillMissing = (list) => {
-    const need = list.filter((item) => !item.src).length;
-    const extras = pickFallbackSides(categoriesWithImages, used, need);
+    const extras = pickFallbackSides(
+      categoriesWithImages,
+      used,
+      list.filter((item) => !item.src).length,
+    );
     let cursor = 0;
     return list.map((item) => {
       if (item.src) return item;
-      const src = extras[cursor] || "";
+      const src = extras[cursor] || imagePool[cursor % Math.max(imagePool.length, 1)] || "";
       cursor += 1;
       return { ...item, src };
     });

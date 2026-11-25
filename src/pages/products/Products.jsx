@@ -13,6 +13,11 @@ import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { resolvePageHero } from "@/lib/pageHero";
+import {
+  categoryCoverImages,
+  homepageSlideImages,
+  matchedCategoryCover,
+} from "@/lib/homeIntro";
 import { toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
@@ -57,6 +62,7 @@ export default function Products() {
   const { contact } = useSiteData();
   const { reducedMotion } = useMotionPrefs();
   const sectionQuery = useHomepageSection("product_categories");
+  const heroQuery = useHomepageSection("hero");
   const [params, setParams] = useSearchParams();
   const sectionId = params.get("section") || "";
   const subcategoryId = params.get("sub") || "";
@@ -189,7 +195,21 @@ export default function Products() {
     fallbackImage: "",
   });
 
-  const heroImage = sectionQuery.data?.imageUrl || "";
+  const heroSlides = useMemo(
+    () => homepageSlideImages(heroQuery.data),
+    [heroQuery.data],
+  );
+  const heroImage =
+    matchedCategoryCover(categories, products, "fertilizers") ||
+    categoryCoverImages(categories, products)[0] ||
+    sectionQuery.data?.imageUrl ||
+    "";
+  const heroSides = useMemo(() => {
+    const covers = categoryCoverImages(categories, products);
+    return [...heroSlides, ...covers].filter(
+      (src, index, list) => src && src !== heroImage && list.indexOf(src) === index,
+    );
+  }, [heroSlides, categories, products, heroImage]);
   const phone = contact?.phones?.[0] || "";
   const askSearchHref = toWhatsAppHref(
     phone,
@@ -221,6 +241,7 @@ export default function Products() {
             title={hero.title}
             description={hero.subtitle}
             imageUrl={heroImage}
+            sideImages={heroSides}
             size="mid"
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },

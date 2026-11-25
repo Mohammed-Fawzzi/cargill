@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useRef } from "react";
+import React, { Suspense, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import LogoTriangle from "@/components/ui/LogoTriangle";
 import AccentHeading from "@/components/ui/AccentHeading";
@@ -10,8 +10,9 @@ import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
-const BrandTriangle3D = lazy(() => import("@/components/ui/BrandTriangle3D"));
+const BrandTriangle3D = lazyWithRetry(() => import("@/components/ui/BrandTriangle3D"));
 
 export default function GrowTogetherBanner() {
   const { locale } = useLocale();

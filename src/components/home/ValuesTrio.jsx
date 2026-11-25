@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { motion, useScroll } from "framer-motion";
 import LogoTriangle from "@/components/ui/LogoTriangle";
 import AccentHeading from "@/components/ui/AccentHeading";
@@ -11,7 +11,9 @@ import { easeOut } from "@/lib/motion";
 import useCountUp from "@/hooks/useCountUp";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
-const BrandTriangle3D = lazy(() => import("@/components/ui/BrandTriangle3D"));
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
+
+const BrandTriangle3D = lazyWithRetry(() => import("@/components/ui/BrandTriangle3D"));
 
 function useIsMobile(breakpoint = 768) {
   const [mobile, setMobile] = useState(false);

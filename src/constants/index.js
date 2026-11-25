@@ -1,19 +1,19 @@
-import React from "react";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
-export const Home = React.lazy(() => import("@/pages/home/Home"));
-export const About = React.lazy(() => import("@/pages/about/About"));
-export const Products = React.lazy(() => import("@/pages/products/Products"));
-export const ProductDetails = React.lazy(
+export const Home = lazyWithRetry(() => import("@/pages/home/Home"));
+export const About = lazyWithRetry(() => import("@/pages/about/About"));
+export const Products = lazyWithRetry(() => import("@/pages/products/Products"));
+export const ProductDetails = lazyWithRetry(
   () => import("@/pages/products/ProductDetails"),
 );
-export const Articles = React.lazy(() => import("@/pages/articles/Articles"));
-export const ArticleDetails = React.lazy(
+export const Articles = lazyWithRetry(() => import("@/pages/articles/Articles"));
+export const ArticleDetails = lazyWithRetry(
   () => import("@/pages/articles/ArticleDetails"),
 );
-export const Events = React.lazy(() => import("@/pages/events/Events"));
-export const EventDetails = React.lazy(
+export const Events = lazyWithRetry(() => import("@/pages/events/Events"));
+export const EventDetails = lazyWithRetry(
   () => import("@/pages/events/EventDetails"),
 );
-export const Contact = React.lazy(() => import("@/pages/contact/Contact"));
-export const Finder = React.lazy(() => import("@/pages/finder/Finder"));
-export const NotFound = React.lazy(() => import("@/pages/not-found/NotFound"));
+export const Contact = lazyWithRetry(() => import("@/pages/contact/Contact"));
+export const Finder = lazyWithRetry(() => import("@/pages/finder/Finder"));
+export const NotFound = lazyWithRetry(() => import("@/pages/not-found/NotFound"));

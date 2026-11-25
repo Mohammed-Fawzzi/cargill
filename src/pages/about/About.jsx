@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -12,13 +12,16 @@ import useMotionPrefs from "@/hooks/useMotionPrefs";
 import useCountUp from "@/hooks/useCountUp";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories, getProducts } from "@/services/cms/products";
+import { useHomepageSection } from "@/hooks/useHomepageSection";
+import { categoryCoverImages, homepageSlideImages } from "@/lib/homeIntro";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
-const BrandTriangle3D = lazy(() => import("@/components/ui/BrandTriangle3D"));
+const BrandTriangle3D = lazyWithRetry(() => import("@/components/ui/BrandTriangle3D"));
 
 function useIsMobile(breakpoint = 768) {
   const [mobile, setMobile] = useState(false);
@@ -232,17 +235,17 @@ function slideCursor(progress, count) {
 
 function copyPose(index, from, fraction, count) {
   if (count <= 1) return { opacity: 1, y: 0, enter: 1 };
-  const u = clampUnit((fraction - 0.28) / 0.44);
-  const outT = storyEase(clampUnit(u / 0.35));
-  const inT = storyEase(clampUnit((u - 0.45) / 0.55));
+  const u = clampUnit((fraction - 0.22) / 0.56);
+  const outT = clampUnit(u / 0.7);
+  const inT = clampUnit((u - 0.3) / 0.7);
   if (index === from) {
     if (fraction >= 1) return { opacity: 0, y: -24, enter: 1 };
     if (u <= 0) return { opacity: 1, y: 0, enter: 1 };
-    return { opacity: 1 - outT, y: -24 * outT, enter: 1 };
+    return { opacity: 1 - outT, y: -24 * storyEase(outT), enter: 1 };
   }
   if (index === from + 1) {
     if (inT <= 0) return { opacity: 0, y: 24, enter: 0 };
-    return { opacity: inT, y: 24 * (1 - inT), enter: inT };
+    return { opacity: inT, y: 24 * (1 - storyEase(inT)), enter: inT };
   }
   if (index < from) return { opacity: 0, y: -24, enter: 1 };
   return { opacity: 0, y: 24, enter: 0 };
@@ -517,6 +520,7 @@ export default function About() {
   const { contact, isPending, isError } = useSiteData();
   const isMobile = useIsMobile();
 
+  const heroQuery = useHomepageSection("hero");
   const categoriesQuery = useQuery({
     queryKey: ["cms", "categories"],
     queryFn: getCategories,
@@ -593,7 +597,17 @@ export default function About() {
 
   const hasContent = Boolean(about || vision || mission || categories.length);
   const usePinned = !reducedMotion && storySteps.length > 1;
-  const aboutImage = bannerUrl;
+  const heroSlides = useMemo(
+    () => homepageSlideImages(heroQuery.data),
+    [heroQuery.data],
+  );
+  const aboutImage = heroSlides[0] || bannerUrl || "";
+  const heroSides = useMemo(() => {
+    const covers = categoryCoverImages(categories, productsQuery.data || []);
+    return [...heroSlides.slice(1), bannerUrl, ...storyImages, ...covers].filter(
+      (src, index, list) => src && src !== aboutImage && list.indexOf(src) === index,
+    );
+  }, [heroSlides, bannerUrl, storyImages, categories, productsQuery.data, aboutImage]);
 
   return (
     <>
@@ -610,7 +624,7 @@ export default function About() {
             title={titleText}
             description={about}
             imageUrl={aboutImage}
-            sideImages={storyImages.filter((src) => src && src !== aboutImage)}
+            sideImages={heroSides}
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },
               { label: t(UI.nav.about, locale) },

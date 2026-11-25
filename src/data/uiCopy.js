@@ -16,6 +16,7 @@ export const UI = {
     en: "Content could not be loaded. Please try again later.",
   },
   retry: { ar: "إعادة المحاولة", en: "Try again" },
+  reload: { ar: "إعادة تحميل", en: "Reload" },
   readMore: { ar: "اقرأ المزيد", en: "Read more" },
   viewAll: { ar: "عرض الكل", en: "View all" },
   letsGetStarted: { ar: "لنبدأ الآن", en: "Let's Get Started" },
