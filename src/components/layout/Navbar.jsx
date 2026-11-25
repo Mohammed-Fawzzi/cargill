@@ -24,7 +24,7 @@ import { easeOut } from "@/lib/motion";
 
 function linkClass(solid) {
   return ({ isActive }) =>
-    `relative inline-flex items-center gap-1 px-1 py-2 text-[14px] font-semibold tracking-wide transition-colors duration-300 xl:text-[15px] ${
+    `relative inline-flex items-center gap-1 whitespace-nowrap px-1 py-2 text-[15px] font-semibold tracking-wide transition-colors duration-300 ${
       solid
         ? isActive
           ? "text-ink"
@@ -54,10 +54,10 @@ function AskAgronomistButton({ href, label, className = "", onClick }) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={onClick}
-      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-brand-lime px-4 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-lime-hover ${className}`}
+      className={`inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand-lime px-4 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-lime-hover ${className}`}
     >
-      <IoLogoWhatsapp className="text-lg" aria-hidden="true" />
-      <span>{label}</span>
+      <IoLogoWhatsapp className="text-lg shrink-0" aria-hidden="true" />
+      <span className="whitespace-nowrap">{label}</span>
     </a>
   );
 }
@@ -136,7 +136,100 @@ function ProductsMegaMenu({ categories = [], locale, onNavigate }) {
   );
 }
 
-function NavItem({ to, end, label, children, onNavigate, mega, solid }) {
+function MoreMenu({ locale, onNavigate }) {
+  const items = [
+    { to: "/events", label: t(UI.nav.events, locale) },
+    { to: "/finder", label: t(UI.findSolution, locale) },
+  ];
+
+  return (
+    <div className="absolute end-0 top-full z-40 pt-3">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 6, transitionEnd: { visibility: "hidden" } }}
+        transition={{ duration: 0.2, ease: easeOut }}
+        className="min-w-[11.5rem] border border-line/12 bg-surface py-2 shadow-[0_18px_40px_rgba(10,8,32,0.45)]"
+      >
+        {items.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            onClick={onNavigate}
+            className="block whitespace-nowrap px-4 py-2.5 text-[15px] font-semibold text-ink/80 transition-colors hover:bg-ink/5 hover:text-ink"
+          >
+            {item.label}
+          </Link>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+function MoreNavItem({ label, solid, children }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onPointerDown = (event) => {
+      if (!rootRef.current?.contains(event.target)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
+  const tone = solid
+    ? open
+      ? "text-ink"
+      : "text-ink/75 hover:text-ink"
+    : open
+      ? "text-white"
+      : "text-white/80 hover:text-white";
+
+  return (
+    <li
+      ref={rootRef}
+      className="relative xl:hidden"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button
+        type="button"
+        className={`relative inline-flex items-center gap-1 whitespace-nowrap px-1 py-2 text-[15px] font-semibold tracking-wide transition-colors duration-300 ${tone}`}
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        {label}
+        <IoChevronDown
+          className={`text-[11px] transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+          aria-hidden="true"
+        />
+        <ActiveMark active={open} />
+      </button>
+      <AnimatePresence>
+        {open ? (
+          <div className="contents" style={{ visibility: "visible" }}>
+            {React.Children.map(children, (child) =>
+              React.isValidElement(child)
+                ? React.cloneElement(child, {
+                    onNavigate: () => setOpen(false),
+                  })
+                : child,
+            )}
+          </div>
+        ) : null}
+      </AnimatePresence>
+    </li>
+  );
+}
+
+function NavItem({ to, end, label, children, onNavigate, mega, solid, className = "" }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
@@ -173,7 +266,7 @@ function NavItem({ to, end, label, children, onNavigate, mega, solid }) {
 
   if (!hasMenu) {
     return (
-      <li>
+      <li className={className}>
         <NavLink to={to} end={end} onClick={onNavigate} className={classes}>
           {({ isActive }) => (
             <>
@@ -197,7 +290,7 @@ function NavItem({ to, end, label, children, onNavigate, mega, solid }) {
   return (
     <li
       ref={rootRef}
-      className={mega ? "static" : "relative"}
+      className={`${mega ? "static" : "relative"} ${className}`.trim()}
       onMouseEnter={() => {
         if (!lockRef.current) setOpen(true);
       }}
@@ -292,7 +385,7 @@ export default function Navbar() {
     { to: "/about", label: t(UI.nav.about, locale) },
     { to: "/products", label: t(UI.nav.products, locale), mega: true },
     { to: "/articles", label: t(UI.nav.articles, locale) },
-    { to: "/events", label: t(UI.nav.events, locale) },
+    { to: "/events", label: t(UI.nav.events, locale), compactHide: true },
     { to: "/contact", label: t(UI.nav.contact, locale) },
   ];
 
@@ -304,11 +397,11 @@ export default function Navbar() {
             <Link
               to="/finder"
               onClick={closeMenu}
-              className="hidden min-h-10 items-center px-2 text-xs font-bold text-ink/75 underline-offset-4 transition-colors hover:text-brand-lime hover:underline sm:inline-flex"
+              className="hidden min-h-10 items-center whitespace-nowrap px-2 text-xs font-bold text-ink/75 underline-offset-4 transition-colors hover:text-brand-lime hover:underline xl:inline-flex"
             >
               {t(UI.findSolution, locale)}
             </Link>
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
               <AskAgronomistButton href={waHref} label={askLabel} />
             </div>
             <ThemeToggle />
@@ -323,7 +416,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setIsMenuOpen((open) => !open)}
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/5 md:hidden"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/5 lg:hidden"
               aria-label={isMenuOpen ? t(UI.closeMenu, locale) : t(UI.openMenu, locale)}
               aria-expanded={isMenuOpen}
             >
@@ -335,7 +428,7 @@ export default function Navbar() {
             </button>
           </div>
 
-          <ul className="order-2 hidden items-center justify-center gap-x-5 md:flex xl:gap-x-7">
+          <ul className="order-2 hidden items-center justify-center gap-x-[22px] lg:flex">
             {navLinks.map((item) =>
               item.mega ? (
                 <NavItem
@@ -360,9 +453,13 @@ export default function Navbar() {
                   label={item.label}
                   solid
                   onNavigate={closeMenu}
+                  className={item.compactHide ? "hidden xl:block" : undefined}
                 />
               ),
             )}
+            <MoreNavItem label={t(UI.nav.more, locale)} solid>
+              <MoreMenu locale={locale} onNavigate={closeMenu} />
+            </MoreNavItem>
           </ul>
 
           <Link
@@ -385,7 +482,7 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transitionEnd: { visibility: "hidden" } }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 z-30 bg-brand-navy md:hidden"
+            className="fixed inset-0 z-30 bg-brand-navy lg:hidden"
             style={{ visibility: "visible", pointerEvents: "auto" }}
           >
             <div className="flex h-full flex-col px-6 pb-8 pt-[calc(var(--ticker-height)+6rem)]">

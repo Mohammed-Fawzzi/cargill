@@ -6,6 +6,7 @@ export const UI = {
     events: { ar: "الفعاليات", en: "Events" },
     about: { ar: "عن الشركة", en: "About" },
     contact: { ar: "تواصل معنا", en: "Contact us" },
+    more: { ar: "المزيد", en: "More" },
   },
   language: { ar: "العربية", en: "English" },
   loading: { ar: "جاري التحميل", en: "Loading" },
