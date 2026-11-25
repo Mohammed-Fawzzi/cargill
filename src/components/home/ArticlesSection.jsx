@@ -1,8 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
 import SectionIntro from "@/components/ui/SectionIntro";
+import { SplitBtnLabel } from "@/components/ui/SplitArrowButton";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
@@ -36,6 +37,7 @@ function formatArticleDate(value, locale) {
 }
 
 function FieldCard({ item, locale, large, index, reducedMotion }) {
+  const labelRef = useRef(null);
   const title = t(item.title, locale);
   const excerpt = t(item.excerpt, locale);
   const content = t(item.content, locale);
@@ -69,7 +71,15 @@ function FieldCard({ item, locale, large, index, reducedMotion }) {
         ease: easeOut,
       }}
     >
-      <Link to={`/articles/${item.id}`} className={shellClass}>
+      <Link
+        to={`/articles/${item.id}`}
+        className={shellClass}
+        onPointerEnter={(event) => {
+          if (event.pointerType === "mouse" || event.pointerType === "pen") {
+            labelRef.current?.play();
+          }
+        }}
+      >
         <div className={frameClass}>
           {item.imageUrl ? (
             <SafeImage
@@ -103,8 +113,13 @@ function FieldCard({ item, locale, large, index, reducedMotion }) {
               {excerpt}
             </p>
           ) : null}
-          <span className="mt-3 inline-block text-sm font-semibold text-brand-lime">
-            {t(UI.readFieldGuide, locale)}
+          <span className="split-btn split-btn--primary pointer-events-none mt-4 min-h-10">
+            <SplitBtnLabel ref={labelRef}>
+              {t(UI.readFieldGuide, locale)}
+            </SplitBtnLabel>
+            <span className="split-btn__arrow" aria-hidden="true">
+              <span className="split-btn__icon">←</span>
+            </span>
           </span>
         </div>
       </Link>
