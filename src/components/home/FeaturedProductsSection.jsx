@@ -160,7 +160,7 @@ export default function FeaturedProductsSection({ section }) {
                   exit={reducedMotion ? undefined : { opacity: 0 }}
                   transition={{ duration: 0.25, ease: easeOut }}
                 >
-                  <div className="relative mb-6 flex aspect-[4/3] items-center justify-center overflow-hidden bg-surface-muted">
+                  <div className="group/image relative mb-6 flex aspect-[4/3] items-center justify-center overflow-hidden bg-surface-muted">
                     <TriangleAccent className="absolute end-4 top-4 z-10 h-3 w-3.5" />
                     {active.imageUrl ? (
                       <SafeImage
@@ -168,7 +168,7 @@ export default function FeaturedProductsSection({ section }) {
                         alt={activeName}
                         width={1000}
                         loading="lazy"
-                        className="h-full w-full object-contain p-6 sm:p-10"
+                        className="h-full w-full object-contain p-6 transition-transform duration-700 ease-out group-hover/image:scale-105 motion-reduce:transform-none motion-reduce:transition-none sm:p-10"
                       />
                     ) : (
                       <p className="px-6 text-center text-lg font-bold text-brand-ink/50">
