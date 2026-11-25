@@ -159,6 +159,11 @@ export const UI = {
     en: "Cargill’s team is ready to help you choose the right solution for your crop and season.",
   },
   whatsapp: { ar: "واتساب", en: "WhatsApp" },
+  askAgronomist: { ar: "اسأل مهندس زراعي", en: "Ask an agronomist" },
+  askAgronomistMessage: {
+    ar: "مرحباً، محتاج أسأل مهندس زراعي عن محصولي.",
+    en: "Hi, I'd like to ask an agronomist about my crop.",
+  },
   imInterested: { ar: "أنا مهتم", en: "I'm interested" },
   needHelp: { ar: "محتاج مساعدة؟", en: "Need help?" },
   featuredBadge: { ar: "مميز", en: "Featured" },
@@ -205,6 +210,25 @@ export const UI = {
     en: "Coverage across {count} categories to reach the right solution faster.",
   },
   exploreProducts: { ar: "استكشف المنتجات", en: "Explore products" },
+  browseProducts: { ar: "تصفح المنتجات", en: "Browse products" },
+  brandLabel: {
+    ar: "كارجيل للحلول الزراعية",
+    en: "Cargill for Agricultural Solutions",
+  },
+  cropQuestion: {
+    ar: "عندك سؤال عن محصولك؟",
+    en: "Got a question about your crop?",
+  },
+  experienceYears: { ar: "+20", en: "+20" },
+  experienceBody: {
+    ar: "سنة خبرة لفريقنا في الحقل المصري",
+    en: "years of experience in Egyptian fields",
+  },
+  ourProducts: { ar: "منتجاتنا", en: "Our products" },
+  fieldEgypt: { ar: "من الحقل المصري", en: "From Egyptian fields" },
+
+
+
   backToTop: { ar: "العودة إلى الأعلى", en: "Back to top" },
 
   commitQuality: {

@@ -1,60 +1,142 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   IoClose,
-  IoMailOutline,
-  IoSearchOutline,
   IoChevronDown,
-  IoCallOutline,
   IoLogoWhatsapp,
+  IoSearchOutline,
 } from "react-icons/io5";
 import { RiMenu2Line } from "react-icons/ri";
 import SiteLogo from "@/components/ui/SiteLogo";
+import SafeImage from "@/components/ui/SafeImage";
+import { TriangleAccent } from "@/components/ui/TriangleMask";
 import LanguageSwitch from "@/components/layout/LanguageSwitch";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
-import { getCategories } from "@/services/cms/products";
-import { toTelHref, toWhatsAppHref } from "@/lib/phone";
+import { getCategories, getProducts } from "@/services/cms/products";
+import { toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
-import { resolveCompanySocial } from "@/utils/social";
+import { easeOut } from "@/lib/motion";
 
-function linkClass({ isActive }) {
-  return `relative inline-flex items-center gap-1 px-1 py-2 text-[15px] font-semibold tracking-wide transition-colors duration-300 hover:text-brand-lime ${
-    isActive ? "text-brand-lime" : "text-brand-ink"
-  } after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:origin-center after:rounded-full after:bg-brand-lime after:transition-transform after:duration-300 ${
-    isActive ? "after:scale-x-100" : "after:scale-x-0 hover:after:scale-x-100"
-  }`;
+function linkClass(solid) {
+  return ({ isActive }) =>
+    `relative inline-flex items-center gap-1 px-1 py-2 text-[14px] font-semibold tracking-wide transition-colors duration-300 xl:text-[15px] ${
+      solid
+        ? isActive
+          ? "text-brand-ink"
+          : "text-brand-ink/75 hover:text-brand-ink"
+        : isActive
+          ? "text-white"
+          : "text-white/80 hover:text-white"
+    }`;
 }
 
-function CircleIcon({ children, href, label, className = "inline-flex" }) {
-  const classes = `${className} h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/45 text-white transition-all duration-300 hover:border-brand-lime hover:bg-brand-lime hover:text-brand-ink`;
-  if (!href) {
-    return (
-      <span className={classes} aria-hidden="true">
-        {children}
-      </span>
-    );
-  }
-  const external = /^https?:/i.test(href);
+function ActiveMark({ active, solid }) {
+  return (
+    <span
+      className={`pointer-events-none absolute inset-x-0 -bottom-0.5 flex justify-center transition-opacity duration-300 ${
+        active ? "opacity-100" : "opacity-0"
+      }`}
+      aria-hidden="true"
+    >
+      <TriangleAccent
+        className={`h-1.5 w-2 ${solid ? "" : "brightness-110"}`}
+      />
+    </span>
+  );
+}
+
+function AskAgronomistButton({ href, label, className = "", onClick }) {
+  if (!href) return null;
   return (
     <a
       href={href}
-      className={classes}
-      aria-label={label}
-      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={onClick}
+      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-brand-lime px-4 text-sm font-bold text-brand-ink transition-colors hover:bg-brand-lime-hover ${className}`}
     >
-      {children}
+      <IoLogoWhatsapp className="text-lg" aria-hidden="true" />
+      <span>{label}</span>
     </a>
   );
 }
 
-function NavItem({ to, end, label, children, onNavigate }) {
+function ProductsMegaMenu({ categories, locale, onNavigate }) {
+  const tiles = categories.slice(0, 4);
+
+  return (
+    <div className="absolute inset-x-0 top-full z-40 pt-3">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 6 }}
+        transition={{ duration: 0.2, ease: easeOut }}
+        className="border border-brand-ink/10 bg-white p-3 shadow-[0_18px_40px_rgba(24,16,96,0.12)] sm:p-4"
+      >
+        <div className="mb-3 flex items-end justify-between gap-3 border-b border-brand-ink/10 pb-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-ink/45">
+              Categories
+            </p>
+            <p className="mt-1 text-sm font-bold text-brand-ink">
+              {t(UI.nav.products, locale)}
+            </p>
+          </div>
+          <Link
+            to="/products"
+            onClick={onNavigate}
+            className="text-xs font-bold text-brand-ink/70 underline-offset-4 transition-colors hover:text-brand-lime hover:underline"
+          >
+            {t(UI.viewAll, locale)}
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+          {tiles.map((category, index) => {
+            const name = t(category.name, locale);
+            return (
+              <Link
+                key={category.id}
+                to={`/products?section=${encodeURIComponent(category.id)}`}
+                onClick={onNavigate}
+                className="group relative aspect-[3/4] overflow-hidden bg-brand-ink"
+              >
+                {category.imageUrl ? (
+                  <SafeImage
+                    src={category.imageUrl}
+                    alt={name}
+                    width={640}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-brand-forest to-brand-forest-deep" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-ink/90 via-brand-ink/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-3">
+                  <p className="mb-1 text-[10px] font-bold tracking-[0.18em] text-brand-lime">
+                    {String(index + 1).padStart(2, "0")}
+                  </p>
+                  <p className="text-sm font-extrabold leading-snug text-white sm:text-base">
+                    {name}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function NavItem({ to, end, label, children, onNavigate, mega, solid }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
   const hasMenu = Boolean(children);
+  const classes = linkClass(solid);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -68,8 +150,13 @@ function NavItem({ to, end, label, children, onNavigate }) {
   if (!hasMenu) {
     return (
       <li>
-        <NavLink to={to} end={end} onClick={onNavigate} className={linkClass}>
-          {label}
+        <NavLink to={to} end={end} onClick={onNavigate} className={classes}>
+          {({ isActive }) => (
+            <>
+              {label}
+              <ActiveMark active={isActive} solid={solid} />
+            </>
+          )}
         </NavLink>
       </li>
     );
@@ -78,57 +165,43 @@ function NavItem({ to, end, label, children, onNavigate }) {
   return (
     <li
       ref={rootRef}
-      className="relative"
+      className={mega ? "static" : "relative"}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
-      <NavLink to={to} end={end} onClick={onNavigate} className={linkClass}>
-        {label}
-        <IoChevronDown
-          className={`text-[11px] transition-transform duration-300 ${open ? "rotate-180" : ""}`}
-          aria-hidden="true"
-        />
+      <NavLink
+        to={to}
+        end={end}
+        onClick={onNavigate}
+        className={classes}
+        aria-expanded={open}
+      >
+        {({ isActive }) => (
+          <>
+            {label}
+            <IoChevronDown
+              className={`text-[11px] transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+              aria-hidden="true"
+            />
+            <ActiveMark active={isActive || open} solid={solid} />
+          </>
+        )}
       </NavLink>
-      <AnimatePresence>
-        {open ? (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.2 }}
-            className="absolute start-1/2 top-full z-40 mt-1 min-w-[15rem] -translate-x-1/2 overflow-hidden rounded-b-md border border-brand-ink/10 bg-white py-2 shadow-[0_18px_40px_rgba(24,16,96,0.14)] rtl:translate-x-1/2"
-          >
-            {children}
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+      <AnimatePresence>{open ? children : null}</AnimatePresence>
     </li>
-  );
-}
-
-function DropdownLink({ to, children, onNavigate }) {
-  return (
-    <Link
-      to={to}
-      onClick={onNavigate}
-      className="block px-4 py-2.5 text-sm font-medium text-brand-ink/80 transition-colors hover:bg-brand-lime/10 hover:text-brand-lime"
-    >
-      {children}
-    </Link>
   );
 }
 
 export default function Navbar() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const companyName = t(contact?.companyName, locale);
   const phone = contact?.phones?.[0] || "";
-  const email = contact?.emails?.[0] || "";
-  const phoneHref = toTelHref(phone);
-  const waHref = toWhatsAppHref(phone);
-  const socials = resolveCompanySocial(contact?.social);
+  const askLabel = t(UI.askAgronomist, locale);
+  const askMessage = t(UI.askAgronomistMessage, locale);
+  const waHref = toWhatsAppHref(phone, askMessage);
   const closeMenu = () => setIsMenuOpen(false);
 
   const categoriesQuery = useQuery({
@@ -136,158 +209,73 @@ export default function Navbar() {
     queryFn: getCategories,
     staleTime: 1000 * 60 * 5,
   });
-  const categories = categoriesQuery.data || [];
+  const productsQuery = useQuery({
+    queryKey: ["cms", "products"],
+    queryFn: getProducts,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const categories = useMemo(() => {
+    const list = categoriesQuery.data || [];
+    const products = productsQuery.data || [];
+    return list.map((category) => {
+      const cover = products.find(
+        (product) => product.sectionId === category.id && product.imageUrl,
+      );
+      return {
+        ...category,
+        imageUrl: cover?.imageUrl || "",
+      };
+    });
+  }, [categoriesQuery.data, productsQuery.data]);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    closeMenu();
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!isMenuOpen) return undefined;
     const onKeyDown = (event) => {
       if (event.key === "Escape") closeMenu();
     };
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, [isMenuOpen]);
 
-  const productsMenu = (
-    <>
-      <DropdownLink to="/products" onNavigate={closeMenu}>
-        {t(UI.viewAll, locale)}
-      </DropdownLink>
-      {categories.map((category) => (
-        <DropdownLink
-          key={category.id}
-          to={`/products?section=${encodeURIComponent(category.id)}`}
-          onNavigate={closeMenu}
-        >
-          {t(category.name, locale)}
-        </DropdownLink>
-      ))}
-    </>
-  );
-
-  const mediaMenu = (
-    <>
-      <DropdownLink to="/articles" onNavigate={closeMenu}>
-        {t(UI.nav.articles, locale)}
-      </DropdownLink>
-      <DropdownLink to="/events" onNavigate={closeMenu}>
-        {t(UI.nav.events, locale)}
-      </DropdownLink>
-    </>
-  );
+  const navLinks = [
+    { to: "/", end: true, label: t(UI.nav.home, locale) },
+    { to: "/about", label: t(UI.nav.about, locale) },
+    { to: "/products", label: t(UI.nav.products, locale), mega: true },
+    { to: "/articles", label: t(UI.nav.articles, locale) },
+    { to: "/events", label: t(UI.nav.events, locale) },
+    { to: "/contact", label: t(UI.nav.contact, locale) },
+  ];
 
   return (
-    <nav
-      className={`fixed inset-x-0 top-0 z-30 transition-shadow duration-300 ${
-        scrolled ? "shadow-[0_10px_30px_rgba(24,16,96,0.12)]" : ""
-      }`}
-    >
-      <div className="bg-brand-forest-deep text-white">
-        <div className="mx-auto flex min-h-[38px] max-w-[1400px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
-          <div className="hidden lg:block">
-            <LanguageSwitch variant="menu" />
-          </div>
-
-          <div className="ms-auto flex flex-nowrap items-center justify-end gap-x-2 overflow-hidden text-[12px] text-white/90 sm:gap-x-4 sm:text-[13px]">
-            {phoneHref ? (
-              <a
-                href={phoneHref}
-                className="inline-flex max-w-full cursor-pointer items-center gap-2 transition-colors duration-300 hover:text-brand-lime"
-                dir="ltr"
-              >
-                <CircleIcon>
-                  <IoCallOutline className="text-[13px]" aria-hidden="true" />
-                </CircleIcon>
-                <span className="hidden truncate sm:inline">
-                  {t(UI.phone, locale)}: {phone}
-                </span>
-              </a>
-            ) : null}
-            {waHref ? (
-              <CircleIcon
-                href={waHref}
-                label={t(UI.whatsapp, locale)}
-                className="hidden lg:inline-flex"
-              >
-                <IoLogoWhatsapp className="text-[13px]" aria-hidden="true" />
-              </CircleIcon>
-            ) : null}
-            {email ? (
-              <CircleIcon
-                href={`mailto:${email}`}
-                label={email}
-                className="hidden lg:inline-flex"
-              >
-                <IoMailOutline className="text-[13px]" aria-hidden="true" />
-              </CircleIcon>
-            ) : null}
-            {socials.map((platform) => (
-              <CircleIcon
-                key={platform.id}
-                href={platform.url}
-                label={platform.label}
-                className="hidden lg:inline-flex"
-              >
-                {React.createElement(platform.Icon, {
-                  className: "text-[11px]",
-                  "aria-hidden": true,
-                })}
-              </CircleIcon>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="relative border-b border-brand-ink/5 bg-white">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-10">
-          <div className="relative z-10 hidden min-h-[76px] grid-cols-[1fr_auto_1fr] items-center gap-4 lg:grid">
-            <ul className="flex items-center justify-end gap-x-8 xl:gap-x-11">
-              <NavItem to="/" end label={t(UI.nav.home, locale)} />
-              <NavItem to="/about" label={t(UI.nav.about, locale)} />
-              <NavItem to="/products" label={t(UI.nav.products, locale)}>
-                {productsMenu}
-              </NavItem>
-            </ul>
-
+    <>
+      <nav className="pointer-events-none fixed inset-x-0 top-0 z-40 px-3 pt-3 sm:px-4 sm:pt-4">
+        <div className="pointer-events-auto relative mx-auto flex h-14 max-w-[1180px] items-center justify-between gap-3 rounded-full nav-glass px-3 sm:h-[3.6rem] sm:px-5">
+          <div className="order-3 flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <div className="hidden lg:block">
+              <AskAgronomistButton href={waHref} label={askLabel} />
+            </div>
+            <LanguageSwitch variant="toggle" tone="light" />
             <Link
-              to="/"
-              className="flex h-[76px] items-center justify-center px-3 transition-opacity duration-300 hover:opacity-90"
+              to="/products"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-brand-ink transition-colors hover:bg-brand-ink/5"
+              aria-label={t(UI.searchProducts, locale)}
             >
-              <SiteLogo
-                alt={companyName}
-                className="h-[52px] w-auto max-w-[210px] object-contain"
-              />
+              <IoSearchOutline className="text-xl" aria-hidden="true" />
             </Link>
-
-            <ul className="flex items-center justify-start gap-x-8 xl:gap-x-11">
-              <NavItem to="/articles" label={t(UI.media, locale)}>
-                {mediaMenu}
-              </NavItem>
-              <NavItem to="/events" label={t(UI.nav.events, locale)} />
-              <NavItem to="/contact" label={t(UI.nav.contact, locale)} />
-              <li>
-                <Link
-                  to="/products"
-                  className="inline-flex items-center px-1 py-2 text-brand-ink transition-colors duration-300 hover:text-brand-lime"
-                  aria-label={t(UI.searchProducts, locale)}
-                >
-                  <IoSearchOutline className="text-[20px]" aria-hidden="true" />
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div className="flex min-h-[64px] items-center justify-between gap-3 py-2 lg:hidden">
             <button
               type="button"
               onClick={() => setIsMenuOpen((open) => !open)}
-              className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center text-brand-ink transition-colors hover:text-brand-lime"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-brand-ink transition-colors hover:bg-brand-ink/5 lg:hidden"
               aria-label={isMenuOpen ? t(UI.closeMenu, locale) : t(UI.openMenu, locale)}
               aria-expanded={isMenuOpen}
             >
@@ -297,64 +285,132 @@ export default function Navbar() {
                 <RiMenu2Line className="text-2xl" />
               )}
             </button>
-
-            <Link to="/" onClick={closeMenu} className="min-w-0 flex-1 text-center">
-              <SiteLogo
-                alt={companyName}
-                className="mx-auto h-9 w-auto max-w-[140px] object-contain sm:h-10 sm:max-w-[160px]"
-              />
-            </Link>
-
-            <div className="flex w-[5.5rem] shrink-0 items-center justify-end gap-0.5 sm:w-auto sm:gap-1">
-              <Link
-                to="/products"
-                className="inline-flex h-10 w-10 cursor-pointer items-center justify-center text-brand-ink"
-                aria-label={t(UI.searchProducts, locale)}
-              >
-                <IoSearchOutline className="text-xl" aria-hidden="true" />
-              </Link>
-              <LanguageSwitch compact tone="light" />
-            </div>
           </div>
 
-          <AnimatePresence>
-            {isMenuOpen ? (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.28 }}
-                className="overflow-hidden border-t border-brand-ink/10 lg:hidden"
-              >
-                <ul className="flex flex-col gap-1 py-4 text-base">
-                  <NavItem to="/" end label={t(UI.nav.home, locale)} onNavigate={closeMenu} />
-                  <NavItem to="/about" label={t(UI.nav.about, locale)} onNavigate={closeMenu} />
-                  <NavItem to="/products" label={t(UI.nav.products, locale)} onNavigate={closeMenu}>
-                    {productsMenu}
-                  </NavItem>
-                  <NavItem to="/articles" label={t(UI.nav.articles, locale)} onNavigate={closeMenu} />
-                  <NavItem to="/events" label={t(UI.nav.events, locale)} onNavigate={closeMenu} />
-                  <NavItem to="/contact" label={t(UI.nav.contact, locale)} onNavigate={closeMenu} />
-                </ul>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-        </div>
+          <ul className="order-2 hidden items-center justify-center gap-x-5 lg:flex xl:gap-x-7">
+            {navLinks.map((item) =>
+              item.mega ? (
+                <NavItem
+                  key={item.to}
+                  to={item.to}
+                  label={item.label}
+                  mega
+                  solid
+                  onNavigate={closeMenu}
+                >
+                  <ProductsMegaMenu
+                    categories={categories}
+                    locale={locale}
+                    onNavigate={closeMenu}
+                  />
+                </NavItem>
+              ) : (
+                <NavItem
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  label={item.label}
+                  solid
+                  onNavigate={closeMenu}
+                />
+              ),
+            )}
+          </ul>
 
-        <svg
-          className={`pointer-events-none absolute inset-x-0 top-[calc(100%-1px)] hidden h-[54px] w-full text-white transition-opacity duration-300 lg:block ${
-            scrolled ? "opacity-0" : "opacity-100"
-          }`}
-          viewBox="0 0 1440 54"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <path
-            fill="currentColor"
-            d="M0 0h1440v1H900c-40 0-70 10-98 30-16 12-30 23-74 23s-58-11-74-23C610 11 580 1 540 1H0V0z"
-          />
-        </svg>
-      </div>
-    </nav>
+          <Link
+            to="/"
+            onClick={closeMenu}
+            className="order-1 flex min-w-0 shrink-0 items-center justify-center px-1"
+          >
+            <SiteLogo
+              alt={companyName}
+              className="h-9 w-auto object-contain sm:h-10"
+            />
+          </Link>
+        </div>
+      </nav>
+
+      <AnimatePresence>
+        {isMenuOpen ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            className="fixed inset-0 z-30 bg-brand-forest-deep lg:hidden"
+          >
+            <div className="flex h-full flex-col px-6 pb-8 pt-24">
+              <div className="mb-8 flex items-center justify-between border-b border-white/10 pb-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-brand-lime">
+                  Menu
+                </p>
+                <LanguageSwitch variant="toggle" tone="dark" />
+              </div>
+
+              <ul className="flex flex-1 flex-col justify-center gap-1">
+                {navLinks.map((item, index) => (
+                  <motion.li
+                    key={item.to}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.32,
+                      ease: easeOut,
+                      delay: 0.04 + index * 0.05,
+                    }}
+                  >
+                    <NavLink
+                      to={item.to}
+                      end={item.end}
+                      onClick={closeMenu}
+                      className={({ isActive }) =>
+                        `block border-b border-white/10 py-3 text-3xl font-extrabold tracking-tight sm:text-4xl ${
+                          isActive ? "text-brand-lime" : "text-white"
+                        }`
+                      }
+                    >
+                      <span className="inline-flex items-baseline gap-3">
+                        <span className="text-xs font-bold tracking-[0.18em] text-brand-lime/80">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        {item.label}
+                      </span>
+                    </NavLink>
+                    {item.mega && categories.length ? (
+                      <div className="flex flex-wrap gap-2 pb-3 pt-2">
+                        {categories.slice(0, 4).map((category) => (
+                          <Link
+                            key={category.id}
+                            to={`/products?section=${encodeURIComponent(category.id)}`}
+                            onClick={closeMenu}
+                            className="border border-white/15 px-3 py-1.5 text-sm font-semibold text-white/85 transition-colors hover:border-brand-lime hover:text-brand-lime"
+                          >
+                            {t(category.name, locale)}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : null}
+                  </motion.li>
+                ))}
+              </ul>
+
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: easeOut, delay: 0.34 }}
+                className="mt-auto"
+              >
+                <AskAgronomistButton
+                  href={waHref}
+                  label={askLabel}
+                  className="min-h-12 w-full text-base"
+                  onClick={closeMenu}
+                />
+              </motion.div>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </>
   );
 }

@@ -83,6 +83,47 @@ export default function LanguageSwitch({
     );
   }
 
+  if (variant === "toggle") {
+    return (
+      <div
+        className={`inline-flex items-center rounded-full p-0.5 text-[11px] font-bold tracking-wide ${
+          light
+            ? "border border-brand-ink/10 bg-white"
+            : "border border-white/30 bg-white/10"
+        }`}
+        role="group"
+        aria-label="Language"
+      >
+        <button
+          type="button"
+          className={`rounded-full px-2.5 py-1 transition-colors ${
+            locale === "ar"
+              ? "bg-brand-lime text-brand-ink"
+              : light
+                ? "text-brand-ink/60 hover:text-brand-ink"
+                : "text-white/70 hover:text-white"
+          }`}
+          onClick={() => setLocale("ar")}
+        >
+          AR
+        </button>
+        <button
+          type="button"
+          className={`rounded-full px-2.5 py-1 transition-colors ${
+            locale === "en"
+              ? "bg-brand-lime text-brand-ink"
+              : light
+                ? "text-brand-ink/60 hover:text-brand-ink"
+                : "text-white/70 hover:text-white"
+          }`}
+          onClick={() => setLocale("en")}
+        >
+          EN
+        </button>
+      </div>
+    );
+  }
+
   const buttonClass = (active) =>
     `rounded-md font-bold transition-colors ${
       compact ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-1 text-xs sm:text-sm"

@@ -65,8 +65,8 @@ export default function ImpactStrip({ title: titleProp, eyebrow: eyebrowProp } =
   if (!stats.length && !title) return null;
 
   return (
-    <section className="relative z-10 -mt-10 px-4 pb-2 sm:-mt-14 lg:-mt-16 lg:px-8">
-      <div className="relative container mx-auto overflow-hidden rounded-t-[2rem] bg-brand-forest-deep text-white shadow-[0_24px_60px_rgba(24,16,96,0.22)] sm:rounded-t-[2.75rem]">
+    <section className="relative z-0 mt-0 px-4 pb-2 lg:px-8">
+      <div className="relative container mx-auto overflow-hidden rounded-[1.25rem] bg-brand-forest-deep text-white sm:rounded-[1.5rem]">
         <div
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(136,196,60,0.16),transparent_40%)]"
           aria-hidden="true"
