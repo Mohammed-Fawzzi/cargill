@@ -37,11 +37,12 @@ function useIsMobile(breakpoint = 768) {
   return mobile;
 }
 
-function ExperienceCard({ locale, reducedMotion, isMobile }) {
+function ExperienceCard({ locale, reducedMotion, isMobile, productCount = 0 }) {
   const cardRef = useRef(null);
   const [active, setActive] = useState(false);
-  const counted = useCountUp(20, active, 900);
-  const value = reducedMotion ? 20 : counted;
+  const target = productCount > 0 ? productCount : 0;
+  const counted = useCountUp(target, active, 900);
+  const value = reducedMotion ? target : counted;
 
   useEffect(() => {
     const node = cardRef.current;
@@ -58,6 +59,8 @@ function ExperienceCard({ locale, reducedMotion, isMobile }) {
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
+
+  if (target < 1) return null;
 
   return (
     <div
@@ -86,10 +89,10 @@ function ExperienceCard({ locale, reducedMotion, isMobile }) {
           className="font-display text-[64px] font-bold leading-none text-brand-lime"
           dir="ltr"
         >
-          +{value}
+          {value}
         </p>
         <p className="max-w-[140px] text-start text-[13px] leading-snug text-white/55">
-          {t(UI.experienceBody, locale)}
+          {t(UI.nav.products, locale)}
         </p>
       </div>
     </div>
@@ -662,6 +665,7 @@ export default function About() {
                         locale={locale}
                         reducedMotion={reducedMotion}
                         isMobile={isMobile}
+                        productCount={productsQuery.data?.length || 0}
                       />
                     </div>
                   </motion.section>
@@ -696,6 +700,7 @@ export default function About() {
                             locale={locale}
                             reducedMotion={reducedMotion}
                             isMobile={isMobile}
+                            productCount={productsQuery.data?.length || 0}
                           />
                         </div>
                       </div>

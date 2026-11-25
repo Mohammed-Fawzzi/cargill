@@ -1488,6 +1488,19 @@ html[dir="ltr"] .ix-link::before,
   transition: clip-path 800ms cubic-bezier(0.76, 0, 0.24, 1);
 }
 
+.parallax-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.parallax-media__shift {
+  position: absolute;
+  inset: -14% 0;
+  will-change: transform;
+}
+
+.parallax-media__shift img,
 .curtain-card__photo {
   position: absolute;
   inset: 0;
@@ -1558,6 +1571,106 @@ html[dir="ltr"] .ix-link::before,
 
 .curtain-frame > .curtain-card__cover {
   z-index: 1;
+}
+
+.cover-cta {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(1em);
+  transition:
+    opacity 300ms ease,
+    transform 300ms ease;
+}
+
+.cover-cta__ring {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(10, 8, 32, 0.35);
+  color: #fff;
+  backdrop-filter: blur(6px);
+}
+
+.cover-cta__glyph {
+  grid-area: 1 / 1;
+  font-size: 1rem;
+  line-height: 1;
+  transition:
+    transform 500ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 500ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.cover-cta__glyph:last-child {
+  transform: translateX(1.4em);
+  opacity: 0;
+}
+
+html[dir="ltr"] .cover-cta__glyph,
+[dir="ltr"] .cover-cta__glyph {
+  transform: scaleX(-1);
+}
+
+html[dir="ltr"] .cover-cta__glyph:last-child,
+[dir="ltr"] .cover-cta__glyph:last-child {
+  transform: scaleX(-1) translateX(-1.4em);
+  opacity: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .cover-cta,
+  .group:focus-visible .cover-cta,
+  .curtain-frame:hover > .cover-cta {
+    opacity: 1;
+    transform: none;
+  }
+
+  .group:hover .cover-cta__glyph:first-child,
+  .group:focus-visible .cover-cta__glyph:first-child,
+  .curtain-frame:hover > .cover-cta .cover-cta__glyph:first-child {
+    transform: translateX(-1.4em);
+    opacity: 0;
+  }
+
+  .group:hover .cover-cta__glyph:last-child,
+  .group:focus-visible .cover-cta__glyph:last-child,
+  .curtain-frame:hover > .cover-cta .cover-cta__glyph:last-child {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  html[dir="ltr"] .group:hover .cover-cta__glyph:first-child,
+  html[dir="ltr"] .group:focus-visible .cover-cta__glyph:first-child,
+  html[dir="ltr"] .curtain-frame:hover > .cover-cta .cover-cta__glyph:first-child,
+  [dir="ltr"] .group:hover .cover-cta__glyph:first-child,
+  [dir="ltr"] .group:focus-visible .cover-cta__glyph:first-child,
+  [dir="ltr"] .curtain-frame:hover > .cover-cta .cover-cta__glyph:first-child {
+    transform: scaleX(-1) translateX(1.4em);
+  }
+
+  html[dir="ltr"] .group:hover .cover-cta__glyph:last-child,
+  html[dir="ltr"] .group:focus-visible .cover-cta__glyph:last-child,
+  html[dir="ltr"] .curtain-frame:hover > .cover-cta .cover-cta__glyph:last-child,
+  [dir="ltr"] .group:hover .cover-cta__glyph:last-child,
+  [dir="ltr"] .group:focus-visible .cover-cta__glyph:last-child,
+  [dir="ltr"] .curtain-frame:hover > .cover-cta .cover-cta__glyph:last-child {
+    transform: scaleX(-1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover-cta,
+  .cover-cta__glyph {
+    transition: none;
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {

@@ -11,11 +11,55 @@ import { getCategories, getProducts } from "@/services/cms/products";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
+import useCountUp from "@/hooks/useCountUp";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
 const BrandTriangle3D = lazyWithRetry(() => import("@/components/ui/BrandTriangle3D"));
+
+function StatCard({ value, label, index, reducedMotion }) {
+  const cardRef = useRef(null);
+  const [active, setActive] = useState(false);
+  const counted = useCountUp(value, active, 900);
+  const shown = reducedMotion ? value : counted;
+
+  useEffect(() => {
+    const node = cardRef.current;
+    if (!node) return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setActive(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <motion.article
+      ref={cardRef}
+      className="border border-white/10 bg-[rgba(17,14,51,0.7)] p-4 backdrop-blur-md sm:p-5"
+      initial={reducedMotion ? false : { opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.08,
+        ease: easeOut,
+      }}
+    >
+      <p className="text-3xl font-extrabold tracking-tight text-brand-lime sm:text-4xl" dir="ltr">
+        {shown}
+      </p>
+      <p className="mt-2 text-xs leading-6 text-ink/65 sm:text-sm">{label}</p>
+    </motion.article>
+  );
+}
 
 export default function TriangleStatsPanel() {
   const { locale } = useLocale();
@@ -54,18 +98,17 @@ export default function TriangleStatsPanel() {
     const articles = articlesQuery.data?.length || 0;
     const events = eventsQuery.data?.length || 0;
     return [
-      { value: "+20", label: t(UI.experienceBody, locale) },
       products > 0
-        ? { value: String(products), label: t(UI.nav.products, locale) }
+        ? { value: products, label: t(UI.nav.products, locale) }
         : null,
       categories > 0
-        ? { value: String(categories), label: t(UI.allCategories, locale) }
+        ? { value: categories, label: t(UI.allCategories, locale) }
         : null,
       articles > 0
-        ? { value: String(articles), label: t(UI.nav.articles, locale) }
+        ? { value: articles, label: t(UI.nav.articles, locale) }
         : null,
       events > 0
-        ? { value: String(events), label: t(UI.nav.events, locale) }
+        ? { value: events, label: t(UI.nav.events, locale) }
         : null,
     ]
       .filter(Boolean)
@@ -117,25 +160,13 @@ export default function TriangleStatsPanel() {
 
           <div className="mt-auto grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
             {stats.map((stat, index) => (
-              <motion.article
+              <StatCard
                 key={`${stat.label}-${stat.value}`}
-                className="border border-white/10 bg-[rgba(17,14,51,0.7)] p-4 backdrop-blur-md sm:p-5"
-                initial={reducedMotion ? false : { opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{
-                  duration: 0.4,
-                  delay: index * 0.08,
-                  ease: easeOut,
-                }}
-              >
-                <p className="text-3xl font-extrabold tracking-tight text-brand-lime sm:text-4xl">
-                  {stat.value}
-                </p>
-                <p className="mt-2 text-xs leading-6 text-ink/65 sm:text-sm">
-                  {stat.label}
-                </p>
-              </motion.article>
+                value={stat.value}
+                label={stat.label}
+                index={index}
+                reducedMotion={reducedMotion}
+              />
             ))}
           </div>
         </div>

@@ -1,10 +1,13 @@
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, useScroll } from "framer-motion";
 import LogoTriangle from "@/components/ui/LogoTriangle";
 import AccentHeading from "@/components/ui/AccentHeading";
 import ScrollWords from "@/components/ui/ScrollWords";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
+import { getArticles } from "@/services/cms/articles";
+import { getCategories, getProducts } from "@/services/cms/products";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
@@ -14,6 +17,32 @@ import useMotionPrefs from "@/hooks/useMotionPrefs";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
 const BrandTriangle3D = lazyWithRetry(() => import("@/components/ui/BrandTriangle3D"));
+
+function StatValue({ target, reducedMotion }) {
+  const ref = useRef(null);
+  const [active, setActive] = useState(false);
+  const counted = useCountUp(target, active && target > 0, 900);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setActive(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return (
+    <span ref={ref}>{reducedMotion ? target : counted}</span>
+  );
+}
 
 function useIsMobile(breakpoint = 768) {
   const [mobile, setMobile] = useState(false);
@@ -40,8 +69,47 @@ export default function ValuesTrio() {
 
   const about = t(contact?.about, locale);
   const heading = t(UI.valuesTitle, locale);
-  const counted = useCountUp(20, active, 900);
-  const value = reducedMotion ? 20 : counted;
+
+  const productsQuery = useQuery({
+    queryKey: ["cms", "products"],
+    queryFn: getProducts,
+    staleTime: 1000 * 60 * 5,
+  });
+  const categoriesQuery = useQuery({
+    queryKey: ["cms", "categories"],
+    queryFn: getCategories,
+    staleTime: 1000 * 60 * 5,
+  });
+  const articlesQuery = useQuery({
+    queryKey: ["cms", "articles"],
+    queryFn: getArticles,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const stats = useMemo(() => {
+    const products = productsQuery.data?.length || 0;
+    const categories = categoriesQuery.data?.length || 0;
+    const articles = articlesQuery.data?.length || 0;
+    return [
+      products > 0
+        ? { value: products, label: t(UI.nav.products, locale) }
+        : null,
+      categories > 0
+        ? { value: categories, label: t(UI.allCategories, locale) }
+        : null,
+      articles > 0
+        ? { value: articles, label: t(UI.nav.articles, locale) }
+        : null,
+    ].filter(Boolean);
+  }, [
+    productsQuery.data,
+    categoriesQuery.data,
+    articlesQuery.data,
+    locale,
+  ]);
+
+  const lead = stats[0];
+  const rest = stats.slice(1);
 
   const { scrollYProgress } = useScroll({
     target: paragraphRef,
@@ -107,17 +175,42 @@ export default function ValuesTrio() {
               )}
             </div>
 
-            <div className="relative space-y-3">
-              <p
-                className="font-display text-6xl font-bold tracking-tight text-brand-lime md:text-7xl"
-                dir="ltr"
-              >
-                +{value}
-              </p>
-              <h3 className="font-display text-xl font-bold text-white">
-                {t(UI.experienceBody, locale)}
-              </h3>
-            </div>
+            {lead ? (
+              <div className="relative space-y-5">
+                <div className="space-y-2">
+                  <p
+                    className="font-display text-6xl font-bold tracking-tight text-brand-lime md:text-7xl"
+                    dir="ltr"
+                  >
+                    <StatValue
+                      target={lead.value}
+                      reducedMotion={reducedMotion}
+                    />
+                  </p>
+                  <h3 className="font-display text-xl font-bold text-white">
+                    {lead.label}
+                  </h3>
+                </div>
+                {rest.length ? (
+                  <div className="grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
+                    {rest.map((item) => (
+                      <div key={item.label}>
+                        <p
+                          className="font-display text-2xl font-bold text-brand-lime"
+                          dir="ltr"
+                        >
+                          <StatValue
+                            target={item.value}
+                            reducedMotion={reducedMotion}
+                          />
+                        </p>
+                        <p className="mt-1 text-xs text-white/55">{item.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
           <div className="order-1 space-y-6 lg:order-2 lg:col-span-7">

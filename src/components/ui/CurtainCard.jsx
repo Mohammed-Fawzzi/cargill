@@ -1,12 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import SafeImage from "@/components/ui/SafeImage";
+import ParallaxImage from "@/components/ui/ParallaxImage";
 
 function Cover({ imageUrl }) {
   return (
     <div className="curtain-card__cover" aria-hidden="true">
       {imageUrl ? (
-        <SafeImage
+        <ParallaxImage
           src={imageUrl}
           alt=""
           width={960}

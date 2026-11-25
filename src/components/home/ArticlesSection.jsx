@@ -2,6 +2,7 @@ import React, { useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
+import ParallaxImage from "@/components/ui/ParallaxImage";
 import SectionIntro from "@/components/ui/SectionIntro";
 import { SplitBtnLabel } from "@/components/ui/SplitArrowButton";
 import { useLocale } from "@/context/LocaleContext";
@@ -93,7 +94,7 @@ function FieldCard({ item, locale, large, index, reducedMotion }) {
           )}
           {item.imageUrl ? (
             <div className="curtain-card__cover">
-              <SafeImage
+              <ParallaxImage
                 src={item.imageUrl}
                 alt=""
                 width={large ? 1200 : 640}
@@ -102,6 +103,12 @@ function FieldCard({ item, locale, large, index, reducedMotion }) {
               <div className="curtain-card__shade" />
             </div>
           ) : null}
+          <span className="cover-cta" aria-hidden="true">
+            <span className="cover-cta__ring">
+              <span className="cover-cta__glyph">←</span>
+              <span className="cover-cta__glyph">←</span>
+            </span>
+          </span>
         </div>
         <div className={large ? "p-6 md:p-8" : "flex min-w-0 flex-1 flex-col justify-end p-4"}>
           {meta ? (
