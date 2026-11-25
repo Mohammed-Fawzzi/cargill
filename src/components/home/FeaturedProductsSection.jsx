@@ -1,11 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import SectionRule from "@/components/ui/SectionRule";
-import MagneticButton from "@/components/ui/MagneticButton";
-import RevealHeading from "@/components/ui/RevealHeading";
-import ProductStage from "@/components/products/ProductStage";
+import SafeImage from "@/components/ui/SafeImage";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { getCategories } from "@/services/cms/products";
@@ -13,52 +10,20 @@ import { toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
+import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 const MAX_LIST = 6;
-
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReduced(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
-
-  return reduced;
-}
-
-function useIsMobile(breakpoint = 768) {
-  const [mobile, setMobile] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
-    const sync = () => setMobile(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, [breakpoint]);
-
-  return mobile;
-}
 
 export default function FeaturedProductsSection({ section }) {
   const { locale } = useLocale();
   const { contact } = useSiteData();
-  const reducedMotion = usePrefersReducedMotion();
-  const isMobile = useIsMobile();
-  const featuredRef = useRef(null);
+  const { reducedMotion } = useMotionPrefs();
   const [activeId, setActiveId] = useState("");
 
   const items = useMemo(
     () => (section?.items || []).filter(Boolean).slice(0, MAX_LIST),
     [section?.items],
   );
-  const dashboardTitle = t(section?.data?.title, locale);
-  const dashboardBody = t(section?.data?.body, locale);
-  const heading = dashboardTitle || t(UI.featuredHeading, locale);
 
   const categoriesQuery = useQuery({
     queryKey: ["cms", "categories"],
@@ -100,115 +65,105 @@ export default function FeaturedProductsSection({ section }) {
   );
   const waHref = toWhatsAppHref(phone, waMessage);
 
-  const selectProduct = (id) => {
-    setActiveId(id);
-    if (isMobile && featuredRef.current) {
-      featuredRef.current.scrollIntoView({
-        behavior: reducedMotion ? "auto" : "smooth",
-        block: "start",
-      });
-    }
-  };
-
   if (!items.length) return null;
 
   return (
-    <section className="relative overflow-hidden bg-surface py-[4.5rem] lg:py-[7.5rem]">
-      <motion.div
-        className="container mx-auto px-4 lg:px-8"
-        initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.12 }}
-        transition={{ duration: 0.35, ease: easeOut }}
-      >
-        <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-brand-lime/80 sm:text-[11px]">
-          {t(UI.productsIndexLabel, locale)}
-        </p>
-        <SectionRule
-          label={t(UI.featuredLabel, locale)}
-          number="04"
-          labelClassName="text-ink"
-          numberClassName="text-ink/55"
-          lineClassName="bg-ink"
-        />
-
-        <div className="mb-8 flex flex-col gap-4 lg:mb-10 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl">
-            <RevealHeading
-              text={heading}
-              className="text-clip-safe text-3xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]"
-            />
-            {dashboardBody ? (
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-text-muted sm:text-base sm:leading-8">
-                {dashboardBody}
-              </p>
-            ) : null}
-          </div>
-          <Link
-            to="/products"
-            className="inline-flex w-fit items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-ink transition-[border-width] hover:border-b-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
-          >
-            <span>{t(UI.viewAllProducts, locale)}</span>
-            <span aria-hidden="true">←</span>
-          </Link>
+    <motion.section
+      className="rounded-t-[28px] border-t border-white/8 bg-[#110E33] py-[110px]"
+      initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{ duration: 0.5, ease: easeOut }}
+    >
+      <div className="mx-auto max-w-[1320px] px-6">
+        <div className="flex items-center gap-4 text-[14px] text-white/70">
+          <span>{t(UI.featuredLabel, locale)}</span>
+          <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
+          <span className="font-mono text-brand-lime" dir="ltr">
+            {t(UI.productsIndexLabel, locale)}
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
-          <div ref={featuredRef} className="scroll-mt-[calc(var(--navbar-height)+1.5rem)] lg:col-span-7">
-            <div className="mb-6">
-              <ProductStage
-                stageKey={active?.id}
-                images={active?.imageUrl ? [active.imageUrl] : []}
-                name={activeName}
-                cutout={Boolean(active?.imageUrl)}
-                showNameBackdrop
-              />
-            </div>
+        <div className="mt-11 grid grid-cols-1 items-center gap-10 md:grid-cols-[7fr_5fr] md:gap-14">
+          <div className="relative h-[420px] overflow-hidden rounded-[24px] bg-[#0A0820] sm:h-[560px]">
+            <AnimatePresence mode="wait" initial={false}>
+              {activeName ? (
+                <motion.p
+                  key={`name-${active?.id}`}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 top-[60px] z-0 truncate text-center font-display text-[clamp(3.5rem,14vw,9.375rem)] font-black leading-none text-transparent"
+                  style={{ WebkitTextStroke: "1px rgba(255,255,255,0.16)" }}
+                  initial={reducedMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={reducedMotion ? undefined : { opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {activeName}
+                </motion.p>
+              ) : null}
+            </AnimatePresence>
 
+            <div
+              className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_18%,rgba(140,198,63,0.22),transparent_55%)]"
+              aria-hidden="true"
+            />
+
+            <AnimatePresence mode="wait" initial={false}>
+              {active?.imageUrl ? (
+                <motion.div
+                  key={active.id}
+                  className="absolute inset-0 z-10 flex items-center justify-center p-10 sm:p-14"
+                  initial={reducedMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={reducedMotion ? undefined : { opacity: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  <SafeImage
+                    src={active.imageUrl}
+                    alt={activeName}
+                    width={720}
+                    className="max-h-full max-w-[min(100%,420px)] object-contain"
+                  />
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </div>
+
+          <div>
             <AnimatePresence mode="wait" initial={false}>
               {active ? (
                 <motion.div
                   key={active.id}
-                  initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={reducedMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   exit={reducedMotion ? undefined : { opacity: 0 }}
-                  transition={{ duration: 0.3, ease: easeOut }}
+                  transition={{ duration: 0.3 }}
                 >
                   {activeCategory ? (
-                    <p className="mb-2 font-mono text-[11px] font-medium tracking-[0.16em] text-brand-lime">
-                      {activeCategory}
-                    </p>
+                    <p className="text-[14px] text-brand-lime">{activeCategory}</p>
                   ) : null}
-                  <h3 className="text-clip-safe mb-3 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl lg:text-[2.25rem]">
+                  <h3 className="mt-3 font-display text-[clamp(2.25rem,6vw,4rem)] font-black tracking-[-0.01em] text-white">
                     {activeName}
                   </h3>
                   {activeOverview ? (
-                    <p className="mb-4 line-clamp-3 text-sm leading-7 text-text-muted sm:text-base sm:leading-8">
+                    <p className="mt-4 line-clamp-3 text-[19px] leading-[1.7] text-white/72">
                       {activeOverview}
                     </p>
                   ) : null}
 
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <MagneticButton strength={6}>
-                      <Link
-                        to={`/products/${active.id}`}
-                        className="group inline-flex min-h-11 items-center justify-center gap-2 bg-brand-lime px-5 text-sm font-extrabold text-brand-navy transition-colors hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
-                      >
-                        <span>{t(UI.productDetails, locale)}</span>
-                        <span
-                          aria-hidden="true"
-                          className="inline-block transition-transform duration-300 group-hover:-translate-x-1 rtl:group-hover:translate-x-1"
-                        >
-                          ←
-                        </span>
-                      </Link>
-                    </MagneticButton>
+                  <div className="mt-7 flex flex-wrap items-center gap-[18px]">
+                    <Link
+                      to={`/products/${active.id}`}
+                      className="rounded-lg bg-brand-lime px-[26px] py-[15px] font-semibold text-[#0A0820] transition-colors hover:bg-brand-lime-hover"
+                    >
+                      {t(UI.productDetails, locale)} ←
+                    </Link>
                     {waHref ? (
                       <a
                         href={waHref}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex text-sm font-bold text-ink underline-offset-4 transition-colors hover:text-brand-lime hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
+                        className="border-b border-brand-lime pb-[3px] text-white transition-colors hover:text-brand-lime"
                       >
                         {t(UI.askAboutWhatsApp, locale)}
                       </a>
@@ -217,10 +172,8 @@ export default function FeaturedProductsSection({ section }) {
                 </motion.div>
               ) : null}
             </AnimatePresence>
-          </div>
 
-          <div className="lg:col-span-4 lg:col-start-9">
-            <div className="hidden lg:block">
+            <div className="mt-11 border-t border-white/12">
               {items.map((item, index) => {
                 const name = t(item.name, locale);
                 const category = categoryNameById.get(item.sectionId) || "";
@@ -231,65 +184,35 @@ export default function FeaturedProductsSection({ section }) {
                   <button
                     key={item.id}
                     type="button"
-                    onMouseEnter={() => setActiveId(item.id)}
-                    onFocus={() => setActiveId(item.id)}
                     onClick={() => setActiveId(item.id)}
-                    className={`flex w-full items-baseline gap-3 border-b border-line/10 py-4 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime ${
-                      isActive ? "border-brand-lime" : ""
-                    }`}
+                    className="row-item flex w-full items-center gap-[18px] border-b border-white/12 py-[18px] text-start text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
                     aria-current={isActive ? "true" : undefined}
                   >
-                    <span className="w-7 shrink-0 text-[11px] font-bold tracking-[0.16em] text-ink/40">
+                    <span
+                      className={`font-mono text-[13px] ${
+                        isActive ? "text-brand-lime" : "text-white/50"
+                      }`}
+                      dir="ltr"
+                    >
                       {number}
                     </span>
                     <span
-                      className={`min-w-0 flex-1 text-base font-bold ${
-                        isActive
-                          ? "text-brand-lime underline decoration-brand-lime underline-offset-4"
-                          : "text-ink"
+                      className={`flex-1 text-[20px] font-semibold transition-colors ${
+                        isActive ? "text-brand-lime" : "text-white hover:text-brand-lime"
                       }`}
                     >
                       {name}
-                      {isActive ? (
-                        <span aria-hidden="true" className="ms-2 inline-block">
-                          ←
-                        </span>
-                      ) : null}
                     </span>
                     {category ? (
-                      <span className="shrink-0 text-[11px] font-medium text-text-muted">
-                        {category}
-                      </span>
+                      <span className="text-[14px] text-white/55">{category}</span>
                     ) : null}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden">
-              {items.map((item) => {
-                const name = t(item.name, locale);
-                const isActive = item.id === active?.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => selectProduct(item.id)}
-                    className={`shrink-0 border px-3.5 py-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime ${
-                      isActive
-                        ? "border-brand-lime bg-brand-lime text-brand-navy"
-                        : "border-line/15 bg-surface text-ink"
-                    }`}
-                    aria-current={isActive ? "true" : undefined}
-                  >
-                    {name}
                   </button>
                 );
               })}
             </div>
           </div>
         </div>
-      </motion.div>
-    </section>
+      </div>
+    </motion.section>
   );
 }

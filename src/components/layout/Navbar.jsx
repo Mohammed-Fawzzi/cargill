@@ -308,7 +308,7 @@ export default function Navbar() {
             >
               {t(UI.findSolution, locale)}
             </Link>
-            <div className="hidden lg:block">
+            <div className="hidden md:block">
               <AskAgronomistButton href={waHref} label={askLabel} />
             </div>
             <ThemeToggle />
@@ -323,7 +323,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setIsMenuOpen((open) => !open)}
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/5 lg:hidden"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/5 md:hidden"
               aria-label={isMenuOpen ? t(UI.closeMenu, locale) : t(UI.openMenu, locale)}
               aria-expanded={isMenuOpen}
             >
@@ -335,7 +335,7 @@ export default function Navbar() {
             </button>
           </div>
 
-          <ul className="order-2 hidden items-center justify-center gap-x-5 lg:flex xl:gap-x-7">
+          <ul className="order-2 hidden items-center justify-center gap-x-5 md:flex xl:gap-x-7">
             {navLinks.map((item) =>
               item.mega ? (
                 <NavItem
@@ -385,7 +385,7 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transitionEnd: { visibility: "hidden" } }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 z-30 bg-brand-navy lg:hidden"
+            className="fixed inset-0 z-30 bg-brand-navy md:hidden"
             style={{ visibility: "visible", pointerEvents: "auto" }}
           >
             <div className="flex h-full flex-col px-6 pb-8 pt-[calc(var(--ticker-height)+6rem)]">

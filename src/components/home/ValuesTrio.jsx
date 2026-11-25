@@ -1,11 +1,8 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
-import SectionRule from "@/components/ui/SectionRule";
+import { motion, useScroll } from "framer-motion";
+import LogoTriangle from "@/components/ui/LogoTriangle";
+import AccentHeading from "@/components/ui/AccentHeading";
 import ScrollWords from "@/components/ui/ScrollWords";
-import RevealHeading from "@/components/ui/RevealHeading";
-import AmbientGlow from "@/components/ui/AmbientGlow";
-import { TriangleAccent } from "@/components/ui/TriangleMask";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
@@ -30,22 +27,27 @@ function useIsMobile(breakpoint = 768) {
   return mobile;
 }
 
-function ExperienceBlock({ locale }) {
-  const { reducedMotion, canTilt } = useMotionPrefs();
+export default function ValuesTrio() {
+  const { locale } = useLocale();
+  const { contact } = useSiteData();
+  const { reducedMotion } = useMotionPrefs();
   const isMobile = useIsMobile();
-  const ref = useRef(null);
+  const paragraphRef = useRef(null);
+  const cardRef = useRef(null);
   const [active, setActive] = useState(false);
-  const [twist, setTwist] = useState(0);
+
+  const about = t(contact?.about, locale);
+  const heading = t(UI.valuesTitle, locale);
   const counted = useCountUp(20, active, 900);
+  const value = reducedMotion ? 20 : counted;
 
   const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
+    target: paragraphRef,
+    offset: ["start 0.85", "end 0.35"],
   });
-  const scrollTwist = useTransform(scrollYProgress, [0, 1], [0, 30]);
 
   useEffect(() => {
-    const node = ref.current;
+    const node = cardRef.current;
     if (!node) return undefined;
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -60,169 +62,85 @@ function ExperienceBlock({ locale }) {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (reducedMotion || isMobile) {
-      setTwist(0);
-      return undefined;
-    }
-    return scrollTwist.on("change", (value) => setTwist(value));
-  }, [scrollTwist, reducedMotion, isMobile]);
-
-  const value = reducedMotion ? 20 : counted;
-  const use3d = !reducedMotion && !isMobile && canTilt;
+  if (!about && !heading) return null;
 
   return (
-    <div ref={ref} className="relative min-h-[18rem] sm:min-h-[20rem]">
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <AmbientGlow className="h-48 w-48 sm:h-56 sm:w-56" />
-        {use3d ? (
-          <Suspense
-            fallback={<TriangleAccent className="h-40 w-48 opacity-35" />}
-          >
-            <BrandTriangle3D
-              className="h-[70%] min-h-[11rem] w-[75%] max-w-[17rem]"
-              scrollTwist={twist}
-              softLight
-              spin={0.12}
-              followMouse={false}
-            />
-          </Suspense>
-        ) : (
-          <TriangleAccent className="h-36 w-44 opacity-40 sm:h-44 sm:w-52" />
-        )}
-      </div>
-
-      <div className="relative z-10 flex h-full items-end">
-        <div className="w-full border border-white/10 bg-[rgba(17,14,51,0.7)] p-5 backdrop-blur-md sm:p-6">
-          <p className="text-5xl font-extrabold tracking-tight text-brand-lime sm:text-6xl lg:text-7xl">
-            +{value}
-          </p>
-          <p className="mt-3 max-w-[16rem] text-sm leading-6 text-ink/65">
-            {t(UI.experienceBody, locale)}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function IndexRow({ number, title, body, tag }) {
-  return (
-    <div className="group relative border-y border-line/15 py-7 transition-colors sm:py-8">
-      <span
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-brand-lime transition-transform duration-300 group-hover:scale-x-100"
-        aria-hidden="true"
-      />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-start md:gap-6">
-        <p className="font-mono text-[11px] font-medium tracking-[0.2em] text-brand-lime md:col-span-2">
-          {number}
-        </p>
-        <h3 className="text-2xl font-extrabold tracking-tight text-ink transition-transform duration-300 group-hover:translate-x-0 md:col-span-3 md:text-[2rem] rtl:group-hover:-translate-x-2 ltr:group-hover:translate-x-2">
-          {title}
-        </h3>
-        <p className="text-lg leading-8 text-text-muted md:col-span-6">{body}</p>
-        {tag ? (
-          <div className="md:col-span-1 md:justify-self-end">
-            <span className="inline-flex border border-line/25 px-2.5 py-1 text-[11px] font-bold tracking-wide text-ink">
-              {tag}
+    <motion.section
+      className="mx-auto max-w-[1320px] px-6 pb-[110px] pt-[130px]"
+      initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.5, ease: easeOut }}
+    >
+      <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-[7fr_5fr] md:gap-16">
+        <div>
+          <div className="flex items-center gap-4 text-[14px] text-white/70">
+            <span>{t(UI.whoWeAre, locale)}</span>
+            <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
+            <span className="font-mono text-brand-lime" dir="ltr">
+              § 02
             </span>
           </div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
 
-export default function ValuesTrio() {
-  const { locale } = useLocale();
-  const { contact } = useSiteData();
-  const { reducedMotion } = useMotionPrefs();
-  const isMobile = useIsMobile();
-  const paragraphRef = useRef(null);
+          {heading ? (
+            <AccentHeading
+              as="h2"
+              text={heading}
+              className="mt-[30px] font-display text-[clamp(2.75rem,8vw,5.25rem)] font-black leading-[1.02] tracking-[-0.02em] text-white md:text-[84px]"
+            />
+          ) : null}
 
-  const about = t(contact?.about, locale);
-  const vision = t(contact?.vision, locale);
-  const mission = t(contact?.mission, locale);
-  const heading = t(UI.valuesTitle, locale);
-
-  const { scrollYProgress } = useScroll({
-    target: paragraphRef,
-    offset: ["start 0.85", "end 0.35"],
-  });
-
-  if (!about && !vision && !mission) return null;
-
-  return (
-    <section className="relative overflow-hidden bg-page py-[4.5rem] lg:py-[7.5rem]">
-      <motion.div
-        className="container mx-auto px-4 lg:px-8"
-        initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.15 }}
-        transition={{ duration: 0.35, ease: easeOut }}
-      >
-        <SectionRule
-          className="mb-8 flex items-center gap-4 sm:mb-10"
-          label={t(UI.whoWeAre, locale)}
-          number="01"
-          labelClassName="text-ink"
-          numberClassName="text-ink/55"
-          lineClassName="bg-ink"
-        />
-
-        <RevealHeading
-          text={heading}
-          className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.25rem,6vw,5.5rem)] font-extrabold leading-[1.12] tracking-tight text-ink sm:mb-14"
-        />
-
-        <div
-          ref={paragraphRef}
-          className="mb-10 grid grid-cols-1 gap-10 lg:mb-12 lg:grid-cols-12 lg:gap-8"
-        >
-          <div className="lg:col-span-7">
-            {about ? (
+          {about ? (
+            <div ref={paragraphRef} className="mt-[34px]">
               <ScrollWords
                 text={about}
                 progress={scrollYProgress}
                 reducedMotion={reducedMotion}
                 mobile={isMobile}
                 accentPhrase
+                className="text-[clamp(1.125rem,2.4vw,1.5625rem)] font-medium leading-[1.85] text-white/62"
               />
-            ) : null}
-          </div>
-
-          <div className="lg:col-span-4 lg:col-start-9">
-            <ExperienceBlock locale={locale} />
-          </div>
-        </div>
-
-        <div className="mb-8">
-          {vision ? (
-            <IndexRow
-              number="02"
-              title={t(UI.ourVision, locale)}
-              body={vision}
-              tag={t(UI.valuesTagVision, locale)}
-            />
-          ) : null}
-          {mission ? (
-            <IndexRow
-              number="03"
-              title={t(UI.ourMission, locale)}
-              body={mission}
-              tag={t(UI.valuesTagMission, locale)}
-            />
+            </div>
           ) : null}
         </div>
 
-        <Link
-          to="/about"
-          className="inline-flex items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-ink transition-[border-width,color] hover:border-b-[3px] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
+        <div
+          ref={cardRef}
+          className="relative h-[420px] overflow-hidden rounded-[24px] border border-white/8 bg-[#110E33] sm:h-[520px]"
         >
-          <span>{t(UI.learnMoreAbout, locale)}</span>
-          <span aria-hidden="true">←</span>
-        </Link>
-      </motion.div>
-    </section>
+          <div
+            className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(140,198,63,0.2),transparent_60%)]"
+            aria-hidden="true"
+          />
+
+          <div className="absolute start-1/2 top-[42%] h-[58%] w-[78%] max-w-[340px] -translate-x-1/2 -translate-y-1/2 rtl:translate-x-1/2">
+            {reducedMotion ? (
+              <LogoTriangle className="h-full w-full" />
+            ) : (
+              <Suspense fallback={<LogoTriangle className="h-full w-full" />}>
+                <BrandTriangle3D
+                  className="h-full w-full"
+                  softLight
+                  spin={0.18}
+                  followMouse={!isMobile}
+                />
+              </Suspense>
+            )}
+          </div>
+
+          <div className="absolute inset-x-7 bottom-7 z-10 rounded-[14px] border border-white/12 bg-[rgba(10,8,32,0.72)] px-6 py-[22px] backdrop-blur-[10px]">
+            <p
+              className="font-display text-[clamp(3rem,8vw,4.5rem)] font-black leading-none text-brand-lime"
+              dir="ltr"
+            >
+              +{value}
+            </p>
+            <p className="mt-2 text-[16px] text-white/78">
+              {t(UI.experienceBody, locale)}
+            </p>
+          </div>
+        </div>
+      </div>
+    </motion.section>
   );
 }

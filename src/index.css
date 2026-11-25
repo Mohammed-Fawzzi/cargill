@@ -2,15 +2,15 @@
 @import "lenis/dist/lenis.css";
 
 @theme {
-  --color-brand-lime: #88c43c;
-  --color-brand-lime-hover: #9ad14f;
+  --color-brand-lime: #8cc63f;
+  --color-brand-lime-hover: #a3d65a;
   --color-brand-lime-soft: var(--theme-lime-soft);
   --color-brand-navy: #181060;
   --color-brand-black: var(--theme-page);
   --color-brand-ink: var(--theme-ink);
   --color-brand-forest: var(--theme-surface);
   --color-brand-forest-deep: var(--theme-page);
-  --color-brand-moss: #6aa32e;
+  --color-brand-moss: #6fa42c;
   --color-page: var(--theme-page);
   --color-surface: var(--theme-surface);
   --color-surface-muted: var(--theme-surface-muted);
@@ -18,7 +18,9 @@
   --color-text: var(--theme-ink);
   --color-text-muted: var(--theme-ink-muted);
   --color-line: var(--theme-line);
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-sans: "IBM Plex Sans Arabic", "DIN Next LT Arabic", sans-serif;
+  --font-display: "Alexandria", "DIN Next LT Arabic", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --font-ruqaa: "Aref Ruqaa", serif;
 }
 
@@ -40,10 +42,10 @@
   --theme-ink-muted: rgba(255, 255, 255, 0.6);
   --theme-ink-faint: rgba(255, 255, 255, 0.4);
   --theme-line: rgba(255, 255, 255, 0.1);
-  --theme-lime-soft: rgba(136, 196, 60, 0.14);
+  --theme-lime-soft: rgba(140, 198, 63, 0.14);
   --theme-nav-glass: rgba(17, 14, 51, 0.72);
-  --color-lime: #88c43c;
-  --color-lime-hover: #9ad14f;
+  --color-lime: #8cc63f;
+  --color-lime-hover: #a3d65a;
   --color-black: #0a0820;
   --color-forest: #110e33;
   --color-text: rgba(255, 255, 255, 0.92);
@@ -110,18 +112,26 @@ html {
 
 body {
   overflow-x: clip;
-  font-family: "DIN Next LT Arabic", sans-serif;
+  font-family: "IBM Plex Sans Arabic", "DIN Next LT Arabic", sans-serif;
   font-weight: 500;
   background-color: var(--theme-page);
   color: var(--theme-ink);
 }
 
+.font-display {
+  font-family: "Alexandria", "DIN Next LT Arabic", sans-serif;
+}
+
 .font-mono {
-  font-family: var(--font-mono);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
 }
 
 .font-ruqaa {
-  font-family: var(--font-ruqaa);
+  font-family: "Aref Ruqaa", serif;
+}
+
+.font-body {
+  font-family: "IBM Plex Sans Arabic", "DIN Next LT Arabic", sans-serif;
 }
 
 a,
@@ -248,6 +258,15 @@ footer {
   }
 }
 
+@keyframes marquee-rtl {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(50%, 0, 0);
+  }
+}
+
 .animate-marquee {
   animation: marquee 28s linear infinite;
 }
@@ -258,6 +277,10 @@ footer {
 
 .animate-ticker-slow {
   animation: marquee 58s linear infinite;
+}
+
+.animate-ticker-slow-rtl {
+  animation: marquee-rtl 58s linear infinite;
 }
 
 .article-body {
@@ -425,7 +448,8 @@ footer {
   .animate-soft-float,
   .animate-marquee,
   .animate-ticker,
-  .animate-ticker-slow {
+  .animate-ticker-slow,
+  .animate-ticker-slow-rtl {
     animation: none !important;
   }
 

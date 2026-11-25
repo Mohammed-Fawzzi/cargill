@@ -50,7 +50,7 @@ export default function ScrollWords({
 
   if (reducedMotion || mobile) {
     return (
-      <p className={`${className} text-ink/85`}>
+      <p className={className}>
         {words.map((word, index) => {
           const isAccent =
             accent.start >= 0 && index >= accent.start && index <= accent.end;

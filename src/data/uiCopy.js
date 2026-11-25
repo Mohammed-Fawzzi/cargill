@@ -379,7 +379,7 @@ export const UI = {
   caseProgram: { ar: "البرنامج:", en: "Program:" },
   caseResult: { ar: "النتيجة:", en: "Result:" },
   heroMonoLabel: { ar: "FIELD PROFILE", en: "FIELD PROFILE" },
-  productsIndexLabel: { ar: "INDEX № 04 / PRODUCTS", en: "INDEX № 04 / PRODUCTS" },
+  productsIndexLabel: { ar: "INDEX № 03 / PRODUCTS", en: "INDEX № 03 / PRODUCTS" },
 
   findSolution: { ar: "لاقي الحل", en: "Find a solution" },
   finderStepCrop: { ar: "بتزرع إيه؟", en: "What do you grow?" },

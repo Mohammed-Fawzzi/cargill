@@ -43,9 +43,9 @@ function TrianglePrism({ followMouse, mouse, scrollTwist = 0, spin = 0.22 }) {
     <Center>
       <mesh ref={mesh} geometry={geometry} rotation={[0.15, 0.4, 0]}>
         <meshStandardMaterial
-          color="#88c43c"
-          roughness={0.92}
-          metalness={0}
+          color="#8CC63F"
+          roughness={0.88}
+          metalness={0.05}
           flatShading
         />
       </mesh>
