@@ -21,7 +21,7 @@ function TitleLines({ title, reduceMotion }) {
   if (!title) return null;
 
   return (
-    <h1 className="text-[clamp(2.75rem,8vw,6.5rem)] font-extrabold leading-[1.12] tracking-tight text-brand-ink">
+    <h1 className="text-[clamp(2.75rem,8vw,6.5rem)] font-extrabold leading-[1.12] tracking-tight text-ink">
       {lines.map((line, index) => (
         <span
           key={`${line}-${index}`}
@@ -58,7 +58,7 @@ export default function PageBanner({
   const labels = meta.filter(Boolean);
 
   return (
-    <header className="bg-white pt-[140px] pb-16">
+    <header className="bg-page pb-16 pt-[calc(var(--navbar-height)+var(--ticker-height)+2.5rem)]">
       <div className="container mx-auto px-4 lg:px-8">
         {crumbs.length > 0 ? (
           <div className="mb-8 flex items-center gap-4">
@@ -72,19 +72,19 @@ export default function PageBanner({
                   return (
                     <li key={`${item.label}-${index}`} className="flex items-center gap-2">
                       {index > 0 ? (
-                        <span className="text-brand-ink/30" aria-hidden="true">
+                        <span className="text-ink/30" aria-hidden="true">
                           /
                         </span>
                       ) : null}
                       {item.to && !last ? (
                         <Link
                           to={item.to}
-                          className="transition-colors hover:text-brand-ink"
+                          className="transition-colors hover:text-ink"
                         >
                           {item.label}
                         </Link>
                       ) : (
-                        <span className={last ? "text-brand-ink/70" : undefined}>
+                        <span className={last ? "text-ink/70" : undefined}>
                           {item.label}
                         </span>
                       )}
@@ -95,7 +95,7 @@ export default function PageBanner({
             </nav>
             <span className="relative h-px min-w-0 flex-1 overflow-hidden" aria-hidden="true">
               <motion.span
-                className="absolute inset-0 origin-left bg-brand-ink rtl:origin-right"
+                className="absolute inset-0 origin-left bg-ink rtl:origin-right"
                 initial={reduceMotion ? false : { scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ duration: 0.6, ease: easeOut, delay: 0.08 }}
@@ -111,7 +111,7 @@ export default function PageBanner({
                 {labels.map((item, index) => (
                   <span key={`${item}-${index}`} className="inline-flex items-center gap-2">
                     {index > 0 ? (
-                      <span className="text-brand-ink/25" aria-hidden="true">
+                      <span className="text-ink/25" aria-hidden="true">
                         ·
                       </span>
                     ) : null}
@@ -144,7 +144,7 @@ export default function PageBanner({
           {label ? (
             <div className="flex shrink-0 items-center gap-2.5 lg:pb-2">
               <TriangleAccent className="h-3 w-3.5" />
-              <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-brand-ink">
+              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-ink/70">
                 {label}
               </span>
             </div>
@@ -153,19 +153,28 @@ export default function PageBanner({
 
         {imageUrl ? (
           <motion.div
-            className="mt-10 overflow-hidden rounded-lg bg-surface-muted"
+            className="relative mt-10 overflow-hidden border border-line/12 bg-surface"
             initial={
               reduceMotion ? false : { clipPath: "inset(100% 0 0 0)" }
             }
             animate={{ clipPath: "inset(0% 0 0 0)" }}
             transition={{ duration: 0.7, delay: 0.2, ease: easeOut }}
           >
-            <SafeImage
-              src={imageUrl}
-              alt=""
-              className="h-[32vh] w-full object-cover"
-              aria-hidden="true"
-            />
+            <motion.div
+              className="h-full w-full"
+              initial={reduceMotion ? false : { scale: 1 }}
+              whileInView={reduceMotion ? undefined : { scale: 1.05 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{ duration: 9, ease: "linear" }}
+            >
+              <SafeImage
+                src={imageUrl}
+                alt=""
+                className="cinema-grade-open h-[32vh] w-full object-cover"
+                aria-hidden="true"
+              />
+            </motion.div>
+            <div className="pointer-events-none absolute inset-0 bg-brand-navy/25 mix-blend-multiply" />
           </motion.div>
         ) : null}
       </div>

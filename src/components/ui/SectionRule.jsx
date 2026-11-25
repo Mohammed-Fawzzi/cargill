@@ -8,7 +8,7 @@ export default function SectionRule({
   number,
   labelClassName = "",
   numberClassName = "",
-  lineClassName = "bg-brand-ink",
+  lineClassName = "bg-brand-navy",
   className = "mb-6 flex items-center gap-4",
 }) {
   const { reducedMotion } = useMotionPrefs();

@@ -368,4 +368,57 @@ export const UI = {
     ar: "فهم عميق لتربة ومحاصيل وظروف الحقل المحلي",
     en: "Deep understanding of local soil, crops, and field conditions",
   },
+
+  themeLight: { ar: "الوضع الفاتح", en: "Light mode" },
+  themeDark: { ar: "الوضع الداكن", en: "Dark mode" },
+  fieldStoriesTitle: {
+    ar: "من الحقل: قصص نجاح",
+    en: "From the field: success stories",
+  },
+  caseProblem: { ar: "المشكلة:", en: "Problem:" },
+  caseProgram: { ar: "البرنامج:", en: "Program:" },
+  caseResult: { ar: "النتيجة:", en: "Result:" },
+  heroMonoLabel: { ar: "FIELD PROFILE", en: "FIELD PROFILE" },
+  productsIndexLabel: { ar: "INDEX № 04 / PRODUCTS", en: "INDEX № 04 / PRODUCTS" },
+
+  findSolution: { ar: "لاقي الحل", en: "Find a solution" },
+  finderStepCrop: { ar: "بتزرع إيه؟", en: "What do you grow?" },
+  finderStepIssue: { ar: "المشكلة إيه؟", en: "What's the issue?" },
+  finderStepResults: { ar: "المنتجات المناسبة", en: "Matching products" },
+  finderBack: { ar: "رجوع", en: "Back" },
+  finderNoMatch: {
+    ar: "ملقيناش منتج للحالة دي — ابعت صورة للمهندس على واتساب",
+    en: "No product for this case — send a photo to the agronomist on WhatsApp",
+  },
+  finderAskWa: {
+    ar: "اسأل المهندس على واتساب",
+    en: "Ask the agronomist on WhatsApp",
+  },
+  finderAskMessage: {
+    ar: "عندي [المحصول] وفيه [المشكلة]، محتاج أعرف عن [المنتج]",
+    en: "I grow [المحصول] with [المشكلة], I need details about [المنتج]",
+  },
+  finderNoMatchMessage: {
+    ar: "مرحباً، ملقيناش منتج للحالة دي. عندي محصول ومشكلة محتاج رأي المهندس — هبعت صورة.",
+    en: "Hi, no product matched my case. I need an agronomist's advice — I'll send a photo.",
+  },
+  megaByCategory: { ar: "حسب الفئة", en: "By category" },
+  megaByCrop: { ar: "حسب المحصول", en: "By crop" },
+  megaByIssue: { ar: "حسب المشكلة", en: "By issue" },
+  distributorsTitle: { ar: "الموزعين", en: "Distributors" },
+  distributorsTeaser: {
+    ar: "دور على أقرب موزّع لمحافظتك",
+    en: "Find a distributor in your governorate",
+  },
+  distributorsEmptyGov: {
+    ar: "مفيش موزّع مسجّل في المحافظة دي حالياً",
+    en: "No distributor listed for this governorate yet",
+  },
+  registrationBadge: {
+    ar: "مسجل بوزارة الزراعة — رقم {n}",
+    en: "Registered with Ministry of Agriculture — No. {n}",
+  },
+  triangleStatsLabel: { ar: "FIELD FACTS", en: "FIELD FACTS" },
+  shockStatLabel: { ar: "FIELD NOTE", en: "FIELD NOTE" },
+  seedHarvestLabel: { ar: "FROM SEED TO HARVEST", en: "FROM SEED TO HARVEST" },
 };

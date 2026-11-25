@@ -65,21 +65,21 @@ export default function ImpactStrip({ title: titleProp, eyebrow: eyebrowProp } =
   if (!stats.length && !title) return null;
 
   return (
-    <section className="relative z-0 mt-0 isolate px-4 pb-2 lg:px-8">
-      <div className="relative container mx-auto rounded-[1.25rem] bg-brand-forest-deep text-white sm:rounded-[1.5rem]">
+    <section className="relative z-0 mt-0 isolate border-y border-line/10 bg-surface px-4 py-12 lg:px-8 lg:py-16">
+      <div className="relative container mx-auto">
         <div
-          className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.25rem] bg-[radial-gradient(circle_at_20%_0%,rgba(136,196,60,0.16),transparent_40%)] sm:rounded-[1.5rem]"
+          className="pointer-events-none absolute start-[10%] top-0 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(136,196,60,0.08),transparent_70%)] blur-2xl"
           aria-hidden="true"
         />
-        <div className="relative px-6 py-12 sm:px-10 sm:py-14 lg:px-16 lg:py-16">
+        <div className="relative">
           <Reveal className="mb-10 text-center lg:mb-12">
-            <p className="mb-4 flex items-center justify-center gap-4 text-xs font-bold uppercase tracking-[0.28em] text-brand-lime sm:text-sm">
+            <p className="mb-4 flex items-center justify-center gap-4 font-mono text-[10px] font-medium uppercase tracking-[0.28em] text-brand-lime sm:text-[11px]">
               <span className="hidden h-px w-16 bg-brand-lime/50 sm:block" aria-hidden="true" />
               <span className="text-clip-safe">{eyebrow}</span>
               <span className="hidden h-px w-16 bg-brand-lime/50 sm:block" aria-hidden="true" />
             </p>
             {title ? (
-              <h2 className="mx-auto max-w-3xl text-xl font-extrabold tracking-tight line-clamp-4 sm:text-3xl sm:line-clamp-none lg:text-4xl">
+              <h2 className="mx-auto max-w-3xl text-xl font-extrabold tracking-tight text-ink line-clamp-4 sm:text-3xl sm:line-clamp-none lg:text-4xl">
                 {title}
               </h2>
             ) : null}
@@ -98,9 +98,11 @@ export default function ImpactStrip({ title: titleProp, eyebrow: eyebrowProp } =
                 >
                   <StatValue
                     value={item.value}
-                    className="mb-2 text-4xl font-extrabold tracking-tight text-white sm:text-5xl"
+                    className="mb-2 text-4xl font-extrabold tracking-tight text-ink sm:text-5xl"
                   />
-                  <p className="text-sm leading-7 text-white/70 sm:text-base">{item.label}</p>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55 sm:text-[11px]">
+                    {item.label}
+                  </p>
                 </motion.div>
               ))}
             </div>

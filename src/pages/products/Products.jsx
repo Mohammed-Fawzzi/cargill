@@ -63,16 +63,16 @@ function ProductGroup({ group, locale, index }) {
       <div className="mb-8 flex items-end gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h2 className="text-2xl font-extrabold tracking-tight text-brand-ink sm:text-3xl">
+            <h2 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
               {group.name}
             </h2>
             <span className="text-sm text-text-muted">
               {group.items.length} {t(UI.productsCount, locale)}
             </span>
           </div>
-          <div className="mt-3 h-px w-full bg-brand-ink/15" aria-hidden="true" />
+          <div className="mt-3 h-px w-full bg-brand-navy/15" aria-hidden="true" />
         </div>
-        <span className="shrink-0 pb-1 text-[11px] font-bold tracking-[0.2em] text-brand-ink/40">
+        <span className="shrink-0 pb-1 text-[11px] font-bold tracking-[0.2em] text-ink/40">
           {number}
         </span>
       </div>
@@ -265,7 +265,7 @@ export default function Products() {
         />
       ) : null}
       {!pending && !error ? (
-        <main className="min-h-screen bg-white">
+        <main className="min-h-screen bg-page">
           <PageBanner
             title={hero.title}
             subtitle={hero.subtitle}
@@ -277,7 +277,7 @@ export default function Products() {
             ]}
           />
 
-          <div className="sticky top-[var(--navbar-height)] z-20 border-b border-brand-ink/10 bg-white">
+          <div className="sticky top-[var(--navbar-height)] z-20 border-b border-line/10 bg-page">
             <div className="container mx-auto flex flex-col gap-5 px-4 py-4 lg:flex-row lg:items-end lg:justify-between lg:gap-10 lg:px-8">
               <div className="min-w-0 flex-1">
                 <FilterTabs
@@ -291,7 +291,7 @@ export default function Products() {
               <label className="relative block w-full shrink-0 lg:max-w-sm">
                 <span className="sr-only">{t(UI.search, locale)}</span>
                 <IoSearchOutline
-                  className="pointer-events-none absolute start-0 top-1/2 -translate-y-1/2 text-lg text-brand-ink/40"
+                  className="pointer-events-none absolute start-0 top-1/2 -translate-y-1/2 text-lg text-ink/40"
                   aria-hidden="true"
                 />
                 <input
@@ -299,7 +299,7 @@ export default function Products() {
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                   placeholder={t(UI.searchProducts, locale)}
-                  className="w-full border-0 border-b border-brand-ink/20 bg-transparent py-2.5 ps-8 pe-2 text-sm text-brand-ink outline-none transition-colors placeholder:text-text-muted/70 focus:border-brand-lime"
+                  className="w-full border-0 border-b border-line/20 bg-transparent py-2.5 ps-8 pe-2 text-sm text-ink outline-none transition-colors placeholder:text-text-muted/70 focus:border-brand-lime"
                 />
               </label>
             </div>

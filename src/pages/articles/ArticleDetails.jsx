@@ -45,10 +45,10 @@ function ShareLinks({ url, title, locale, copied, onCopy, className = "" }) {
 
   return (
     <div className={className}>
-      <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-brand-ink">
+      <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-ink">
         {t(UI.shareArticle, locale)}
       </p>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-brand-ink">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink">
         <a
           href={waHref}
           target="_blank"
@@ -57,7 +57,7 @@ function ShareLinks({ url, title, locale, copied, onCopy, className = "" }) {
         >
           {t(UI.shareWhatsApp, locale)}
         </a>
-        <span className="text-brand-ink/25" aria-hidden="true">
+        <span className="text-ink/25" aria-hidden="true">
           ·
         </span>
         <a
@@ -68,7 +68,7 @@ function ShareLinks({ url, title, locale, copied, onCopy, className = "" }) {
         >
           {t(UI.shareFacebook, locale)}
         </a>
-        <span className="text-brand-ink/25" aria-hidden="true">
+        <span className="text-ink/25" aria-hidden="true">
           ·
         </span>
         <button
@@ -176,12 +176,12 @@ export default function ArticleDetails() {
         <ErrorState onRetry={articleQuery.refetch} />
       ) : null}
       {!articleQuery.isPending && !articleQuery.isError && !article ? (
-        <main className="pt-navbar min-h-screen bg-white">
+        <main className="pt-navbar min-h-screen bg-page">
           <EmptyState message={t(UI.missingArticle, locale)} />
         </main>
       ) : null}
       {!articleQuery.isPending && article ? (
-        <main className="min-h-screen bg-white">
+        <main className="min-h-screen bg-page">
           <ReadingProgress />
 
           <header className="pt-[140px]">
@@ -201,7 +201,7 @@ export default function ArticleDetails() {
                 </span>
                 {dateLabel ? (
                   <>
-                    <span className="text-brand-ink/25" aria-hidden="true">
+                    <span className="text-ink/25" aria-hidden="true">
                       ·
                     </span>
                     <span className="text-text-muted">{dateLabel}</span>
@@ -209,7 +209,7 @@ export default function ArticleDetails() {
                 ) : null}
                 {minutes > 0 ? (
                   <>
-                    <span className="text-brand-ink/25" aria-hidden="true">
+                    <span className="text-ink/25" aria-hidden="true">
                       ·
                     </span>
                     <span className="text-text-muted">
@@ -220,7 +220,7 @@ export default function ArticleDetails() {
               </p>
 
               {title ? (
-                <h1 className="max-w-[900px] text-[clamp(2.25rem,5vw,4.25rem)] font-extrabold leading-[1.12] tracking-tight text-brand-ink">
+                <h1 className="max-w-[900px] text-[clamp(2.25rem,5vw,4.25rem)] font-extrabold leading-[1.12] tracking-tight text-ink">
                   {title}
                 </h1>
               ) : null}
@@ -293,9 +293,9 @@ export default function ArticleDetails() {
               </div>
             </div>
 
-            <div className="mx-auto mt-16 max-w-[720px] border-y border-brand-ink/15 py-8">
+            <div className="mx-auto mt-16 max-w-[720px] border-y border-line/15 py-8">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xl font-extrabold text-brand-ink sm:text-2xl">
+                <p className="text-xl font-extrabold text-ink sm:text-2xl">
                   {t(UI.cropQuestion, locale)}
                 </p>
                 {askHref ? (
@@ -308,10 +308,10 @@ export default function ArticleDetails() {
           </div>
 
           {related.length > 0 ? (
-            <section className="border-t border-brand-ink/10 py-14 lg:py-16">
+            <section className="border-t border-line/10 py-14 lg:py-16">
               <div className="container mx-auto px-4 lg:px-8">
                 <Reveal className="mb-8">
-                  <h2 className="text-2xl font-extrabold text-brand-ink sm:text-3xl">
+                  <h2 className="text-2xl font-extrabold text-ink sm:text-3xl">
                     {t(UI.moreFieldArticles, locale)}
                   </h2>
                 </Reveal>

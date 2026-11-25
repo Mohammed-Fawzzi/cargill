@@ -32,9 +32,9 @@ function SectionLabel({ number, label }) {
       className="mb-8 flex items-center gap-4"
       label={label}
       number={number}
-      labelClassName="text-brand-ink"
-      numberClassName="text-brand-ink/45"
-      lineClassName="bg-brand-ink/15"
+      labelClassName="text-ink"
+      numberClassName="text-ink/45"
+      lineClassName="bg-brand-navy/15"
     />
   );
 }
@@ -97,7 +97,7 @@ export default function About() {
       {isPending ? <Loading /> : null}
       {!isPending && isError ? <ErrorState /> : null}
       {!isPending && !isError ? (
-        <main className="min-h-screen bg-white">
+        <main className="min-h-screen bg-page">
           <PageBanner
             title={bannerTitle}
             subtitle={t(UI.aboutIntro, locale)}
@@ -127,7 +127,7 @@ export default function About() {
                       >
                         <div className="lg:col-span-7">
                           {lead ? (
-                            <p className="mb-5 text-[1.35rem] font-extrabold leading-[1.7] text-brand-ink sm:text-[1.5rem]">
+                            <p className="mb-5 text-[1.35rem] font-extrabold leading-[1.7] text-ink sm:text-[1.5rem]">
                               {lead}
                             </p>
                           ) : null}
@@ -137,14 +137,14 @@ export default function About() {
                               progress={scrollYProgress}
                               reducedMotion={reducedMotion}
                               mobile={false}
-                              className="whitespace-pre-wrap text-[1.3125rem] font-medium leading-[1.9] text-brand-ink sm:text-[1.4rem]"
+                              className="whitespace-pre-wrap text-[1.3125rem] font-medium leading-[1.9] text-ink sm:text-[1.4rem]"
                             />
                           ) : null}
                         </div>
                         <div className="lg:col-span-4 lg:col-start-9">
                           <div className="flex items-end gap-4 border-t border-brand-lime pt-4">
                             <div className="min-w-0 flex-1">
-                              <p className="text-5xl font-extrabold tracking-tight text-brand-ink sm:text-6xl lg:text-7xl">
+                              <p className="text-5xl font-extrabold tracking-tight text-ink sm:text-6xl lg:text-7xl">
                                 {t(UI.experienceYears, locale)}
                               </p>
                               <p className="mt-3 max-w-[14rem] text-sm leading-6 text-text-muted">
@@ -161,21 +161,21 @@ export default function About() {
               ) : null}
 
               {(vision || mission) && (
-                <section className="border-t border-brand-ink/10 py-14 lg:py-20">
+                <section className="border-t border-line/10 py-14 lg:py-20">
                   <div className="container mx-auto px-4 lg:px-8">
                     {vision ? (
                       <Reveal>
-                        <div className="grid grid-cols-1 gap-6 border-b border-brand-ink/15 py-10 lg:grid-cols-12 lg:gap-8 lg:py-12">
+                        <div className="grid grid-cols-1 gap-6 border-b border-line/15 py-10 lg:grid-cols-12 lg:gap-8 lg:py-12">
                           <div className="lg:col-span-3">
                             <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
                               02
                             </p>
-                            <h2 className="text-[2.5rem] font-extrabold leading-none tracking-tight text-brand-ink">
+                            <h2 className="text-[2.5rem] font-extrabold leading-none tracking-tight text-ink">
                               {t(UI.ourVision, locale)}
                             </h2>
                           </div>
                           <div className="lg:col-span-9">
-                            <p className="whitespace-pre-wrap text-[1.5rem] font-semibold leading-[1.7] text-brand-ink sm:text-[1.625rem]">
+                            <p className="whitespace-pre-wrap text-[1.5rem] font-semibold leading-[1.7] text-ink sm:text-[1.625rem]">
                               {vision}
                             </p>
                           </div>
@@ -189,12 +189,12 @@ export default function About() {
                             <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
                               03
                             </p>
-                            <h2 className="text-[2.5rem] font-extrabold leading-none tracking-tight text-brand-ink">
+                            <h2 className="text-[2.5rem] font-extrabold leading-none tracking-tight text-ink">
                               {t(UI.ourMission, locale)}
                             </h2>
                           </div>
                           <div className="lg:col-span-9">
-                            <p className="whitespace-pre-wrap text-[1.5rem] font-semibold leading-[1.7] text-brand-ink sm:text-[1.625rem]">
+                            <p className="whitespace-pre-wrap text-[1.5rem] font-semibold leading-[1.7] text-ink sm:text-[1.625rem]">
                               {mission}
                             </p>
                           </div>
@@ -206,7 +206,7 @@ export default function About() {
               )}
 
               {pillars.length === 3 ? (
-                <section className="border-t border-brand-ink/10 py-14 lg:py-20">
+                <section className="border-t border-line/10 py-14 lg:py-20">
                   <div className="container mx-auto px-4 lg:px-8">
                     <Reveal>
                       <SectionLabel
@@ -219,14 +219,14 @@ export default function About() {
                             key={item.title}
                             className={`py-6 md:px-6 md:py-2 ${
                               index > 0
-                                ? "border-t border-brand-ink/15 md:border-t-0 md:border-s"
+                                ? "border-t border-line/15 md:border-t-0 md:border-s"
                                 : ""
                             }`}
                           >
                             <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
                               {String(index + 1).padStart(2, "0")}
                             </p>
-                            <h3 className="mb-3 text-xl font-extrabold text-brand-ink">
+                            <h3 className="mb-3 text-xl font-extrabold text-ink">
                               {item.title}
                             </h3>
                             <p className="text-sm leading-7 text-text-muted">
@@ -241,19 +241,19 @@ export default function About() {
               ) : null}
 
               {categories.length > 0 ? (
-                <section className="border-t border-brand-ink/10 py-14 lg:py-20">
+                <section className="border-t border-line/10 py-14 lg:py-20">
                   <div className="container mx-auto px-4 lg:px-8">
                     <Reveal>
                       <SectionLabel
                         number="05"
                         label={t(UI.whatWeOffer, locale)}
                       />
-                      <div className="flex flex-col gap-0 border-t border-brand-ink/15 sm:flex-row sm:flex-wrap">
+                      <div className="flex flex-col gap-0 border-t border-line/15 sm:flex-row sm:flex-wrap">
                         {categories.map((item, index) => (
                           <Link
                             key={item.id}
                             to={`/products?section=${item.id}`}
-                            className={`group flex flex-1 items-center justify-between gap-4 border-b border-brand-ink/15 py-6 sm:border-b-0 sm:border-e sm:px-5 sm:py-8 sm:last:border-e-0 ${
+                            className={`group flex flex-1 items-center justify-between gap-4 border-b border-line/15 py-6 sm:border-b-0 sm:border-e sm:px-5 sm:py-8 sm:last:border-e-0 ${
                               index === 0 ? "sm:ps-0" : ""
                             }`}
                           >
@@ -261,12 +261,12 @@ export default function About() {
                               <span className="text-[11px] font-bold tracking-[0.18em] text-brand-lime">
                                 {String(index + 1).padStart(2, "0")}
                               </span>
-                              <span className="text-2xl font-extrabold tracking-tight text-brand-ink transition-colors group-hover:text-brand-lime sm:text-3xl">
+                              <span className="text-2xl font-extrabold tracking-tight text-ink transition-colors group-hover:text-brand-lime sm:text-3xl">
                                 {t(item.name, locale)}
                               </span>
                             </span>
                             <span
-                              className="shrink-0 text-brand-ink transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1 motion-reduce:transition-none"
+                              className="shrink-0 text-ink transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1 motion-reduce:transition-none"
                               aria-hidden="true"
                             >
                               →

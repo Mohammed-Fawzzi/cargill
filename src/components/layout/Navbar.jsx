@@ -13,6 +13,7 @@ import SiteLogo from "@/components/ui/SiteLogo";
 import SafeImage from "@/components/ui/SafeImage";
 import { TriangleAccent } from "@/components/ui/TriangleMask";
 import LanguageSwitch from "@/components/layout/LanguageSwitch";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { getCategories, getProducts } from "@/services/cms/products";
@@ -26,26 +27,22 @@ function linkClass(solid) {
     `relative inline-flex items-center gap-1 px-1 py-2 text-[14px] font-semibold tracking-wide transition-colors duration-300 xl:text-[15px] ${
       solid
         ? isActive
-          ? "text-brand-ink"
-          : "text-brand-ink/75 hover:text-brand-ink"
+          ? "text-ink"
+          : "text-ink/75 hover:text-ink"
         : isActive
           ? "text-white"
           : "text-white/80 hover:text-white"
     }`;
 }
 
-function ActiveMark({ active, solid }) {
+function ActiveMark({ active }) {
   return (
     <span
-      className={`pointer-events-none absolute inset-x-0 -bottom-0.5 flex justify-center transition-opacity duration-300 ${
+      className={`pointer-events-none absolute inset-x-1 -bottom-0.5 h-px bg-brand-lime transition-opacity duration-300 ${
         active ? "opacity-100" : "opacity-0"
       }`}
       aria-hidden="true"
-    >
-      <TriangleAccent
-        className={`h-1.5 w-2 ${solid ? "" : "brightness-110"}`}
-      />
-    </span>
+    />
   );
 }
 
@@ -57,7 +54,7 @@ function AskAgronomistButton({ href, label, className = "", onClick }) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={onClick}
-      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-brand-lime px-4 text-sm font-bold text-brand-ink transition-colors hover:bg-brand-lime-hover ${className}`}
+      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-brand-lime px-4 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-lime-hover ${className}`}
     >
       <IoLogoWhatsapp className="text-lg" aria-hidden="true" />
       <span>{label}</span>
@@ -65,7 +62,7 @@ function AskAgronomistButton({ href, label, className = "", onClick }) {
   );
 }
 
-function ProductsMegaMenu({ categories, locale, onNavigate }) {
+function ProductsMegaMenu({ categories = [], locale, onNavigate }) {
   const tiles = categories.slice(0, 4);
 
   return (
@@ -78,21 +75,21 @@ function ProductsMegaMenu({ categories, locale, onNavigate }) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 6, transitionEnd: { visibility: "hidden" } }}
         transition={{ duration: 0.2, ease: easeOut }}
-        className="border border-brand-ink/10 bg-white p-3 shadow-[0_18px_40px_rgba(24,16,96,0.12)] sm:p-4"
+        className="border border-line/12 bg-surface p-3 shadow-[0_18px_40px_rgba(10,8,32,0.45)] sm:p-4"
       >
-        <div className="mb-3 flex items-end justify-between gap-3 border-b border-brand-ink/10 pb-3">
+        <div className="mb-3 flex items-end justify-between gap-3 border-b border-line/10 pb-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-ink/45">
+            <p className="font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-ink/45">
               Categories
             </p>
-            <p className="mt-1 text-sm font-bold text-brand-ink">
+            <p className="mt-1 text-sm font-bold text-ink">
               {t(UI.nav.products, locale)}
             </p>
           </div>
           <Link
             to="/products"
             onClick={onNavigate}
-            className="text-xs font-bold text-brand-ink/70 underline-offset-4 transition-colors hover:text-brand-lime hover:underline"
+            className="text-xs font-bold text-ink/70 underline-offset-4 transition-colors hover:text-brand-lime hover:underline"
           >
             {t(UI.viewAll, locale)}
           </Link>
@@ -105,7 +102,7 @@ function ProductsMegaMenu({ categories, locale, onNavigate }) {
                 key={category.id}
                 to={`/products?section=${encodeURIComponent(category.id)}`}
                 onClick={onNavigate}
-                className="group relative aspect-[3/4] overflow-hidden bg-brand-ink"
+                className="group relative aspect-[3/4] overflow-hidden border border-line/10 bg-brand-navy"
               >
                 {category.imageUrl ? (
                   <SafeImage
@@ -115,16 +112,20 @@ function ProductsMegaMenu({ categories, locale, onNavigate }) {
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-brand-forest to-brand-forest-deep" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#221a72] to-[#181060]" />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-ink/90 via-brand-ink/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/25 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-3">
-                  <p className="mb-1 text-[10px] font-bold tracking-[0.18em] text-brand-lime">
+                  <p className="mb-1 font-mono text-[10px] font-medium tracking-[0.18em] text-brand-lime">
                     {String(index + 1).padStart(2, "0")}
                   </p>
                   <p className="text-sm font-extrabold leading-snug text-white sm:text-base">
                     {name}
                   </p>
+                  <span
+                    className="mt-2 block h-px w-0 bg-brand-lime transition-[width] duration-300 group-hover:w-full"
+                    aria-hidden="true"
+                  />
                 </div>
               </Link>
             );
@@ -177,7 +178,7 @@ function NavItem({ to, end, label, children, onNavigate, mega, solid }) {
           {({ isActive }) => (
             <>
               {label}
-              <ActiveMark active={isActive} solid={solid} />
+              <ActiveMark active={isActive} />
             </>
           )}
         </NavLink>
@@ -216,7 +217,7 @@ function NavItem({ to, end, label, children, onNavigate, mega, solid }) {
               className={`text-[11px] transition-transform duration-300 ${open ? "rotate-180" : ""}`}
               aria-hidden="true"
             />
-            <ActiveMark active={isActive || open} solid={solid} />
+            <ActiveMark active={isActive || open} />
           </>
         )}
       </NavLink>
@@ -297,16 +298,24 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="pointer-events-none fixed inset-x-0 top-0 z-40 px-4 pt-3 sm:px-5 sm:pt-4 lg:px-6">
+      <nav className="pointer-events-none relative z-40 px-4 pt-3 sm:px-5 sm:pt-4 lg:px-6">
         <div className="pointer-events-auto relative mx-auto flex h-16 max-w-[1180px] items-center justify-between gap-3 overflow-visible rounded-full nav-glass px-3 sm:h-[4.25rem] sm:px-5">
           <div className="order-3 flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <Link
+              to="/finder"
+              onClick={closeMenu}
+              className="hidden min-h-10 items-center px-2 text-xs font-bold text-ink/75 underline-offset-4 transition-colors hover:text-brand-lime hover:underline sm:inline-flex"
+            >
+              {t(UI.findSolution, locale)}
+            </Link>
             <div className="hidden lg:block">
               <AskAgronomistButton href={waHref} label={askLabel} />
             </div>
+            <ThemeToggle />
             <LanguageSwitch variant="toggle" tone="light" />
             <Link
               to="/products"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-brand-ink transition-colors hover:bg-brand-ink/5"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/5"
               aria-label={t(UI.searchProducts, locale)}
             >
               <IoSearchOutline className="text-xl" aria-hidden="true" />
@@ -314,7 +323,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setIsMenuOpen((open) => !open)}
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-brand-ink transition-colors hover:bg-brand-ink/5 lg:hidden"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/5 lg:hidden"
               aria-label={isMenuOpen ? t(UI.closeMenu, locale) : t(UI.openMenu, locale)}
               aria-expanded={isMenuOpen}
             >
@@ -376,15 +385,18 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transitionEnd: { visibility: "hidden" } }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 z-30 bg-brand-forest-deep lg:hidden"
+            className="fixed inset-0 z-30 bg-brand-navy lg:hidden"
             style={{ visibility: "visible", pointerEvents: "auto" }}
           >
-            <div className="flex h-full flex-col px-6 pb-8 pt-24">
+            <div className="flex h-full flex-col px-6 pb-8 pt-[calc(var(--ticker-height)+6rem)]">
               <div className="mb-8 flex items-center justify-between border-b border-white/10 pb-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-brand-lime">
+                <p className="font-mono text-[10px] font-medium uppercase tracking-[0.24em] text-brand-lime">
                   Menu
                 </p>
-                <LanguageSwitch variant="toggle" tone="dark" />
+                <div className="flex items-center gap-2">
+                  <ThemeToggle className="text-white hover:bg-white/10" />
+                  <LanguageSwitch variant="toggle" tone="dark" />
+                </div>
               </div>
 
               <ul className="flex flex-1 flex-col justify-center gap-1">

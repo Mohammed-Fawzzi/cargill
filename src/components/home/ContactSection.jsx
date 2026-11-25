@@ -22,7 +22,7 @@ function usePrefersReducedMotion() {
 }
 
 const inputClass =
-  "w-full border-0 border-b border-brand-ink/20 bg-transparent px-0 py-3 text-sm text-brand-ink outline-none transition-colors placeholder:text-brand-ink/35 focus:border-brand-lime";
+  "w-full border-0 border-b border-line/20 bg-transparent px-0 py-3 text-sm text-ink outline-none transition-colors placeholder:text-ink/35 focus:border-brand-lime";
 
 export default function ContactSection({ section }) {
   const { locale } = useLocale();
@@ -75,10 +75,10 @@ export default function ContactSection({ section }) {
       >
         <div className="mb-12 grid grid-cols-1 gap-10 lg:mb-16 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-5">
-            <p className="text-clip-safe mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-ink/55">
+            <p className="text-clip-safe mb-3 text-[11px] font-bold tracking-[0.18em] text-ink/55">
               {t(UI.contactInfo, locale)}
             </p>
-            <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
+            <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]">
               {title}
             </h2>
             {hoursLine ? (
@@ -89,37 +89,37 @@ export default function ContactSection({ section }) {
 
             <ul>
               {address ? (
-                <li className="border-b border-brand-ink/10 py-4">
+                <li className="border-b border-line/10 py-4">
                   <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
                     {t(UI.address, locale)}
                   </p>
-                  <p className="text-base font-semibold leading-7 text-brand-ink">
+                  <p className="text-base font-semibold leading-7 text-ink">
                     {address}
                   </p>
                 </li>
               ) : null}
               {phones.map((phone) => (
-                <li key={phone} className="border-b border-brand-ink/10 py-4">
+                <li key={phone} className="border-b border-line/10 py-4">
 
                   <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
                     {t(UI.phone, locale)}
                   </p>
                   <a
                     href={`tel:${phone.replace(/\s+/g, "")}`}
-                    className="text-base font-semibold text-brand-ink transition-colors hover:text-brand-lime"
+                    className="text-base font-semibold text-ink transition-colors hover:text-brand-lime"
                   >
                     <LtrText>{phone}</LtrText>
                   </a>
                 </li>
               ))}
               {emails.map((email) => (
-                <li key={email} className="border-b border-brand-ink/10 py-4">
+                <li key={email} className="border-b border-line/10 py-4">
                   <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
                     {t(UI.email, locale)}
                   </p>
                   <a
                     href={`mailto:${email}`}
-                    className="text-base font-semibold text-brand-ink transition-colors hover:text-brand-lime"
+                    className="text-base font-semibold text-ink transition-colors hover:text-brand-lime"
                   >
                     {email}
                   </a>
@@ -129,7 +129,7 @@ export default function ContactSection({ section }) {
           </div>
 
           <div className="lg:col-span-6 lg:col-start-7">
-            <div className="rounded-lg border border-brand-ink/10 bg-white p-5 sm:p-8">
+            <div className="rounded-lg border border-line/10 bg-page p-5 sm:p-8">
               <form onSubmit={onSubmit} className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <label className="block">
                   <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
@@ -198,7 +198,7 @@ export default function ContactSection({ section }) {
                 {targetEmail ? (
                   <button
                     type="submit"
-                    className="min-h-12 w-full bg-brand-ink text-sm font-extrabold text-white transition-colors hover:bg-brand-lime hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:col-span-2"
+                    className="min-h-12 w-full bg-brand-navy text-sm font-extrabold text-white transition-colors hover:bg-brand-lime hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:col-span-2"
                   >
                     {t(UI.sendMessage, locale)}
                   </button>
@@ -233,7 +233,7 @@ export default function ContactSection({ section }) {
                 href={mapLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-brand-ink transition-[border-width] hover:border-b-[3px]"
+                className="mt-4 inline-flex items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-ink transition-[border-width] hover:border-b-[3px]"
               >
                 <span>{t(UI.openInMaps, locale)}</span>
                 <span aria-hidden="true">←</span>

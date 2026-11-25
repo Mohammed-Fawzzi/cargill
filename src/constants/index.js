@@ -15,4 +15,5 @@ export const EventDetails = React.lazy(
   () => import("@/pages/events/EventDetails"),
 );
 export const Contact = React.lazy(() => import("@/pages/contact/Contact"));
+export const Finder = React.lazy(() => import("@/pages/finder/Finder"));
 export const NotFound = React.lazy(() => import("@/pages/not-found/NotFound"));

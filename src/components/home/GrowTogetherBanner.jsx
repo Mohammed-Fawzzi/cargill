@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { TriangleAccent } from "@/components/ui/TriangleMask";
 import SectionRule from "@/components/ui/SectionRule";
 import MagneticButton from "@/components/ui/MagneticButton";
+import RevealHeading from "@/components/ui/RevealHeading";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { toTelHref, toWhatsAppHref } from "@/lib/phone";
@@ -29,7 +30,7 @@ function accentLastWord(text) {
   }
   return parts.map((part, index) =>
     index === lastIndex ? (
-      <span key={index} className="text-brand-lime">
+      <span key={index} className="font-ruqaa text-brand-lime">
         {part}
       </span>
     ) : (
@@ -48,11 +49,12 @@ export default function GrowTogetherBanner() {
   const title = t(UI.growTogetherTitle, locale);
 
   return (
-    <section className="relative bg-brand-forest-deep py-[4.5rem] text-white lg:py-[7.5rem]">
+    <section className="relative overflow-hidden bg-page py-[4.5rem] text-ink lg:py-[7.5rem]">
       <div
         className="pointer-events-none absolute inset-0 overflow-hidden"
         aria-hidden="true"
       >
+        <div className="absolute -bottom-16 -end-10 h-56 w-64 rounded-full bg-[radial-gradient(circle,rgba(136,196,60,0.14),transparent_70%)] blur-3xl sm:h-72 sm:w-80" />
         <Suspense
           fallback={
             <TriangleAccent className="absolute -bottom-10 -end-10 z-0 h-40 w-48 opacity-30 sm:-bottom-14 sm:-end-14 sm:h-52 sm:w-64 lg:h-64 lg:w-72" />
@@ -73,26 +75,26 @@ export default function GrowTogetherBanner() {
           label={t(UI.contactLabel, locale)}
           number="08"
           labelClassName="text-brand-lime"
-          numberClassName="text-white/45"
-          lineClassName="bg-white/20"
+          numberClassName="text-ink/45"
+          lineClassName="bg-line"
         />
 
-        <h2 className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.75rem,9vw,7.5rem)] font-extrabold leading-[1.12] tracking-tight">
+        <RevealHeading className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.75rem,9vw,7.5rem)] font-extrabold leading-[1.12] tracking-tight text-ink">
           {accentLastWord(title)}
-        </h2>
+        </RevealHeading>
 
-        <div className="mb-12 grid grid-cols-1 border-y border-white/15 md:grid-cols-3">
+        <div className="mb-12 grid grid-cols-1 border-y border-line/15 md:grid-cols-3">
           {COMMITMENTS.map((item, index) => (
             <div
               key={item.en}
               className={`px-0 py-6 md:px-6 md:py-8 ${
-                index > 0 ? "border-t border-white/15 md:border-t-0 md:border-s" : ""
+                index > 0 ? "border-t border-line/15 md:border-t-0 md:border-s" : ""
               }`}
             >
-              <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+              <p className="mb-3 font-mono text-[11px] font-medium tracking-[0.18em] text-brand-lime">
                 {String(index + 1).padStart(2, "0")}
               </p>
-              <p className="text-base font-semibold leading-8 text-white/85 sm:text-lg">
+              <p className="text-base font-semibold leading-8 text-ink/70 sm:text-lg">
                 {t(item, locale)}
               </p>
             </div>
@@ -106,7 +108,7 @@ export default function GrowTogetherBanner() {
                 href={waHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex min-h-12 w-full items-center justify-center gap-2 bg-brand-lime px-6 text-sm font-extrabold text-brand-ink transition-colors hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:w-auto"
+                className="group inline-flex min-h-12 w-full items-center justify-center gap-2 bg-brand-lime px-6 text-sm font-extrabold text-brand-navy transition-colors hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:w-auto"
               >
                 <span>{t(UI.askAgronomist, locale)}</span>
                 <span
@@ -123,7 +125,7 @@ export default function GrowTogetherBanner() {
             <a
               href={phoneHref}
               dir="ltr"
-              className="text-2xl font-extrabold tracking-tight text-white transition-colors hover:text-brand-lime focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:text-3xl"
+              className="text-2xl font-extrabold tracking-tight text-ink transition-colors hover:text-brand-lime focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:text-3xl"
             >
               {phone}
             </a>
@@ -131,7 +133,7 @@ export default function GrowTogetherBanner() {
 
           <Link
             to="/products"
-            className="inline-flex w-fit items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-white transition-[border-width] hover:border-b-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
+            className="inline-flex w-fit items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-ink transition-[border-width] hover:border-b-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
           >
             <span>{t(UI.exploreProducts, locale)}</span>
             <span aria-hidden="true">←</span>

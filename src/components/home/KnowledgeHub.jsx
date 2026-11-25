@@ -61,7 +61,7 @@ function ArticleRailCard({ item, locale, featured }) {
         to={`/articles/${item.id}`}
         className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2 focus-visible:ring-offset-brand-forest-deep"
       >
-        <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-md bg-brand-ink">
+        <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-md bg-brand-navy">
           {item.imageUrl ? (
             <SafeImage
               src={item.imageUrl}

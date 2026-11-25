@@ -5,13 +5,12 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import Reveal from "@/components/ui/Reveal";
-import SafeImage from "@/components/ui/SafeImage";
-import TiltCard from "@/components/ui/TiltCard";
 import LtrText from "@/components/ui/LtrText";
 import ContentGrid, { cardLayoutForCount } from "@/components/ui/ContentGrid";
 import { PrimaryButton, SecondaryButton } from "@/components/ui/AppButton";
-import { TriangleAccent } from "@/components/ui/TriangleMask";
 import ProductCard from "@/components/products/ProductCard";
+import ProductStage from "@/components/products/ProductStage";
+import RegistrationBadge from "@/components/products/RegistrationBadge";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories, getProduct, getProducts } from "@/services/cms/products";
 import { useLocale } from "@/context/LocaleContext";
@@ -44,7 +43,7 @@ function UsageTable({ columns, rows, locale, reduceMotion }) {
       <div className="hidden md:block">
         <table className="min-w-full text-sm">
           <thead>
-            <tr className="border-b-2 border-brand-ink">
+            <tr className="border-b-2 border-ink">
               {columns.map((col) => (
                 <th
                   key={col.id}
@@ -59,7 +58,7 @@ function UsageTable({ columns, rows, locale, reduceMotion }) {
             {rows.map((row, index) => (
               <motion.tr
                 key={row.id}
-                className="border-b border-brand-ink/10 transition-colors hover:bg-surface-muted"
+                className="border-b border-line/10 transition-colors hover:bg-surface-muted"
                 initial={reduceMotion ? false : { opacity: 0, y: 8 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
@@ -77,7 +76,7 @@ function UsageTable({ columns, rows, locale, reduceMotion }) {
                       key={col.id}
                       className={`px-3 py-4 align-top ${
                         isDose
-                          ? "font-bold text-brand-ink"
+                          ? "font-bold text-ink"
                           : "text-text-muted"
                       }`}
                     >
@@ -99,7 +98,7 @@ function UsageTable({ columns, rows, locale, reduceMotion }) {
           return (
             <motion.article
               key={row.id}
-              className="border-b border-brand-ink/15 pb-4"
+              className="border-b border-line/15 pb-4"
               initial={reduceMotion ? false : { opacity: 0, y: 8 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -110,7 +109,7 @@ function UsageTable({ columns, rows, locale, reduceMotion }) {
               }}
             >
               {title ? (
-                <h3 className="mb-3 text-base font-extrabold text-brand-ink">
+                <h3 className="mb-3 text-base font-extrabold text-ink">
                   {title}
                 </h3>
               ) : null}
@@ -129,8 +128,8 @@ function UsageTable({ columns, rows, locale, reduceMotion }) {
                       <dd
                         className={`text-sm ${
                           col.id === "dose"
-                            ? "font-bold text-brand-ink"
-                            : "text-brand-ink"
+                            ? "font-bold text-ink"
+                            : "text-ink"
                         }`}
                       >
                         <ValueText value={value} />
@@ -152,7 +151,6 @@ export default function ProductDetails() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
   const reduceMotion = useReducedMotion();
-  const [activeImage, setActiveImage] = useState(0);
   const mainCtaRef = useRef(null);
   const [showStickyWa, setShowStickyWa] = useState(false);
 
@@ -272,13 +270,13 @@ export default function ProductDetails() {
         <ErrorState onRetry={productQuery.refetch} />
       ) : null}
       {!productQuery.isPending && !productQuery.isError && !product ? (
-        <main className="pt-navbar min-h-screen bg-white">
+        <main className="pt-navbar min-h-screen bg-page">
           <EmptyState message={t(UI.missingProduct, locale)} />
         </main>
       ) : null}
       {!productQuery.isPending && product ? (
-        <main className="min-h-screen bg-white pb-28 md:pb-0">
-          <section className="pt-[140px]">
+        <main className="min-h-screen bg-page pb-28 md:pb-0">
+          <section className="pt-[calc(var(--navbar-height)+var(--ticker-height)+2.5rem)]">
             <div className="container mx-auto px-4 lg:px-8">
               <motion.div
                 initial={reduceMotion ? false : { opacity: 0 }}
@@ -298,19 +296,19 @@ export default function ProductDetails() {
                           className="flex items-center gap-2"
                         >
                           {index > 0 ? (
-                            <span className="text-brand-ink/30" aria-hidden="true">
+                            <span className="text-ink/30" aria-hidden="true">
                               /
                             </span>
                           ) : null}
                           {item.to && !last ? (
                             <Link
                               to={item.to}
-                              className="transition-colors hover:text-brand-ink"
+                              className="transition-colors hover:text-ink"
                             >
                               {item.label}
                             </Link>
                           ) : (
-                            <span className={last ? "text-brand-ink/70" : undefined}>
+                            <span className={last ? "text-ink/70" : undefined}>
                               {item.label}
                             </span>
                           )}
@@ -327,10 +325,14 @@ export default function ProductDetails() {
                 <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
                   <div className="order-2 lg:order-1 lg:col-span-6">
                     {name ? (
-                      <h1 className="text-[clamp(2.25rem,5vw,4.5rem)] font-extrabold leading-[1.12] tracking-tight text-brand-ink">
+                      <h1 className="text-[clamp(2.25rem,5vw,4.5rem)] font-extrabold leading-[1.12] tracking-tight text-ink">
                         {name}
                       </h1>
                     ) : null}
+                    <RegistrationBadge
+                      number={product.registrationNumber}
+                      className="mt-4"
+                    />
                     {overview ? (
                       <p className="mt-5 max-w-xl text-base leading-8 text-text-muted sm:text-lg sm:leading-9">
                         {overview}
@@ -338,11 +340,11 @@ export default function ProductDetails() {
                     ) : null}
 
                     {facts.length ? (
-                      <dl className="mt-8 border-t border-brand-ink/15">
+                      <dl className="mt-8 border-t border-line/15">
                         {facts.map((fact, index) => (
                           <motion.div
                             key={fact.label}
-                            className="grid grid-cols-[7.5rem_1fr] gap-4 border-b border-brand-ink/15 py-3.5 sm:grid-cols-[9rem_1fr]"
+                            className="grid grid-cols-[7.5rem_1fr] gap-4 border-b border-line/15 py-3.5 sm:grid-cols-[9rem_1fr]"
                             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, amount: 0.4 }}
@@ -355,7 +357,7 @@ export default function ProductDetails() {
                             <dt className="text-xs font-semibold text-text-muted">
                               {fact.label}
                             </dt>
-                            <dd className="text-sm font-semibold leading-6 text-brand-ink">
+                            <dd className="text-sm font-semibold leading-6 text-ink">
                               <ValueText value={fact.value} />
                             </dd>
                           </motion.div>
@@ -381,51 +383,13 @@ export default function ProductDetails() {
                   </div>
 
                   <div className="order-1 lg:order-2 lg:col-span-6">
-                    <TiltCard className="relative overflow-hidden rounded-lg bg-surface-muted">
-                      <TriangleAccent className="absolute end-4 top-4 z-10 h-3.5 w-4" />
-                      {images[activeImage] ? (
-                        <motion.div
-                          key={images[activeImage]}
-                          initial={reduceMotion ? false : { opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ duration: 0.25, ease: easeOut }}
-                        >
-                          <SafeImage
-                            src={images[activeImage]}
-                            alt={name}
-                            className="aspect-[4/3] w-full object-contain p-6 sm:p-10"
-                          />
-                        </motion.div>
-                      ) : (
-                        <div className="flex aspect-[4/3] items-center justify-center px-6 text-center text-brand-ink/40">
-                          {name}
-                        </div>
-                      )}
-                    </TiltCard>
-                    {images.length > 1 ? (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {images.map((src, index) => (
-                          <button
-                            key={`${src}-${index}`}
-                            type="button"
-                            onClick={() => setActiveImage(index)}
-                            aria-label={`${name} ${index + 1}`}
-                            className={`overflow-hidden rounded-md bg-surface-muted p-1.5 ${
-                              activeImage === index
-                                ? "ring-2 ring-brand-lime"
-                                : "ring-1 ring-brand-ink/10"
-                            }`}
-                          >
-                            <SafeImage
-                              src={src}
-                              alt=""
-                              className="h-14 w-14 object-contain"
-                              aria-hidden="true"
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    ) : null}
+                    <ProductStage
+                      stageKey={product.id}
+                      images={images}
+                      name={name}
+                      cutout={images.length > 0}
+                      showNameBackdrop
+                    />
                   </div>
                 </div>
               </motion.div>
@@ -435,20 +399,20 @@ export default function ProductDetails() {
           <div className="container mx-auto space-y-14 px-4 py-14 lg:px-8 lg:py-16">
             {composition.length ? (
               <Reveal>
-                <h2 className="mb-6 text-2xl font-extrabold text-brand-ink">
+                <h2 className="mb-6 text-2xl font-extrabold text-ink">
                   {t(UI.composition, locale)}
                 </h2>
                 <ul className="grid gap-0 sm:grid-cols-2 sm:gap-x-10">
                   {composition.map((item) => (
                     <li
                       key={item.id}
-                      className="flex items-end justify-between gap-4 border-b border-brand-ink/15 py-5"
+                      className="flex items-end justify-between gap-4 border-b border-line/15 py-5"
                     >
-                      <span className="text-base font-semibold text-brand-ink">
+                      <span className="text-base font-semibold text-ink">
                         {t(item.name, locale)}
                       </span>
                       {item.percentage ? (
-                        <span className="text-[40px] font-extrabold leading-none tracking-tight text-brand-ink">
+                        <span className="text-[40px] font-extrabold leading-none tracking-tight text-ink">
                           <LtrText>{item.percentage}</LtrText>
                         </span>
                       ) : null}
@@ -460,7 +424,7 @@ export default function ProductDetails() {
 
             {product.features?.length ? (
               <Reveal>
-                <h2 className="mb-6 text-2xl font-extrabold text-brand-ink">
+                <h2 className="mb-6 text-2xl font-extrabold text-ink">
                   {t(UI.productHighlights, locale)}
                 </h2>
                 <ul
@@ -471,12 +435,12 @@ export default function ProductDetails() {
                   {product.features.map((item, index) => (
                     <li
                       key={item.id}
-                      className="flex gap-4 border-b border-brand-ink/15 py-5"
+                      className="flex gap-4 border-b border-line/15 py-5"
                     >
                       <span className="shrink-0 text-sm font-bold tracking-wide text-brand-lime">
                         {String(index + 1).padStart(2, "0")}
                       </span>
-                      <p className="text-[20px] font-semibold leading-8 text-brand-ink">
+                      <p className="text-[20px] font-semibold leading-8 text-ink">
                         {t(item.text, locale)}
                       </p>
                     </li>
@@ -487,7 +451,7 @@ export default function ProductDetails() {
 
             {details ? (
               <Reveal>
-                <h2 className="mb-4 text-2xl font-extrabold text-brand-ink">
+                <h2 className="mb-4 text-2xl font-extrabold text-ink">
                   {t(UI.details, locale)}
                 </h2>
                 <p className="whitespace-pre-wrap text-base leading-9 text-text-muted sm:text-lg">
@@ -498,7 +462,7 @@ export default function ProductDetails() {
 
             {product.agriculturalUses?.length ? (
               <Reveal>
-                <h2 className="mb-6 text-2xl font-extrabold text-brand-ink">
+                <h2 className="mb-6 text-2xl font-extrabold text-ink">
                   {t(UI.usage, locale)}
                 </h2>
                 <UsageTable
@@ -515,10 +479,10 @@ export default function ProductDetails() {
           </div>
 
           {related.length > 0 ? (
-            <section className="border-t border-brand-ink/10 py-14 lg:py-16">
+            <section className="border-t border-line/10 py-14 lg:py-16">
               <div className="container mx-auto px-4 lg:px-8">
                 <Reveal className="mb-8">
-                  <h2 className="text-2xl font-extrabold text-brand-ink sm:text-3xl">
+                  <h2 className="text-2xl font-extrabold text-ink sm:text-3xl">
                     {t(UI.relatedSameCategory, locale)}
                   </h2>
                 </Reveal>
@@ -556,7 +520,7 @@ export default function ProductDetails() {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ duration: 0.3, ease: easeOut }}
-                className="fixed inset-x-0 bottom-0 z-30 border-t border-brand-ink/15 bg-white p-3 md:hidden"
+                className="fixed inset-x-0 bottom-0 z-30 border-t border-line/15 bg-page p-3 md:hidden"
               >
                 <PrimaryButton href={waHref} className="w-full">
                   {t(UI.askAboutProductWa, locale)}

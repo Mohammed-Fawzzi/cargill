@@ -40,7 +40,7 @@ function EventLightbox({ images, index, onClose, onPrev, onNext, title }) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-brand-ink/95 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-brand-navy/95 p-4"
       initial={reduceMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -183,12 +183,12 @@ export default function EventDetails() {
         <ErrorState onRetry={eventQuery.refetch} />
       ) : null}
       {!eventQuery.isPending && !eventQuery.isError && !event ? (
-        <main className="pt-navbar min-h-screen bg-white">
+        <main className="pt-navbar min-h-screen bg-page">
           <EmptyState message={t(UI.missingEvent, locale)} />
         </main>
       ) : null}
       {!eventQuery.isPending && event ? (
-        <main className={`min-h-screen bg-white ${!isEnded ? "pb-28 md:pb-0" : ""}`}>
+        <main className={`min-h-screen bg-page ${!isEnded ? "pb-28 md:pb-0" : ""}`}>
           <header className="pt-[140px]">
             <motion.div
               className="container mx-auto px-4 lg:px-8"
@@ -209,22 +209,22 @@ export default function EventDetails() {
               </p>
 
               {title ? (
-                <h1 className="max-w-[900px] text-[clamp(2.25rem,5vw,4.25rem)] font-extrabold leading-[1.12] tracking-tight text-brand-ink">
+                <h1 className="max-w-[900px] text-[clamp(2.25rem,5vw,4.25rem)] font-extrabold leading-[1.12] tracking-tight text-ink">
                   {title}
                 </h1>
               ) : null}
 
               {facts.length ? (
-                <dl className="mt-8 grid gap-0 border-y border-brand-ink/15 sm:grid-cols-3">
+                <dl className="mt-8 grid gap-0 border-y border-line/15 sm:grid-cols-3">
                   {facts.map((fact) => (
                     <div
                       key={fact.label}
-                      className="border-b border-brand-ink/10 px-0 py-4 last:border-b-0 sm:border-b-0 sm:border-e sm:px-5 sm:first:ps-0 sm:last:border-e-0 sm:last:pe-0"
+                      className="border-b border-line/10 px-0 py-4 last:border-b-0 sm:border-b-0 sm:border-e sm:px-5 sm:first:ps-0 sm:last:border-e-0 sm:last:pe-0"
                     >
                       <dt className="mb-1 text-xs text-text-muted">
                         {fact.label}
                       </dt>
-                      <dd className="text-base font-bold text-brand-ink">
+                      <dd className="text-base font-bold text-ink">
                         {fact.value}
                       </dd>
                     </div>
@@ -314,14 +314,14 @@ export default function EventDetails() {
           </div>
 
           {related.length > 0 ? (
-            <section className="border-t border-brand-ink/10 py-14 lg:py-16">
+            <section className="border-t border-line/10 py-14 lg:py-16">
               <div className="container mx-auto px-4 lg:px-8">
                 <Reveal className="mb-6">
-                  <h2 className="text-2xl font-extrabold text-brand-ink sm:text-3xl">
+                  <h2 className="text-2xl font-extrabold text-ink sm:text-3xl">
                     {t(UI.relatedEvents, locale)}
                   </h2>
                 </Reveal>
-                <div className="border-t border-brand-ink/15">
+                <div className="border-t border-line/15">
                   {related.map((item) => (
                     <EventAgendaRow
                       key={item.id}
@@ -336,7 +336,7 @@ export default function EventDetails() {
           ) : null}
 
           {!isEnded && waHref ? (
-            <div className="fixed inset-x-0 bottom-0 z-30 border-t border-brand-ink/15 bg-white p-3 md:hidden">
+            <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line/15 bg-page p-3 md:hidden">
               <PrimaryButton href={waHref} className="w-full">
                 {t(UI.bookEventWa, locale)}
               </PrimaryButton>

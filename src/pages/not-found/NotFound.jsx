@@ -41,7 +41,7 @@ export default function NotFound() {
           <div className="flex flex-wrap items-center justify-center gap-6">
             <Link
               to="/"
-              className="inline-flex min-h-11 items-center justify-center bg-brand-lime px-6 text-sm font-extrabold text-brand-ink transition-colors hover:bg-brand-lime-hover"
+              className="inline-flex min-h-11 items-center justify-center bg-brand-lime px-6 text-sm font-extrabold text-brand-navy transition-colors hover:bg-brand-lime-hover"
             >
               {t(UI.nav.home, locale)}
             </Link>

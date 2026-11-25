@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, useScroll } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import SectionRule from "@/components/ui/SectionRule";
-import PlantStroke from "@/components/ui/PlantStroke";
 import ScrollWords from "@/components/ui/ScrollWords";
+import RevealHeading from "@/components/ui/RevealHeading";
+import AmbientGlow from "@/components/ui/AmbientGlow";
+import { TriangleAccent } from "@/components/ui/TriangleMask";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
@@ -12,19 +14,7 @@ import { easeOut } from "@/lib/motion";
 import useCountUp from "@/hooks/useCountUp";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReduced(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
-
-  return reduced;
-}
+const BrandTriangle3D = lazy(() => import("@/components/ui/BrandTriangle3D"));
 
 function useIsMobile(breakpoint = 768) {
   const [mobile, setMobile] = useState(false);
@@ -40,33 +30,19 @@ function useIsMobile(breakpoint = 768) {
   return mobile;
 }
 
-function accentLastWord(text) {
-  const words = String(text || "")
-    .trim()
-    .split(/(\s+)/);
-  if (words.length === 0) return null;
-  let lastIndex = -1;
-  for (let i = words.length - 1; i >= 0; i -= 1) {
-    if (words[i].trim()) {
-      lastIndex = i;
-      break;
-    }
-  }
-  return words.map((part, index) => {
-    if (index !== lastIndex) return <span key={index}>{part}</span>;
-    return (
-      <span key={index} className="text-brand-lime">
-        {part}
-      </span>
-    );
-  });
-}
-
 function ExperienceBlock({ locale }) {
-  const { reducedMotion } = useMotionPrefs();
+  const { reducedMotion, canTilt } = useMotionPrefs();
+  const isMobile = useIsMobile();
   const ref = useRef(null);
   const [active, setActive] = useState(false);
+  const [twist, setTwist] = useState(0);
   const counted = useCountUp(20, active, 900);
+
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  const scrollTwist = useTransform(scrollYProgress, [0, 1], [0, 30]);
 
   useEffect(() => {
     const node = ref.current;
@@ -78,50 +54,76 @@ function ExperienceBlock({ locale }) {
           observer.disconnect();
         }
       },
-      { threshold: 0.45 },
+      { threshold: 0.35 },
     );
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (reducedMotion || isMobile) {
+      setTwist(0);
+      return undefined;
+    }
+    return scrollTwist.on("change", (value) => setTwist(value));
+  }, [scrollTwist, reducedMotion, isMobile]);
+
   const value = reducedMotion ? 20 : counted;
+  const use3d = !reducedMotion && !isMobile && canTilt;
 
   return (
-    <div ref={ref} className="flex items-end gap-4 border-t border-brand-lime pt-4">
-      <div className="min-w-0 flex-1">
-        <p className="text-5xl font-extrabold tracking-tight text-brand-ink sm:text-6xl lg:text-7xl">
-          +{value}
-        </p>
-        <p className="mt-3 max-w-[14rem] text-sm leading-6 text-text-muted">
-          {t(UI.experienceBody, locale)}
-        </p>
+    <div ref={ref} className="relative min-h-[18rem] sm:min-h-[20rem]">
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <AmbientGlow className="h-48 w-48 sm:h-56 sm:w-56" />
+        {use3d ? (
+          <Suspense
+            fallback={<TriangleAccent className="h-40 w-48 opacity-35" />}
+          >
+            <BrandTriangle3D
+              className="h-[70%] min-h-[11rem] w-[75%] max-w-[17rem]"
+              scrollTwist={twist}
+              softLight
+              spin={0.12}
+              followMouse={false}
+            />
+          </Suspense>
+        ) : (
+          <TriangleAccent className="h-36 w-44 opacity-40 sm:h-44 sm:w-52" />
+        )}
       </div>
-      <PlantStroke className="mb-1 h-28 w-14 shrink-0 sm:h-32 sm:w-16" />
+
+      <div className="relative z-10 flex h-full items-end">
+        <div className="w-full border border-white/10 bg-[rgba(17,14,51,0.7)] p-5 backdrop-blur-md sm:p-6">
+          <p className="text-5xl font-extrabold tracking-tight text-brand-lime sm:text-6xl lg:text-7xl">
+            +{value}
+          </p>
+          <p className="mt-3 max-w-[16rem] text-sm leading-6 text-ink/65">
+            {t(UI.experienceBody, locale)}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
 
 function IndexRow({ number, title, body, tag }) {
   return (
-    <div className="group relative border-y border-brand-ink/15 py-7 transition-colors sm:py-8">
+    <div className="group relative border-y border-line/15 py-7 transition-colors sm:py-8">
       <span
         className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-brand-lime transition-transform duration-300 group-hover:scale-x-100"
         aria-hidden="true"
       />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-start md:gap-6">
-        <p className="text-[11px] font-bold tracking-[0.2em] text-brand-lime md:col-span-2">
+        <p className="font-mono text-[11px] font-medium tracking-[0.2em] text-brand-lime md:col-span-2">
           {number}
         </p>
-        <h3 className="text-2xl font-extrabold tracking-tight text-brand-ink transition-transform duration-300 group-hover:translate-x-0 md:col-span-3 md:text-[2rem] rtl:group-hover:-translate-x-2 ltr:group-hover:translate-x-2">
+        <h3 className="text-2xl font-extrabold tracking-tight text-ink transition-transform duration-300 group-hover:translate-x-0 md:col-span-3 md:text-[2rem] rtl:group-hover:-translate-x-2 ltr:group-hover:translate-x-2">
           {title}
         </h3>
-
-        <p className="text-lg leading-8 text-text-muted md:col-span-6">
-          {body}
-        </p>
+        <p className="text-lg leading-8 text-text-muted md:col-span-6">{body}</p>
         {tag ? (
           <div className="md:col-span-1 md:justify-self-end">
-            <span className="inline-flex border border-brand-ink/25 px-2.5 py-1 text-[11px] font-bold tracking-wide text-brand-ink">
+            <span className="inline-flex border border-line/25 px-2.5 py-1 text-[11px] font-bold tracking-wide text-ink">
               {tag}
             </span>
           </div>
@@ -134,7 +136,7 @@ function IndexRow({ number, title, body, tag }) {
 export default function ValuesTrio() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
-  const reducedMotion = usePrefersReducedMotion();
+  const { reducedMotion } = useMotionPrefs();
   const isMobile = useIsMobile();
   const paragraphRef = useRef(null);
 
@@ -151,7 +153,7 @@ export default function ValuesTrio() {
   if (!about && !vision && !mission) return null;
 
   return (
-    <section className="relative bg-surface-muted py-[4.5rem] lg:py-[7.5rem]">
+    <section className="relative overflow-hidden bg-page py-[4.5rem] lg:py-[7.5rem]">
       <motion.div
         className="container mx-auto px-4 lg:px-8"
         initial={reducedMotion ? false : { opacity: 0, y: 12 }}
@@ -163,14 +165,15 @@ export default function ValuesTrio() {
           className="mb-8 flex items-center gap-4 sm:mb-10"
           label={t(UI.whoWeAre, locale)}
           number="01"
-          labelClassName="text-brand-ink"
-          numberClassName="text-brand-ink/55"
-          lineClassName="bg-brand-ink"
+          labelClassName="text-ink"
+          numberClassName="text-ink/55"
+          lineClassName="bg-ink"
         />
 
-        <h2 className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.25rem,6vw,5.5rem)] font-extrabold leading-[1.12] tracking-tight text-brand-ink sm:mb-14">
-          {accentLastWord(heading)}
-        </h2>
+        <RevealHeading
+          text={heading}
+          className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.25rem,6vw,5.5rem)] font-extrabold leading-[1.12] tracking-tight text-ink sm:mb-14"
+        />
 
         <div
           ref={paragraphRef}
@@ -183,6 +186,7 @@ export default function ValuesTrio() {
                 progress={scrollYProgress}
                 reducedMotion={reducedMotion}
                 mobile={isMobile}
+                accentPhrase
               />
             ) : null}
           </div>
@@ -213,7 +217,7 @@ export default function ValuesTrio() {
 
         <Link
           to="/about"
-          className="inline-flex items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-brand-ink transition-[border-width,color] hover:border-b-[3px] hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
+          className="inline-flex items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-ink transition-[border-width,color] hover:border-b-[3px] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
         >
           <span>{t(UI.learnMoreAbout, locale)}</span>
           <span aria-hidden="true">←</span>

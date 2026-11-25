@@ -8,7 +8,7 @@ export default function FilterTabs({
   countLabel,
 }) {
   return (
-    <div className="border-b border-brand-ink/15">
+    <div className="border-b border-line/15">
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <div className="flex min-w-0 flex-1 flex-wrap gap-x-6 gap-y-1" role="tablist">
           {items.map((item) => {
@@ -22,8 +22,8 @@ export default function FilterTabs({
                 onClick={() => onChange?.(item.id)}
                 className={`relative -mb-px pb-3 text-sm transition-colors ${
                   active
-                    ? "font-bold text-brand-ink"
-                    : "font-medium text-brand-ink/70 hover:text-brand-ink"
+                    ? "font-bold text-ink"
+                    : "font-medium text-ink/70 hover:text-ink"
                 }`}
               >
                 {item.label}

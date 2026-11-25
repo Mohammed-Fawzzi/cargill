@@ -16,7 +16,7 @@ export default function MediaCard({
   const { locale } = useLocale();
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_10px_30px_rgba(12,18,14,0.06)] transition-transform hover:-translate-y-1">
+    <article className="group overflow-hidden rounded-2xl border border-black/5 bg-page shadow-[0_10px_30px_rgba(12,18,14,0.06)] transition-transform hover:-translate-y-1">
       <Link to={to} className="block">
         <div className="relative aspect-[16/10] overflow-hidden bg-surface-muted">
           {imageUrl ? (
@@ -41,7 +41,7 @@ export default function MediaCard({
             <p className="mb-2 text-xs font-bold text-brand-moss">{meta}</p>
           ) : null}
           {title ? (
-            <h3 className="mb-2 text-lg font-extrabold text-brand-ink">{title}</h3>
+            <h3 className="mb-2 text-lg font-extrabold text-ink">{title}</h3>
           ) : null}
           {body ? (
             <p className="line-clamp-3 text-sm leading-7 text-text-muted">{body}</p>

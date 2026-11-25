@@ -4,6 +4,7 @@ import { RouterProvider } from "react-router-dom";
 import { MotionConfig } from "framer-motion";
 import { router } from "@/routes/routes";
 import { LocaleProvider } from "@/context/LocaleContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { getCompanyContact } from "@/services/cms/contact";
 import { getFooterSection } from "@/services/cms/homepage";
 
@@ -32,11 +33,13 @@ queryClient.prefetchQuery({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <LocaleProvider>
-        <MotionConfig reducedMotion="user">
-          <RouterProvider router={router} />
-        </MotionConfig>
-      </LocaleProvider>
+      <ThemeProvider>
+        <LocaleProvider>
+          <MotionConfig reducedMotion="user">
+            <RouterProvider router={router} />
+          </MotionConfig>
+        </LocaleProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

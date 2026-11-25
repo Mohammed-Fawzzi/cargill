@@ -66,7 +66,7 @@ export default function StoriesCarousel({
         onClick={goPrev}
         disabled={safeIndex === 0}
         aria-label={t(UI.prevSlide, locale)}
-        className="absolute start-0 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink/45 shadow-sm transition-all hover:border-brand-lime hover:text-brand-ink disabled:opacity-30 md:inline-flex lg:-start-1"
+        className="absolute start-0 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-line/10 bg-page text-ink/45 shadow-sm transition-all hover:border-brand-lime hover:text-ink disabled:opacity-30 md:inline-flex lg:-start-1"
       >
         <IoChevronBack className="text-xl rtl:rotate-180" aria-hidden="true" />
       </button>
@@ -75,7 +75,7 @@ export default function StoriesCarousel({
         onClick={goNext}
         disabled={safeIndex >= maxIndex}
         aria-label={t(UI.nextSlide, locale)}
-        className="absolute end-0 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink/45 shadow-sm transition-all hover:border-brand-lime hover:text-brand-ink disabled:opacity-30 md:inline-flex lg:-end-1"
+        className="absolute end-0 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-line/10 bg-page text-ink/45 shadow-sm transition-all hover:border-brand-lime hover:text-ink disabled:opacity-30 md:inline-flex lg:-end-1"
       >
         <IoChevronForward className="text-xl rtl:rotate-180" aria-hidden="true" />
       </button>
@@ -147,7 +147,7 @@ export default function StoriesCarousel({
               className={`rounded-full transition-all ${
                 pageIndex === safeIndex
                   ? "h-2.5 w-7 bg-brand-lime"
-                  : "h-2.5 w-2.5 bg-brand-ink/20 hover:bg-brand-ink/45"
+                  : "h-2.5 w-2.5 bg-brand-navy/20 hover:bg-brand-navy/45"
               }`}
             />
           ))}
@@ -160,7 +160,7 @@ export default function StoriesCarousel({
           onClick={goPrev}
           disabled={safeIndex === 0}
           aria-label={t(UI.prevSlide, locale)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-ink/20 text-brand-ink disabled:opacity-30"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line/20 text-ink disabled:opacity-30"
         >
           <IoChevronBack className="rtl:rotate-180" aria-hidden="true" />
         </button>
@@ -169,7 +169,7 @@ export default function StoriesCarousel({
           onClick={goNext}
           disabled={safeIndex >= maxIndex}
           aria-label={t(UI.nextSlide, locale)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-ink/20 text-brand-ink disabled:opacity-30"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line/20 text-ink disabled:opacity-30"
         >
           <IoChevronForward className="rtl:rotate-180" aria-hidden="true" />
         </button>

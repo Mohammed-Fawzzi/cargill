@@ -17,7 +17,7 @@ export default function SectionHeader({
       {title ? (
         <h2
           className={`text-2xl font-extrabold sm:text-3xl ${
-            light ? "text-white" : "text-brand-ink"
+            light ? "text-white" : "text-ink"
           }`}
         >
           {title}

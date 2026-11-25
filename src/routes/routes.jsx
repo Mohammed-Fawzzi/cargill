@@ -12,6 +12,7 @@ import {
   Events,
   EventDetails,
   Contact,
+  Finder,
   NotFound,
 } from "@/constants";
 
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: "events/:id", element: withSuspense(<EventDetails />) },
       { path: "about", element: withSuspense(<About />) },
       { path: "contact", element: withSuspense(<Contact />) },
+      { path: "finder", element: withSuspense(<Finder />) },
       { path: "*", element: withSuspense(<NotFound />) },
     ],
   },

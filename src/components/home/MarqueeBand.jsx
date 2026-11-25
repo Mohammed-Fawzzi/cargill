@@ -40,15 +40,15 @@ export default function MarqueeBand({ items: itemsProp } = {}) {
   const loop = [...items, ...items];
 
   return (
-    <section className="overflow-hidden border-y border-brand-ink/5 bg-brand-lime py-4">
+    <section className="overflow-hidden border-y border-line/5 bg-brand-lime py-4">
       <div className="flex w-max animate-marquee gap-10 whitespace-nowrap">
         {loop.map((item, index) => (
           <span
             key={`${item}-${index}`}
-            className="inline-flex items-center gap-10 text-sm font-extrabold uppercase tracking-[0.18em] text-brand-ink"
+            className="inline-flex items-center gap-10 text-sm font-extrabold uppercase tracking-[0.18em] text-ink"
           >
             {item}
-            <span className="h-2 w-2 rounded-full bg-brand-ink/40" aria-hidden="true" />
+            <span className="h-2 w-2 rounded-full bg-brand-navy/40" aria-hidden="true" />
           </span>
         ))}
       </div>

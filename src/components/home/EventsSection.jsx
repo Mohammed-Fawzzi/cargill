@@ -57,7 +57,7 @@ function EventRow({ item, locale, single }) {
   return (
     <Link
       to={`/events/${item.id}`}
-      className="group relative block border-b border-brand-ink/15 py-7 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2 sm:py-8"
+      className="group relative block border-b border-line/15 py-7 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2 sm:py-8"
     >
       <span
         className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-brand-lime transition-transform duration-300 group-hover:scale-x-100"
@@ -75,7 +75,7 @@ function EventRow({ item, locale, single }) {
               className="aspect-[4/3] h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
             />
           ) : (
-            <div className="flex aspect-[4/3] items-center justify-center bg-surface-muted text-sm font-bold text-brand-ink/40">
+            <div className="flex aspect-[4/3] items-center justify-center bg-surface-muted text-sm font-bold text-ink/40">
               {title}
             </div>
           )}
@@ -91,7 +91,7 @@ function EventRow({ item, locale, single }) {
               <p className="text-sm text-text-muted">{parts.full}</p>
             ) : null}
           </div>
-          <h3 className="mb-2 text-xl font-extrabold tracking-tight text-brand-ink">
+          <h3 className="mb-2 text-xl font-extrabold tracking-tight text-ink">
             {title}
           </h3>
           {details ? (
@@ -114,7 +114,7 @@ function EventRow({ item, locale, single }) {
             </p>
           ) : null}
           {parts.day ? (
-            <p className="text-clip-safe text-5xl font-extrabold leading-none tracking-tight text-brand-ink lg:text-[4rem]">
+            <p className="text-clip-safe text-5xl font-extrabold leading-none tracking-tight text-ink lg:text-[4rem]">
               {parts.day}
             </p>
           ) : null}
@@ -124,7 +124,7 @@ function EventRow({ item, locale, single }) {
         </div>
 
         <div className={single ? "md:col-span-4" : "md:col-span-6"}>
-          <h3 className="mb-3 text-[1.4rem] font-extrabold leading-snug tracking-tight text-brand-ink lg:text-[1.625rem]">
+          <h3 className="mb-3 text-[1.4rem] font-extrabold leading-snug tracking-tight text-ink lg:text-[1.625rem]">
             {title}
           </h3>
           {details ? (
@@ -135,7 +135,7 @@ function EventRow({ item, locale, single }) {
         </div>
 
         <div className={single ? "md:col-span-6" : "md:col-span-4"}>
-          <div className="overflow-hidden rounded-md bg-white">
+          <div className="overflow-hidden rounded-md bg-page">
             {item.imageUrl ? (
               <SafeImage
                 src={item.imageUrl}
@@ -145,7 +145,7 @@ function EventRow({ item, locale, single }) {
                 className="aspect-[4/3] h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
               />
             ) : (
-              <div className="flex aspect-[4/3] items-center justify-center bg-white text-sm font-bold text-brand-ink/40">
+              <div className="flex aspect-[4/3] items-center justify-center bg-page text-sm font-bold text-ink/40">
                 {title}
               </div>
             )}
@@ -188,14 +188,14 @@ export default function EventsSection({ section }) {
         <SectionRule
           label={t(UI.nav.events, locale)}
           number="07"
-          labelClassName="text-brand-ink"
-          numberClassName="text-brand-ink/55"
-          lineClassName="bg-brand-ink"
+          labelClassName="text-ink"
+          numberClassName="text-ink/55"
+          lineClassName="bg-brand-navy"
         />
 
         <div className="mb-10 flex flex-col gap-4 sm:mb-12 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <h2 className="text-clip-safe text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
+            <h2 className="text-clip-safe text-3xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]">
               {title || t(UI.nav.events, locale)}
             </h2>
             {body ? (
@@ -206,14 +206,14 @@ export default function EventsSection({ section }) {
           </div>
           <Link
             to="/events"
-            className="inline-flex w-fit items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-brand-ink transition-[border-width] hover:border-b-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
+            className="inline-flex w-fit items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-ink transition-[border-width] hover:border-b-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
           >
             <span>{t(UI.allEventsLink, locale)}</span>
             <span aria-hidden="true">←</span>
           </Link>
         </div>
 
-        <div className="border-t border-brand-ink/15">
+        <div className="border-t border-line/15">
           {items.map((item) => (
             <EventRow
               key={item.id}

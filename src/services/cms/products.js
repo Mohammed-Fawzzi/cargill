@@ -113,6 +113,10 @@ export function mapProduct(id, data = {}) {
     subcategoryId: asString(data.subcategoryId),
     imageUrl: asString(data.imageUrl),
     images: gallery,
+    registrationNumber:
+      asString(data.registrationNumber) ||
+      asString(data.ministryRegistration) ||
+      asString(data.agricultureRegistrationNumber),
     originCountry: readLocalized(data, "originCountry"),
     packaging: readLocalized(data, "packaging"),
     packageSize: readLocalized(data, "packageSize"),

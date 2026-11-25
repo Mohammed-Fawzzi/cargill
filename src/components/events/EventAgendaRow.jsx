@@ -70,7 +70,7 @@ export default function EventAgendaRow({
   return (
     <Link
       to={`/events/${item.id}`}
-      className="group relative block border-b border-brand-ink/15 py-7 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2 sm:py-8"
+      className="group relative block border-b border-line/15 py-7 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2 sm:py-8"
     >
       <span
         className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-brand-lime transition-transform duration-500 group-hover:scale-x-100 motion-reduce:transition-none"
@@ -87,7 +87,7 @@ export default function EventAgendaRow({
                 className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
               />
             ) : (
-              <div className="flex aspect-[4/3] items-center justify-center text-sm font-bold text-brand-ink/40">
+              <div className="flex aspect-[4/3] items-center justify-center text-sm font-bold text-ink/40">
                 {title}
               </div>
             )}
@@ -109,7 +109,7 @@ export default function EventAgendaRow({
             ) : null}
           </div>
           <h3
-            className={`font-extrabold tracking-tight text-brand-ink ${
+            className={`font-extrabold tracking-tight text-ink ${
               compact ? "text-lg" : "text-xl"
             }`}
           >
@@ -124,7 +124,7 @@ export default function EventAgendaRow({
             </p>
           ) : null}
           {!compact ? (
-            <span className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand-ink underline decoration-brand-lime decoration-2 underline-offset-6">
+            <span className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-ink underline decoration-brand-lime decoration-2 underline-offset-6">
               {t(UI.eventDetailsLink, locale)}
               <span
                 className="transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1 motion-reduce:transition-none"
@@ -148,7 +148,7 @@ export default function EventAgendaRow({
             {parts.day ? (
               <motion.p
                 className={`overflow-hidden text-[4.5rem] font-extrabold leading-none tracking-tight ${
-                  upcoming ? "text-brand-ink" : "text-text-muted"
+                  upcoming ? "text-ink" : "text-text-muted"
                 }`}
                 initial={reduceMotion ? false : { y: "100%", opacity: 0 }}
                 whileInView={{ y: "0%", opacity: 1 }}
@@ -169,7 +169,7 @@ export default function EventAgendaRow({
           </div>
 
           <div className="md:col-span-6">
-            <h3 className="mb-3 text-[1.75rem] font-extrabold leading-snug tracking-tight text-brand-ink">
+            <h3 className="mb-3 text-[1.75rem] font-extrabold leading-snug tracking-tight text-ink">
               {title}
             </h3>
             {meta ? <p className="mb-3 text-sm text-text-muted">{meta}</p> : null}
@@ -178,7 +178,7 @@ export default function EventAgendaRow({
                 {details}
               </p>
             ) : null}
-            <span className="inline-flex items-center gap-2 text-sm font-bold text-brand-ink underline decoration-brand-lime decoration-2 underline-offset-6">
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-ink underline decoration-brand-lime decoration-2 underline-offset-6">
               {t(UI.eventDetailsLink, locale)}
               <span
                 className="transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1 motion-reduce:transition-none"
@@ -199,7 +199,7 @@ export default function EventAgendaRow({
                     className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                   />
                 ) : (
-                  <div className="flex aspect-[4/3] items-center justify-center text-sm font-bold text-brand-ink/40">
+                  <div className="flex aspect-[4/3] items-center justify-center text-sm font-bold text-ink/40">
                     {title}
                   </div>
                 )}
@@ -213,7 +213,7 @@ export default function EventAgendaRow({
             {parts.day ? (
               <p
                 className={`text-4xl font-extrabold leading-none tracking-tight ${
-                  upcoming ? "text-brand-ink" : "text-text-muted"
+                  upcoming ? "text-ink" : "text-text-muted"
                 }`}
               >
                 {parts.day}
@@ -224,7 +224,7 @@ export default function EventAgendaRow({
             ) : null}
           </div>
           <div className="md:col-span-10">
-            <h3 className="text-xl font-extrabold tracking-tight text-brand-ink">
+            <h3 className="text-xl font-extrabold tracking-tight text-ink">
               {title}
             </h3>
           </div>

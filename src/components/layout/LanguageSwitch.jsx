@@ -88,7 +88,7 @@ export default function LanguageSwitch({
       <div
         className={`inline-flex items-center rounded-full p-0.5 text-[11px] font-bold tracking-wide ${
           light
-            ? "border border-brand-ink/10 bg-white"
+            ? "border border-line/10 bg-page"
             : "border border-white/30 bg-white/10"
         }`}
         role="group"
@@ -98,9 +98,9 @@ export default function LanguageSwitch({
           type="button"
           className={`rounded-full px-2.5 py-1 transition-colors ${
             locale === "ar"
-              ? "bg-brand-lime text-brand-ink"
+              ? "bg-brand-lime text-brand-navy"
               : light
-                ? "text-brand-ink/60 hover:text-brand-ink"
+                ? "text-ink/60 hover:text-ink"
                 : "text-white/70 hover:text-white"
           }`}
           onClick={() => setLocale("ar")}
@@ -111,9 +111,9 @@ export default function LanguageSwitch({
           type="button"
           className={`rounded-full px-2.5 py-1 transition-colors ${
             locale === "en"
-              ? "bg-brand-lime text-brand-ink"
+              ? "bg-brand-lime text-brand-navy"
               : light
-                ? "text-brand-ink/60 hover:text-brand-ink"
+                ? "text-ink/60 hover:text-ink"
                 : "text-white/70 hover:text-white"
           }`}
           onClick={() => setLocale("en")}
@@ -129,9 +129,9 @@ export default function LanguageSwitch({
       compact ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-1 text-xs sm:text-sm"
     } ${
       active
-        ? "bg-brand-lime text-brand-ink"
+        ? "bg-brand-lime text-brand-navy"
         : light
-          ? "text-brand-ink/70 hover:text-brand-lime"
+          ? "text-ink/70 hover:text-brand-lime"
           : "text-white/80 hover:text-brand-lime"
     }`;
 
@@ -141,7 +141,7 @@ export default function LanguageSwitch({
         compact ? "gap-0.5 p-0.5" : "gap-1 p-0.5"
       } ${
         light
-          ? "border border-brand-ink/10 bg-brand-ink/5"
+          ? "border border-line/10 bg-brand-navy/5"
           : "border border-white/10 bg-white/5"
       }`}
       role="group"

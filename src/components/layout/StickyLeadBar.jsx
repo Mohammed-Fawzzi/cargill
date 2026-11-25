@@ -24,7 +24,7 @@ export default function StickyLeadBar() {
           <a
             href={telHref}
             aria-label={t(UI.phone, locale)}
-            className="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-brand-lime hover:text-brand-ink"
+            className="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-brand-lime hover:text-brand-navy"
           >
             <IoCallOutline className="text-lg" aria-hidden="true" />
           </a>
@@ -42,7 +42,7 @@ export default function StickyLeadBar() {
         ) : null}
         <Link
           to="/contact"
-          className="inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center rounded-xl bg-brand-lime px-4 text-sm font-extrabold text-brand-ink transition-colors hover:bg-brand-lime-hover"
+          className="inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center rounded-xl bg-brand-lime px-4 text-sm font-extrabold text-brand-navy transition-colors hover:bg-brand-lime-hover"
         >
           {t(UI.imInterested, locale)}
         </Link>

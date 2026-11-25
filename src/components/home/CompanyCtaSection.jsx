@@ -75,10 +75,10 @@ export default function CompanyCtaSection({ section }) {
           <MagneticButton>
             <CtaLink
               href={href}
-              className="group inline-flex min-h-12 items-center justify-center gap-2.5 rounded-md bg-brand-black px-8 py-3.5 text-sm font-bold text-white shadow-[0_14px_34px_rgba(24,16,96,0.28)] transition-all duration-300 hover:bg-brand-lime hover:text-brand-ink"
+              className="group inline-flex min-h-12 items-center justify-center gap-2.5 rounded-md bg-brand-black px-8 py-3.5 text-sm font-bold text-white shadow-[0_14px_34px_rgba(24,16,96,0.28)] transition-all duration-300 hover:bg-brand-lime hover:text-brand-navy"
             >
               <FaPhoneAlt
-                className="text-brand-lime transition-colors group-hover:text-brand-ink"
+                className="text-brand-lime transition-colors group-hover:text-brand-navy"
                 aria-hidden="true"
               />
               <span>{ctaLabel}</span>

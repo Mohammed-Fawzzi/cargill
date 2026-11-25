@@ -116,7 +116,7 @@ export default function WhyCargill() {
           <MagneticButton>
             <Link
               to="/products"
-              className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-md bg-brand-lime px-8 text-sm font-extrabold text-brand-ink transition-colors hover:bg-brand-lime-hover"
+              className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-md bg-brand-lime px-8 text-sm font-extrabold text-brand-navy transition-colors hover:bg-brand-lime-hover"
             >
               {t(UI.exploreProducts, locale)}
             </Link>

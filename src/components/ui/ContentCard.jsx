@@ -56,7 +56,7 @@ export default function ContentCard({
                 }`}
               />
             ) : (
-              <div className="flex h-full min-h-[180px] items-center justify-center px-4 text-center text-sm font-semibold text-brand-ink/50">
+              <div className="flex h-full min-h-[180px] items-center justify-center px-4 text-center text-sm font-semibold text-ink/50">
                 {title}
               </div>
             )}
@@ -74,7 +74,7 @@ export default function ContentCard({
                 <span className="font-semibold text-brand-lime">{category}</span>
               ) : null}
               {category && secondary ? (
-                <span className="text-brand-ink/25" aria-hidden="true">
+                <span className="text-ink/25" aria-hidden="true">
                   ·
                 </span>
               ) : null}
@@ -85,7 +85,7 @@ export default function ContentCard({
           ) : null}
 
           {title ? (
-            <h3 className="mb-2 line-clamp-2 text-[22px] font-extrabold leading-8 text-brand-ink">
+            <h3 className="mb-2 line-clamp-2 text-[22px] font-extrabold leading-8 text-ink">
               {title}
             </h3>
           ) : null}
@@ -98,7 +98,7 @@ export default function ContentCard({
         </div>
 
         <span
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-brand-ink/15"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-brand-navy/15"
           aria-hidden="true"
         />
         <span

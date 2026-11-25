@@ -130,7 +130,7 @@ export default function Events() {
         />
       ) : null}
       {!pending && !error ? (
-        <main className="min-h-screen bg-white">
+        <main className="min-h-screen bg-page">
           <PageBanner
             title={hero.title}
             subtitle={hero.subtitle}
@@ -161,14 +161,14 @@ export default function Events() {
                     href={facebook.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex text-sm font-bold text-brand-ink underline decoration-brand-lime decoration-2 underline-offset-6"
+                    className="inline-flex text-sm font-bold text-ink underline decoration-brand-lime decoration-2 underline-offset-6"
                   >
                     {t(UI.followFacebook, locale)}
                   </a>
                 ) : null}
               </div>
             ) : showSplit ? (
-              <div className="border-t border-brand-ink/15">
+              <div className="border-t border-line/15">
                 {upcomingItems.map((item, index) => (
                   <Reveal key={item.id} delay={Math.min(index * 0.03, 0.15)}>
                     <EventAgendaRow item={item} />
@@ -181,7 +181,7 @@ export default function Events() {
                         {t(UI.pastEventsLabel, locale)}
                       </p>
                       <span
-                        className="h-px flex-1 bg-brand-ink/15"
+                        className="h-px flex-1 bg-brand-navy/15"
                         aria-hidden="true"
                       />
                     </div>
@@ -197,7 +197,7 @@ export default function Events() {
                 ) : null}
               </div>
             ) : (
-              <div className="border-t border-brand-ink/15">
+              <div className="border-t border-line/15">
                 {(filter === "upcoming" ? upcomingItems : pastItems).map(
                   (item, index) => (
                     <Reveal key={item.id} delay={Math.min(index * 0.03, 0.15)}>

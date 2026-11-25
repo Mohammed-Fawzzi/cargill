@@ -107,7 +107,7 @@ export default function Articles() {
         />
       ) : null}
       {!pending && !error ? (
-        <main className="min-h-screen bg-white">
+        <main className="min-h-screen bg-page">
           <PageBanner
             title={hero.title}
             subtitle={hero.subtitle}
@@ -131,7 +131,7 @@ export default function Articles() {
                 />
               </div>
             ) : (
-              <div className="mb-8 border-b border-brand-ink/15 pb-3 text-xs text-text-muted">
+              <div className="mb-8 border-b border-line/15 pb-3 text-xs text-text-muted">
                 {filtered.length} {t(UI.resultsCount, locale)}
               </div>
             )}
@@ -152,7 +152,7 @@ export default function Articles() {
                           {formatMillis(featured.createdAt, locale) ? (
                             <>
                               <span
-                                className="text-brand-ink/25"
+                                className="text-ink/25"
                                 aria-hidden="true"
                               >
                                 ·
@@ -163,7 +163,7 @@ export default function Articles() {
                             </>
                           ) : null}
                         </p>
-                        <h2 className="mb-4 text-[clamp(1.75rem,3.5vw,2.5rem)] font-extrabold leading-tight tracking-tight text-brand-ink">
+                        <h2 className="mb-4 text-[clamp(1.75rem,3.5vw,2.5rem)] font-extrabold leading-tight tracking-tight text-ink">
                           {t(featured.title, locale)}
                         </h2>
                         {t(featured.excerpt, locale) ? (
@@ -187,7 +187,7 @@ export default function Articles() {
                               className="aspect-[16/10] w-full object-cover transition-transform duration-500 hover:scale-[1.02] motion-reduce:transition-none motion-reduce:hover:scale-100"
                             />
                           ) : (
-                            <div className="flex aspect-[16/10] items-center justify-center px-6 text-center text-brand-ink/40">
+                            <div className="flex aspect-[16/10] items-center justify-center px-6 text-center text-ink/40">
                               {t(featured.title, locale)}
                             </div>
                           )}

@@ -48,7 +48,7 @@ export function PrimaryButton({
       <Comp
         {...props}
         onClick={onClick}
-        className={`group inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-brand-lime px-6 py-2.5 text-sm font-bold text-brand-ink transition-colors hover:bg-brand-lime-hover disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
+        className={`group inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-brand-lime px-6 py-2.5 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-lime-hover disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
       >
         <span>{children}</span>
         <Arrow />
@@ -72,7 +72,7 @@ export function SecondaryButton({
     <Comp
       {...props}
       onClick={onClick}
-      className={`group inline-flex items-center gap-2 text-sm font-bold text-brand-ink underline decoration-brand-lime decoration-2 underline-offset-6 transition-colors hover:text-brand-moss disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
+      className={`group inline-flex items-center gap-2 text-sm font-bold text-ink underline decoration-brand-lime decoration-2 underline-offset-6 transition-colors hover:text-brand-moss disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
     >
       <span>{children}</span>
       <Arrow />

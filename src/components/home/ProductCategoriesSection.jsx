@@ -44,13 +44,13 @@ export default function ProductCategoriesSection({ section }) {
   const goNext = () => setIndex((currentIndex) => (currentIndex + 1) % items.length);
 
   return (
-    <section className="relative overflow-hidden bg-white py-16 lg:py-24">
+    <section className="relative overflow-hidden bg-page py-16 lg:py-24">
       <div className="relative container mx-auto px-4 lg:px-8">
         <Reveal className="mx-auto mb-10 max-w-3xl text-center lg:mb-14">
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-brand-moss">
             {t(UI.produceEfficiently, locale)}
           </p>
-          <h2 className="mb-3 text-2xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
+          <h2 className="mb-3 text-2xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]">
             <span className="block">{t(UI.discoverEyebrow, locale)}</span>
             <span className="block text-brand-lime">{brand}</span>
           </h2>
@@ -75,7 +75,7 @@ export default function ProductCategoriesSection({ section }) {
                   type="button"
                   onClick={goPrev}
                   aria-label={t(UI.prevSlide, locale)}
-                  className="absolute start-0 top-[38%] z-10 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink shadow-sm transition-colors hover:border-brand-lime hover:bg-brand-lime sm:inline-flex"
+                  className="absolute start-0 top-[38%] z-10 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-line/10 bg-page text-ink shadow-sm transition-colors hover:border-brand-lime hover:bg-brand-lime sm:inline-flex"
                 >
                   <IoChevronBack className="text-xl rtl:rotate-180" aria-hidden="true" />
                 </button>
@@ -83,7 +83,7 @@ export default function ProductCategoriesSection({ section }) {
                   type="button"
                   onClick={goNext}
                   aria-label={t(UI.nextSlide, locale)}
-                  className="absolute end-0 top-[38%] z-10 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink shadow-sm transition-colors hover:border-brand-lime hover:bg-brand-lime sm:inline-flex"
+                  className="absolute end-0 top-[38%] z-10 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-line/10 bg-page text-ink shadow-sm transition-colors hover:border-brand-lime hover:bg-brand-lime sm:inline-flex"
                 >
                   <IoChevronForward className="text-xl rtl:rotate-180" aria-hidden="true" />
                 </button>
@@ -112,7 +112,7 @@ export default function ProductCategoriesSection({ section }) {
                 />
               </Link>
 
-              <h3 className="mb-3 text-center text-2xl font-extrabold uppercase tracking-[0.08em] text-brand-ink sm:text-3xl">
+              <h3 className="mb-3 text-center text-2xl font-extrabold uppercase tracking-[0.08em] text-ink sm:text-3xl">
                 {currentName}
               </h3>
               <Link
@@ -130,7 +130,7 @@ export default function ProductCategoriesSection({ section }) {
                       type="button"
                       onClick={goPrev}
                       aria-label={t(UI.prevSlide, locale)}
-                      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-brand-ink/15 text-brand-ink"
+                      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-line/15 text-ink"
                     >
                       <IoChevronBack className="rtl:rotate-180" aria-hidden="true" />
                     </button>
@@ -138,7 +138,7 @@ export default function ProductCategoriesSection({ section }) {
                       type="button"
                       onClick={goNext}
                       aria-label={t(UI.nextSlide, locale)}
-                      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-brand-ink/15 text-brand-ink"
+                      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-line/15 text-ink"
                     >
                       <IoChevronForward className="rtl:rotate-180" aria-hidden="true" />
                     </button>
@@ -157,7 +157,7 @@ export default function ProductCategoriesSection({ section }) {
                           className={`cursor-pointer rounded-full transition-all ${
                             active
                               ? "h-2.5 w-8 bg-brand-lime"
-                              : "h-2.5 w-2.5 bg-brand-ink/20 hover:bg-brand-ink/40"
+                              : "h-2.5 w-2.5 bg-brand-navy/20 hover:bg-brand-navy/40"
                           }`}
                         />
                       );

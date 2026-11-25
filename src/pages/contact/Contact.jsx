@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
@@ -14,8 +14,12 @@ import { toMapEmbedSrc, toMapLink } from "@/lib/map";
 import { toTelHref, toWhatsAppHref } from "@/lib/phone";
 import { resolveCompanySocial } from "@/utils/social";
 
+const EgyptDistributorMap = lazy(
+  () => import("@/components/map/EgyptDistributorMap"),
+);
+
 const inputClass =
-  "w-full border-0 border-b border-brand-ink/20 bg-transparent px-0 py-3 text-sm text-brand-ink outline-none transition-colors placeholder:text-brand-ink/35 focus:border-brand-lime";
+  "w-full border-0 border-b border-line/20 bg-transparent px-0 py-3 text-sm text-ink outline-none transition-colors placeholder:text-ink/35 focus:border-brand-lime";
 
 function FastLink({ label, value, href, external = false }) {
   if (!href || !value) return null;
@@ -23,19 +27,19 @@ function FastLink({ label, value, href, external = false }) {
     <a
       href={href}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="group flex items-center justify-between gap-4 border-b border-brand-ink/15 px-0 py-6 transition-colors lg:border-b-0 lg:border-e lg:px-6 lg:py-8 lg:last:border-e-0 lg:first:ps-0 lg:last:pe-0"
+      className="group flex items-center justify-between gap-4 border-b border-line/15 px-0 py-6 transition-colors lg:border-b-0 lg:border-e lg:px-6 lg:py-8 lg:last:border-e-0 lg:first:ps-0 lg:last:pe-0"
     >
       <span className="min-w-0">
         <span className="mb-2 block text-xs text-text-muted">{label}</span>
         <span
-          className="block text-2xl font-extrabold tracking-tight text-brand-ink transition-colors group-hover:text-brand-lime"
+          className="block text-2xl font-extrabold tracking-tight text-ink transition-colors group-hover:text-brand-lime"
           dir={/^\+?\d/.test(String(value)) ? "ltr" : undefined}
         >
           {value}
         </span>
       </span>
       <span
-        className="shrink-0 text-brand-ink transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1 motion-reduce:transition-none"
+        className="shrink-0 text-ink transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1 motion-reduce:transition-none"
         aria-hidden="true"
       >
         →
@@ -122,7 +126,7 @@ export default function Contact() {
       {pending ? <Loading /> : null}
       {!pending && error ? <ErrorState /> : null}
       {!pending && !error ? (
-        <main className="min-h-screen bg-white">
+        <main className="min-h-screen bg-page">
           <PageBanner
             title={heading}
             subtitle={hoursLine}
@@ -138,7 +142,7 @@ export default function Contact() {
             <EmptyState />
           ) : (
             <>
-              <section className="border-b border-brand-ink/10">
+              <section className="border-b border-line/10">
                 <div className="container mx-auto px-4 lg:px-8">
                 <Reveal>
                     <div className="grid grid-cols-1 lg:grid-cols-3">
@@ -168,17 +172,17 @@ export default function Contact() {
                   <Reveal className="order-2 lg:order-1 lg:col-span-5">
                     <ul>
                       {address ? (
-                        <li className="border-b border-brand-ink/10 py-4">
+                        <li className="border-b border-line/10 py-4">
                           <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
                             {t(UI.address, locale)}
                           </p>
-                          <p className="text-base font-semibold leading-7 text-brand-ink">
+                          <p className="text-base font-semibold leading-7 text-ink">
                             {address}
                           </p>
                         </li>
                       ) : null}
                       {otherPhones.length ? (
-                        <li className="border-b border-brand-ink/10 py-4">
+                        <li className="border-b border-line/10 py-4">
                           <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
                             {t(UI.otherPhones, locale)}
                           </p>
@@ -188,7 +192,7 @@ export default function Contact() {
                                 key={phone}
                                 href={toTelHref(phone)}
                                 dir="ltr"
-                                className="block text-base font-semibold text-brand-ink transition-colors hover:text-brand-lime"
+                                className="block text-base font-semibold text-ink transition-colors hover:text-brand-lime"
                               >
                                 {phone}
                               </a>
@@ -197,7 +201,7 @@ export default function Contact() {
                         </li>
                       ) : null}
                       {emails.length > 1 ? (
-                        <li className="border-b border-brand-ink/10 py-4">
+                        <li className="border-b border-line/10 py-4">
                           <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
                             {t(UI.email, locale)}
                           </p>
@@ -206,7 +210,7 @@ export default function Contact() {
                               <a
                                 key={email}
                                 href={`mailto:${email}`}
-                                className="block text-base font-semibold text-brand-ink transition-colors hover:text-brand-lime"
+                                className="block text-base font-semibold text-ink transition-colors hover:text-brand-lime"
                               >
                                 {email}
                               </a>
@@ -214,24 +218,24 @@ export default function Contact() {
                           </div>
                         </li>
                       ) : emails[0] ? (
-                        <li className="border-b border-brand-ink/10 py-4">
+                        <li className="border-b border-line/10 py-4">
                           <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
                             {t(UI.email, locale)}
                           </p>
                           <a
                             href={`mailto:${emails[0]}`}
-                            className="text-base font-semibold text-brand-ink transition-colors hover:text-brand-lime"
+                            className="text-base font-semibold text-ink transition-colors hover:text-brand-lime"
                           >
                             {emails[0]}
                           </a>
                         </li>
                       ) : null}
                       {hoursLine ? (
-                        <li className="border-b border-brand-ink/10 py-4">
+                        <li className="border-b border-line/10 py-4">
                           <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
                             {t(UI.workingHours, locale)}
                           </p>
-                          <p className="text-base font-semibold leading-7 text-brand-ink">
+                          <p className="text-base font-semibold leading-7 text-ink">
                             {hoursLine}
                           </p>
                         </li>
@@ -239,7 +243,7 @@ export default function Contact() {
                     </ul>
 
                     {socials.length ? (
-                      <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-bold text-brand-ink">
+                      <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-bold text-ink">
                         {socials.map((item, index) => (
                           <span
                             key={item.id}
@@ -247,7 +251,7 @@ export default function Contact() {
                           >
                             {index > 0 ? (
                               <span
-                                className="text-brand-ink/25"
+                                className="text-ink/25"
                                 aria-hidden="true"
                               >
                                 ·
@@ -271,7 +275,7 @@ export default function Contact() {
                     delay={0.06}
                     className="order-1 lg:order-2 lg:col-span-6 lg:col-start-7"
                   >
-                    <div className="rounded-lg border border-brand-ink/10 bg-white p-5 sm:p-8">
+                    <div className="rounded-lg border border-line/10 bg-page p-5 sm:p-8">
                       {submitted ? (
                         <div className="flex min-h-[280px] flex-col items-center justify-center gap-6 text-center">
                           <svg
@@ -289,7 +293,7 @@ export default function Contact() {
                               className="contact-success-triangle"
                             />
                           </svg>
-                          <p className="max-w-xs text-lg font-extrabold leading-8 text-brand-ink">
+                          <p className="max-w-xs text-lg font-extrabold leading-8 text-ink">
                             {t(UI.formSuccessTitle, locale)}
                           </p>
                         </div>
@@ -365,7 +369,7 @@ export default function Contact() {
                     {targetEmail ? (
                         <button
                           type="submit"
-                            className="min-h-12 w-full bg-brand-ink text-sm font-extrabold text-white transition-colors hover:bg-brand-lime hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:col-span-2"
+                            className="min-h-12 w-full bg-brand-navy text-sm font-extrabold text-white transition-colors hover:bg-brand-lime hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:col-span-2"
                         >
                           {ctaLabel}
                         </button>
@@ -409,6 +413,9 @@ export default function Contact() {
                   </Reveal>
                 </div>
               ) : null}
+              <Suspense fallback={null}>
+                <EgyptDistributorMap />
+              </Suspense>
             </>
           )}
         </main>

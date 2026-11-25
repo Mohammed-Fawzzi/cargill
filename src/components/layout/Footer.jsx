@@ -90,15 +90,15 @@ export default function Footer() {
     (companyName || title || "كارجيل").split(/\s+/)[0] || "كارجيل";
 
   return (
-    <footer className="relative bg-brand-forest-deep text-white" aria-label="footer">
+    <footer className="relative bg-white text-brand-navy" aria-label="footer">
       <div className="relative container mx-auto px-4 pt-14 lg:px-8 lg:pt-16">
-        <div className="mb-12 flex flex-col gap-6 border-b border-white/15 pb-10 lg:flex-row lg:items-end lg:justify-between">
-          <p className="order-2 max-w-xl text-sm leading-7 text-white/70 lg:order-1 lg:text-base">
+        <div className="mb-12 flex flex-col gap-6 border-b border-brand-navy/10 pb-10 lg:flex-row lg:items-end lg:justify-between">
+          <p className="order-2 max-w-xl text-sm leading-7 text-brand-navy/70 lg:order-1 lg:text-base">
             {description || title || ""}
           </p>
           <Link to="/" className="order-1 shrink-0 lg:order-2">
             <SiteLogo
-              variant="white"
+              variant="default"
               alt={companyName || title}
               className="h-11 w-auto max-w-[190px] object-contain"
             />
@@ -106,7 +106,7 @@ export default function Footer() {
         </div>
 
         <div className="grid grid-cols-1 gap-10 pb-12 md:grid-cols-3 md:gap-0">
-          <div className="md:border-e md:border-white/15 md:pe-8">
+          <div className="md:border-e md:border-brand-navy/10 md:pe-8">
             <h3 className="mb-5 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
               {t(UI.usefulLinks, locale)}
             </h3>
@@ -115,7 +115,7 @@ export default function Footer() {
                 <li key={link.path}>
                   <Link
                     to={link.path}
-                    className="text-sm leading-7 text-white/80 transition-colors hover:text-brand-lime"
+                    className="text-sm leading-7 text-brand-navy/80 transition-colors hover:text-brand-lime"
                   >
                     {t(UI.nav[link.key], locale)}
                   </Link>
@@ -124,7 +124,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div className="md:border-e md:border-white/15 md:px-8">
+          <div className="md:border-e md:border-brand-navy/10 md:px-8">
             <h3 className="mb-5 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
               {t(UI.nav.products, locale)}
             </h3>
@@ -133,7 +133,7 @@ export default function Footer() {
                 <li key={category.id}>
                   <Link
                     to={`/products?section=${encodeURIComponent(category.id)}`}
-                    className="text-sm leading-7 text-white/80 transition-colors hover:text-brand-lime"
+                    className="text-sm leading-7 text-brand-navy/80 transition-colors hover:text-brand-lime"
                   >
                     {t(category.name, locale)}
                   </Link>
@@ -146,7 +146,7 @@ export default function Footer() {
             <h3 className="mb-5 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
               {t(UI.contactLabel, locale)}
             </h3>
-            <ul className="space-y-3 text-sm leading-7 text-white/80">
+            <ul className="space-y-3 text-sm leading-7 text-brand-navy/80">
               {phones.map((phone) => (
                 <li key={phone}>
                   <a
@@ -186,7 +186,7 @@ export default function Footer() {
             {socials.map((link, index) => (
               <React.Fragment key={link.id}>
                 {index > 0 ? (
-                  <span className="text-white/25" aria-hidden="true">
+                  <span className="text-brand-navy/25" aria-hidden="true">
                     ·
                   </span>
                 ) : null}
@@ -194,7 +194,7 @@ export default function Footer() {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white/80 transition-colors hover:text-brand-lime"
+                  className="text-brand-navy/80 transition-colors hover:text-brand-lime"
                 >
                   {link.label}
                 </a>
@@ -204,14 +204,14 @@ export default function Footer() {
         ) : null}
       </div>
 
-      <div className="relative border-t border-white/15">
-        <div className="container mx-auto flex flex-col items-start justify-between gap-3 px-4 py-4 text-xs leading-7 text-white/55 sm:flex-row sm:items-center sm:text-sm lg:px-8">
+      <div className="relative border-t border-brand-navy/10">
+        <div className="container mx-auto flex flex-col items-start justify-between gap-3 px-4 py-4 text-xs leading-7 text-brand-navy/60 sm:flex-row sm:items-center sm:text-sm lg:px-8">
           <p>
             {companyName || title
               ? `© ${year} ${companyName || title} — ${t(UI.copyright, locale)}`
               : `© ${year} ${t(UI.copyright, locale)}`}
           </p>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 font-semibold">
             <Link to="/articles" className="transition-colors hover:text-brand-lime">
               {t(UI.nav.articles, locale)}
             </Link>
@@ -224,7 +224,7 @@ export default function Footer() {
 
       <div
         ref={brandRef}
-        className="text-clip-safe pointer-events-none relative px-4 pb-20 pt-2 text-center text-[clamp(3.5rem,12vw,9rem)] font-extrabold leading-[1.15] tracking-tight text-white/[0.06] md:pb-8 lg:px-8"
+        className="text-clip-safe pointer-events-none relative px-4 pb-16 pt-2 text-center text-[clamp(3rem,10vw,7rem)] font-extrabold leading-[1.15] tracking-tight text-brand-navy/[0.06] md:pb-8 lg:px-8"
         aria-hidden="true"
       >
         <BrandWordReveal

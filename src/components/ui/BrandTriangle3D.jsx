@@ -5,7 +5,7 @@ import { ExtrudeGeometry, Shape } from "three";
 import { TriangleAccent } from "@/components/ui/TriangleMask";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
-function TrianglePrism({ followMouse, mouse }) {
+function TrianglePrism({ followMouse, mouse, scrollTwist = 0, spin = 0.22 }) {
   const mesh = useRef(null);
   const target = useRef({ x: 0, y: 0 });
 
@@ -26,12 +26,16 @@ function TrianglePrism({ followMouse, mouse }) {
   useFrame((_, delta) => {
     const node = mesh.current;
     if (!node) return;
-    node.rotation.y += delta * 0.22;
+    node.rotation.y += delta * spin;
+    const twist = (Number(scrollTwist) || 0) * (Math.PI / 180);
     if (followMouse) {
       target.current.x += (mouse.current.y * 0.26 - target.current.x) * 0.06;
       target.current.y += (mouse.current.x * 0.26 - target.current.y) * 0.06;
-      node.rotation.x = target.current.x;
-      node.rotation.z = target.current.y * 0.35;
+      node.rotation.x = target.current.x + twist * 0.35;
+      node.rotation.z = target.current.y * 0.35 + twist;
+    } else {
+      node.rotation.x = 0.15 + twist * 0.35;
+      node.rotation.z = twist;
     }
   });
 
@@ -49,23 +53,39 @@ function TrianglePrism({ followMouse, mouse }) {
   );
 }
 
-function Scene({ followMouse, mouse }) {
+function Scene({ followMouse, mouse, scrollTwist, softLight, spin }) {
   return (
     <>
-      <ambientLight intensity={0.55} />
-      <directionalLight position={[2.5, 3.5, 2]} intensity={0.85} />
-      <TrianglePrism followMouse={followMouse} mouse={mouse} />
+      <ambientLight intensity={softLight ? 0.35 : 0.55} />
+      <directionalLight
+        position={[2.5, 3.5, 2]}
+        intensity={softLight ? 0.55 : 0.85}
+      />
+      <TrianglePrism
+        followMouse={followMouse}
+        mouse={mouse}
+        scrollTwist={scrollTwist}
+        spin={spin}
+      />
     </>
   );
 }
 
-export default function BrandTriangle3D({ className = "" }) {
+export default function BrandTriangle3D({
+  className = "",
+  scrollTwist = 0,
+  softLight = false,
+  spin = 0.22,
+  followMouse: followMouseProp,
+}) {
   const { reducedMotion, canTilt } = useMotionPrefs();
   const [webgl, setWebgl] = useState(true);
   const [visible, setVisible] = useState(false);
   const hostRef = useRef(null);
   const mouse = useRef({ x: 0, y: 0 });
-  const use3d = !reducedMotion && webgl && canTilt;
+  const followMouse =
+    followMouseProp === undefined ? canTilt : Boolean(followMouseProp);
+  const use3d = !reducedMotion && webgl;
 
   useEffect(() => {
     try {
@@ -91,7 +111,7 @@ export default function BrandTriangle3D({ className = "" }) {
   }, []);
 
   useEffect(() => {
-    if (!use3d || !visible) return undefined;
+    if (!use3d || !visible || !followMouse) return undefined;
     const onMove = (event) => {
       const node = hostRef.current;
       if (!node) return;
@@ -105,11 +125,9 @@ export default function BrandTriangle3D({ className = "" }) {
     };
     window.addEventListener("mousemove", onMove, { passive: true });
     return () => window.removeEventListener("mousemove", onMove);
-  }, [use3d, visible]);
+  }, [use3d, visible, followMouse]);
 
-  const fallback = (
-    <TriangleAccent className="h-full w-full opacity-30" />
-  );
+  const fallback = <TriangleAccent className="h-full w-full opacity-30" />;
 
   return (
     <div ref={hostRef} className={className} aria-hidden="true">
@@ -123,7 +141,13 @@ export default function BrandTriangle3D({ className = "" }) {
             camera={{ position: [0, 0.2, 3.2], fov: 35 }}
             style={{ width: "100%", height: "100%", background: "transparent" }}
           >
-            <Scene followMouse={canTilt} mouse={mouse} />
+            <Scene
+              followMouse={followMouse && canTilt}
+              mouse={mouse}
+              scrollTwist={scrollTwist}
+              softLight={softLight}
+              spin={reducedMotion ? 0 : spin}
+            />
           </Canvas>
         </Suspense>
       ) : null}

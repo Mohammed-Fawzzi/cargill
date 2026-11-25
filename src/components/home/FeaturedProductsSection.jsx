@@ -2,11 +2,10 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import SafeImage from "@/components/ui/SafeImage";
-import { TriangleAccent } from "@/components/ui/TriangleMask";
 import SectionRule from "@/components/ui/SectionRule";
-import TiltCard from "@/components/ui/TiltCard";
 import MagneticButton from "@/components/ui/MagneticButton";
+import RevealHeading from "@/components/ui/RevealHeading";
+import ProductStage from "@/components/products/ProductStage";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { getCategories } from "@/services/cms/products";
@@ -114,7 +113,7 @@ export default function FeaturedProductsSection({ section }) {
   if (!items.length) return null;
 
   return (
-    <section className="bg-white py-[4.5rem] lg:py-[7.5rem]">
+    <section className="relative overflow-hidden bg-surface py-[4.5rem] lg:py-[7.5rem]">
       <motion.div
         className="container mx-auto px-4 lg:px-8"
         initial={reducedMotion ? false : { opacity: 0, y: 12 }}
@@ -122,19 +121,23 @@ export default function FeaturedProductsSection({ section }) {
         viewport={{ once: true, amount: 0.12 }}
         transition={{ duration: 0.35, ease: easeOut }}
       >
+        <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-brand-lime/80 sm:text-[11px]">
+          {t(UI.productsIndexLabel, locale)}
+        </p>
         <SectionRule
           label={t(UI.featuredLabel, locale)}
           number="04"
-          labelClassName="text-brand-ink"
-          numberClassName="text-brand-ink/55"
-          lineClassName="bg-brand-ink"
+          labelClassName="text-ink"
+          numberClassName="text-ink/55"
+          lineClassName="bg-ink"
         />
 
         <div className="mb-8 flex flex-col gap-4 lg:mb-10 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <h2 className="text-clip-safe text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
-              {heading}
-            </h2>
+            <RevealHeading
+              text={heading}
+              className="text-clip-safe text-3xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]"
+            />
             {dashboardBody ? (
               <p className="mt-3 max-w-2xl text-sm leading-7 text-text-muted sm:text-base sm:leading-8">
                 {dashboardBody}
@@ -143,7 +146,7 @@ export default function FeaturedProductsSection({ section }) {
           </div>
           <Link
             to="/products"
-            className="inline-flex w-fit items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-brand-ink transition-[border-width] hover:border-b-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
+            className="inline-flex w-fit items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-ink transition-[border-width] hover:border-b-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
           >
             <span>{t(UI.viewAllProducts, locale)}</span>
             <span aria-hidden="true">←</span>
@@ -152,40 +155,31 @@ export default function FeaturedProductsSection({ section }) {
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
           <div ref={featuredRef} className="scroll-mt-[calc(var(--navbar-height)+1.5rem)] lg:col-span-7">
+            <div className="mb-6">
+              <ProductStage
+                stageKey={active?.id}
+                images={active?.imageUrl ? [active.imageUrl] : []}
+                name={activeName}
+                cutout={Boolean(active?.imageUrl)}
+                showNameBackdrop
+              />
+            </div>
+
             <AnimatePresence mode="wait" initial={false}>
               {active ? (
                 <motion.div
                   key={active.id}
-                  initial={reducedMotion ? false : { opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
                   exit={reducedMotion ? undefined : { opacity: 0 }}
-                  transition={{ duration: 0.25, ease: easeOut }}
+                  transition={{ duration: 0.3, ease: easeOut }}
                 >
-                  <TiltCard className="group/image relative mb-6 aspect-[4/3] overflow-hidden bg-surface-muted">
-                    <div className="relative flex h-full w-full items-center justify-center">
-                      <TriangleAccent className="absolute end-4 top-4 z-10 h-3 w-3.5" />
-                      {active.imageUrl ? (
-                        <SafeImage
-                          src={active.imageUrl}
-                          alt={activeName}
-                          width={1000}
-                          loading="lazy"
-                          className="h-full w-full object-contain p-6 transition-transform duration-700 ease-out group-hover/image:scale-105 motion-reduce:transform-none motion-reduce:transition-none sm:p-10"
-                        />
-                      ) : (
-                        <p className="px-6 text-center text-lg font-bold text-brand-ink/50">
-                          {activeName}
-                        </p>
-                      )}
-                    </div>
-                  </TiltCard>
-
                   {activeCategory ? (
-                    <p className="mb-2 text-[11px] font-bold tracking-[0.16em] text-brand-lime">
+                    <p className="mb-2 font-mono text-[11px] font-medium tracking-[0.16em] text-brand-lime">
                       {activeCategory}
                     </p>
                   ) : null}
-                  <h3 className="text-clip-safe mb-3 text-2xl font-extrabold tracking-tight text-brand-ink sm:text-3xl lg:text-[2.25rem]">
+                  <h3 className="text-clip-safe mb-3 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl lg:text-[2.25rem]">
                     {activeName}
                   </h3>
                   {activeOverview ? (
@@ -198,7 +192,7 @@ export default function FeaturedProductsSection({ section }) {
                     <MagneticButton strength={6}>
                       <Link
                         to={`/products/${active.id}`}
-                        className="group inline-flex min-h-11 items-center justify-center gap-2 bg-brand-lime px-5 text-sm font-extrabold text-brand-ink transition-colors hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
+                        className="group inline-flex min-h-11 items-center justify-center gap-2 bg-brand-lime px-5 text-sm font-extrabold text-brand-navy transition-colors hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
                       >
                         <span>{t(UI.productDetails, locale)}</span>
                         <span
@@ -214,7 +208,7 @@ export default function FeaturedProductsSection({ section }) {
                         href={waHref}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex text-sm font-bold text-brand-ink underline-offset-4 transition-colors hover:text-brand-lime hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
+                        className="inline-flex text-sm font-bold text-ink underline-offset-4 transition-colors hover:text-brand-lime hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
                       >
                         {t(UI.askAboutWhatsApp, locale)}
                       </a>
@@ -240,19 +234,19 @@ export default function FeaturedProductsSection({ section }) {
                     onMouseEnter={() => setActiveId(item.id)}
                     onFocus={() => setActiveId(item.id)}
                     onClick={() => setActiveId(item.id)}
-                    className={`flex w-full items-baseline gap-3 border-b border-brand-ink/10 py-4 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime ${
+                    className={`flex w-full items-baseline gap-3 border-b border-line/10 py-4 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime ${
                       isActive ? "border-brand-lime" : ""
                     }`}
                     aria-current={isActive ? "true" : undefined}
                   >
-                    <span className="w-7 shrink-0 text-[11px] font-bold tracking-[0.16em] text-brand-ink/40">
+                    <span className="w-7 shrink-0 text-[11px] font-bold tracking-[0.16em] text-ink/40">
                       {number}
                     </span>
                     <span
                       className={`min-w-0 flex-1 text-base font-bold ${
                         isActive
                           ? "text-brand-lime underline decoration-brand-lime underline-offset-4"
-                          : "text-brand-ink"
+                          : "text-ink"
                       }`}
                     >
                       {name}
@@ -283,8 +277,8 @@ export default function FeaturedProductsSection({ section }) {
                     onClick={() => selectProduct(item.id)}
                     className={`shrink-0 border px-3.5 py-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime ${
                       isActive
-                        ? "border-brand-lime bg-brand-lime text-brand-ink"
-                        : "border-brand-ink/15 bg-white text-brand-ink"
+                        ? "border-brand-lime bg-brand-lime text-brand-navy"
+                        : "border-line/15 bg-surface text-ink"
                     }`}
                     aria-current={isActive ? "true" : undefined}
                   >

@@ -18,7 +18,7 @@ export default function TriangleMask({
 }
 
 export function TriangleAccent({ className = "", tone = "lime" }) {
-  const toneClass = tone === "ink" ? "bg-brand-ink" : "bg-brand-lime";
+  const toneClass = tone === "ink" ? "bg-brand-navy" : "bg-brand-lime";
 
   return (
     <span

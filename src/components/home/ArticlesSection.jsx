@@ -19,7 +19,7 @@ export default function ArticlesSection({ section }) {
   const sideItems = items.slice(1);
 
   return (
-    <section className="relative overflow-hidden bg-white py-16 lg:py-24">
+    <section className="relative overflow-hidden bg-page py-16 lg:py-24">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-ink/10 to-transparent"
         aria-hidden="true"
@@ -28,7 +28,7 @@ export default function ArticlesSection({ section }) {
         <Reveal className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end lg:mb-14">
           <div className="max-w-2xl">
             {title ? (
-              <h2 className="mb-3 text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
+              <h2 className="mb-3 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]">
                 {title}
               </h2>
             ) : null}
@@ -39,7 +39,7 @@ export default function ArticlesSection({ section }) {
           <MagneticButton>
             <Link
               to="/articles"
-              className="inline-flex min-h-11 items-center justify-center rounded-md border border-brand-ink/15 px-6 text-sm font-bold text-brand-ink transition-all duration-300 hover:border-brand-lime hover:bg-brand-lime"
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-line/15 px-6 text-sm font-bold text-ink transition-all duration-300 hover:border-brand-lime hover:bg-brand-lime"
             >
               {t(UI.viewAll, locale)}
             </Link>
@@ -94,7 +94,7 @@ export default function ArticlesSection({ section }) {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, amount: 0.25 }}
                   transition={{ duration: 0.55, ease: easeOut, delay: 0.08 + index * 0.08 }}
-                  className="group flex min-h-[170px] overflow-hidden rounded-[1.5rem] border border-brand-ink/8 bg-white shadow-[0_10px_30px_rgba(24,16,96,0.05)] sm:min-h-[190px]"
+                  className="group flex min-h-[170px] overflow-hidden rounded-[1.5rem] border border-line/8 bg-page shadow-[0_10px_30px_rgba(24,16,96,0.05)] sm:min-h-[190px]"
                 >
                   <Link to={`/articles/${item.id}`} className="flex w-full">
                     <div className="relative w-[36%] shrink-0 overflow-hidden bg-surface-muted sm:w-[42%]">
@@ -105,13 +105,13 @@ export default function ArticlesSection({ section }) {
                       />
                     </div>
                     <div className="flex flex-1 flex-col justify-center p-5 sm:p-6">
-                      <h3 className="mb-2 text-lg font-extrabold leading-7 text-brand-ink transition-colors group-hover:text-brand-lime">
+                      <h3 className="mb-2 text-lg font-extrabold leading-7 text-ink transition-colors group-hover:text-brand-lime">
                         {t(item.title, locale)}
                       </h3>
                       <p className="mb-3 line-clamp-2 text-sm leading-7 text-text-muted">
                         {t(item.excerpt, locale)}
                       </p>
-                      <span className="text-sm font-bold text-brand-ink group-hover:text-brand-lime">
+                      <span className="text-sm font-bold text-ink group-hover:text-brand-lime">
                         {t(UI.readMore, locale)}
                       </span>
                     </div>
