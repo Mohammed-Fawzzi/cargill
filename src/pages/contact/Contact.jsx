@@ -140,7 +140,7 @@ export default function Contact() {
             <>
               <section className="border-b border-brand-ink/10">
                 <div className="container mx-auto px-4 lg:px-8">
-                  <Reveal>
+                <Reveal>
                     <div className="grid grid-cols-1 lg:grid-cols-3">
                       <FastLink
                         label={t(UI.whatsapp, locale)}
@@ -264,7 +264,7 @@ export default function Contact() {
                           </span>
                         ))}
                       </div>
-                    ) : null}
+                  ) : null}
                   </Reveal>
 
                   <Reveal
@@ -302,87 +302,87 @@ export default function Contact() {
                           <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
                             {t(UI.firstName, locale)}
                           </span>
-                          <input
-                            name="firstName"
-                            value={form.firstName}
-                            onChange={onChange}
-                            className={inputClass}
+                    <input
+                      name="firstName"
+                      value={form.firstName}
+                      onChange={onChange}
+                      className={inputClass}
                             required
-                          />
+                    />
                         </label>
                         <label className="block">
                           <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
                             {t(UI.lastName, locale)}
                           </span>
-                          <input
-                            name="lastName"
-                            value={form.lastName}
-                            onChange={onChange}
-                            className={inputClass}
+                    <input
+                      name="lastName"
+                      value={form.lastName}
+                      onChange={onChange}
+                      className={inputClass}
                             required
-                          />
+                    />
                         </label>
                         <label className="block">
                           <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
                             {t(UI.phoneField, locale)}
                           </span>
-                          <input
-                            name="phone"
-                            value={form.phone}
-                            onChange={onChange}
-                            className={inputClass}
-                            dir="ltr"
-                          />
+                    <input
+                      name="phone"
+                      value={form.phone}
+                      onChange={onChange}
+                      className={inputClass}
+                      dir="ltr"
+                    />
                         </label>
                         <label className="block">
                           <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
                             {t(UI.emailField, locale)}
                           </span>
-                          <input
-                            name="email"
-                            type="email"
-                            value={form.email}
-                            onChange={onChange}
-                            className={inputClass}
-                            dir="ltr"
+                    <input
+                      name="email"
+                      type="email"
+                      value={form.email}
+                      onChange={onChange}
+                      className={inputClass}
+                      dir="ltr"
                             required
-                          />
+                    />
                         </label>
                         <label className="block sm:col-span-2">
                           <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
                             {t(UI.message, locale)}
                           </span>
-                          <textarea
-                            name="message"
-                            value={form.message}
-                            onChange={onChange}
+                    <textarea
+                      name="message"
+                      value={form.message}
+                      onChange={onChange}
                             rows={4}
                             className={`${inputClass} resize-none`}
                             required
                           />
                         </label>
 
-                        {targetEmail ? (
-                          <button
-                            type="submit"
+                    {targetEmail ? (
+                        <button
+                          type="submit"
                             className="min-h-12 w-full bg-brand-ink text-sm font-extrabold text-white transition-colors hover:bg-brand-lime hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:col-span-2"
-                          >
-                            {ctaLabel}
-                          </button>
-                        ) : (
+                        >
+                          {ctaLabel}
+                        </button>
+                    ) : (
                           <p className="text-sm text-text-muted sm:col-span-2">
-                            {t(UI.noEmail, locale)}
-                          </p>
-                        )}
-                        {targetEmail ? (
+                        {t(UI.noEmail, locale)}
+                      </p>
+                    )}
+                    {targetEmail ? (
                           <p className="text-xs text-text-muted sm:col-span-2">
-                            {t(UI.contactFormHint, locale)}
-                          </p>
-                        ) : null}
-                      </form>
+                        {t(UI.contactFormHint, locale)}
+                      </p>
+                    ) : null}
+                  </form>
                       )}
                     </div>
-                  </Reveal>
+                </Reveal>
                 </div>
               </div>
 
@@ -390,13 +390,13 @@ export default function Contact() {
                 <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
                   <Reveal>
                     <div className="overflow-hidden rounded-lg">
-                      <iframe
-                        title={heading}
-                        src={mapSrc}
+                    <iframe
+                      title={heading}
+                      src={mapSrc}
                         className="h-[280px] w-full border-0 md:h-[420px]"
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                      />
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
                     </div>
                     {mapLink ? (
                       <SecondaryButton
