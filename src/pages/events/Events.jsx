@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Seo from "@/components/seo/Seo";
@@ -6,25 +6,37 @@ import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import FilterTabs from "@/components/ui/FilterTabs";
-import ContentGrid, { cardLayoutForCount } from "@/components/ui/ContentGrid";
-import { PrimaryButton, SecondaryButton } from "@/components/ui/AppButton";
-import EventCard from "@/components/events/EventCard";
+import EventAgendaRow from "@/components/events/EventAgendaRow";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getEvents } from "@/services/cms/events";
 import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { resolvePageHero } from "@/lib/pageHero";
+import { eventDayKey } from "@/lib/time";
+import { resolveCompanySocial } from "@/utils/social";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
-import { formatDay } from "@/lib/time";
 
-const PAGE_SIZE = 9;
 const FILTERS = [
   ["all", UI.allEvents],
   ["upcoming", UI.upcoming],
   ["ended", UI.ended],
 ];
+
+function sortUpcoming(list) {
+  return [...list].sort((a, b) => {
+    const byDate = eventDayKey(a.date).localeCompare(eventDayKey(b.date));
+    return byDate !== 0 ? byDate : (a.createdAt || 0) - (b.createdAt || 0);
+  });
+}
+
+function sortPast(list) {
+  return [...list].sort((a, b) => {
+    const byDate = eventDayKey(b.date).localeCompare(eventDayKey(a.date));
+    return byDate !== 0 ? byDate : (b.createdAt || 0) - (a.createdAt || 0);
+  });
+}
 
 export default function Events() {
   const { locale } = useLocale();
@@ -32,7 +44,6 @@ export default function Events() {
   const sectionQuery = useHomepageSection("events");
   const [params, setParams] = useSearchParams();
   const filter = params.get("status") || "all";
-  const pageParam = Number(params.get("page") || "1");
 
   const eventsQuery = useQuery({
     queryKey: ["cms", "events"],
@@ -46,10 +57,7 @@ export default function Events() {
     (patch) => {
       const next = new URLSearchParams(params);
       Object.entries(patch).forEach(([key, value]) => {
-        const clear =
-          !value ||
-          (key === "status" && value === "all") ||
-          (key === "page" && value === "1");
+        const clear = !value || (key === "status" && value === "all");
         if (clear) next.delete(key);
         else next.set(key, value);
       });
@@ -63,32 +71,26 @@ export default function Events() {
     return events.filter((item) => item.status === filter);
   }, [events, filter]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const currentPage = Math.min(Math.max(1, pageParam || 1), totalPages);
-  const pageItems = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, currentPage]);
-
-  useEffect(() => {
-    if (pageParam !== currentPage) {
-      updateParams({ page: String(currentPage) });
-    }
-  }, [pageParam, currentPage, updateParams]);
+  const upcomingItems = useMemo(
+    () => sortUpcoming(filtered.filter((item) => item.status === "upcoming")),
+    [filtered],
+  );
+  const pastItems = useMemo(
+    () => sortPast(filtered.filter((item) => item.status === "ended")),
+    [filtered],
+  );
 
   const setFilter = (nextFilter) => {
-    updateParams({ status: nextFilter, page: "1" });
+    updateParams({ status: nextFilter });
   };
 
-  const fallbackImage =
-    events.find((item) => item.imageUrl)?.imageUrl || "";
   const hero = resolvePageHero({
     section: sectionQuery.data,
     contact,
     locale,
     fallbackTitle: t(UI.nav.events, locale),
     fallbackSubtitle: t(UI.eventsIntro, locale),
-    fallbackImage,
+    fallbackImage: events.find((item) => item.imageUrl)?.imageUrl || "",
   });
 
   const filterTabs = useMemo(
@@ -100,9 +102,20 @@ export default function Events() {
     [locale],
   );
 
-  const cardLayout = cardLayoutForCount(pageItems.length);
+  const facebook = resolveCompanySocial(contact?.social).find(
+    (item) => item.id === "facebook",
+  );
+
+  const emptyMessage =
+    filter === "upcoming"
+      ? t(UI.noUpcomingEvents, locale)
+      : filter === "ended"
+        ? t(UI.noPastEvents, locale)
+        : t(UI.noEvents, locale);
+
   const pending = eventsQuery.isPending;
   const error = eventsQuery.isError;
+  const showSplit = filter === "all";
 
   return (
     <>
@@ -141,56 +154,58 @@ export default function Events() {
             </Reveal>
 
             {filtered.length === 0 ? (
-              <EmptyState
-                message={
-                  filter === "all"
-                    ? t(UI.noEvents, locale)
-                    : t(UI.noFilteredEvents, locale)
-                }
-              />
-            ) : (
-              <>
-                <ContentGrid count={pageItems.length}>
-                  {pageItems.map((item, index) => (
-                    <Reveal key={item.id} delay={Math.min(index * 0.04, 0.2)}>
-                      <EventCard
-                        to={`/events/${item.id}`}
-                        imageUrl={item.imageUrl}
-                        title={t(item.title, locale)}
-                        body={t(item.details, locale)}
-                        date={formatDay(item.date, locale)}
-                        status={item.status}
-                        layout={cardLayout}
-                      />
-                    </Reveal>
-                  ))}
-                </ContentGrid>
-
-                {totalPages > 1 ? (
-                  <div className="mt-12 flex flex-wrap items-center justify-center gap-6">
-                    <SecondaryButton
-                      disabled={currentPage <= 1}
-                      onClick={() =>
-                        updateParams({ page: String(currentPage - 1) })
-                      }
-                    >
-                      {t(UI.previous, locale)}
-                    </SecondaryButton>
-                    <p className="text-sm text-text-muted">
-                      {t(UI.page, locale)} {currentPage} {t(UI.of, locale)}{" "}
-                      {totalPages}
-                    </p>
-                    <PrimaryButton
-                      disabled={currentPage >= totalPages}
-                      onClick={() =>
-                        updateParams({ page: String(currentPage + 1) })
-                      }
-                    >
-                      {t(UI.next, locale)}
-                    </PrimaryButton>
-                  </div>
+              <div className="space-y-3">
+                <EmptyState message={emptyMessage} />
+                {filter === "upcoming" && facebook?.url ? (
+                  <a
+                    href={facebook.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex text-sm font-bold text-brand-ink underline decoration-brand-lime decoration-2 underline-offset-6"
+                  >
+                    {t(UI.followFacebook, locale)}
+                  </a>
                 ) : null}
-              </>
+              </div>
+            ) : showSplit ? (
+              <div className="border-t border-brand-ink/15">
+                {upcomingItems.map((item, index) => (
+                  <Reveal key={item.id} delay={Math.min(index * 0.03, 0.15)}>
+                    <EventAgendaRow item={item} />
+                  </Reveal>
+                ))}
+                {pastItems.length > 0 ? (
+                  <>
+                    <div className="flex items-center gap-4 py-8">
+                      <p className="shrink-0 text-xs font-bold tracking-[0.16em] text-text-muted">
+                        {t(UI.pastEventsLabel, locale)}
+                      </p>
+                      <span
+                        className="h-px flex-1 bg-brand-ink/15"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    {pastItems.map((item, index) => (
+                      <Reveal
+                        key={item.id}
+                        delay={Math.min(index * 0.03, 0.15)}
+                      >
+                        <EventAgendaRow item={item} />
+                      </Reveal>
+                    ))}
+                  </>
+                ) : null}
+              </div>
+            ) : (
+              <div className="border-t border-brand-ink/15">
+                {(filter === "upcoming" ? upcomingItems : pastItems).map(
+                  (item, index) => (
+                    <Reveal key={item.id} delay={Math.min(index * 0.03, 0.15)}>
+                      <EventAgendaRow item={item} />
+                    </Reveal>
+                  ),
+                )}
+              </div>
             )}
           </div>
         </main>

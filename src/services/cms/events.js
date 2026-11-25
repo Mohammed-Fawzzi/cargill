@@ -7,6 +7,9 @@ export function mapEvent(id, data = {}) {
   const createdAt = toMillis(data.createdAt);
   const details = readLocalized(data, "details");
   const description = readLocalized(data, "description");
+  const gallery = Array.isArray(data.images)
+    ? data.images.map((item) => asString(item)).filter(Boolean)
+    : [];
   return {
     id,
     title: readLocalized(data, "title"),
@@ -15,7 +18,11 @@ export function mapEvent(id, data = {}) {
       en: details.en || description.en,
     },
     imageUrl: asString(data.imageUrl),
+    images: gallery,
     date: asString(data.date),
+    time: asString(data.time),
+    location: readLocalized(data, "location"),
+    mapUrl: asString(data.mapUrl) || asString(data.mapEmbedUrl),
     status: readEventStatus(data.status, data.date),
     createdAt,
     updatedAt: toMillis(data.updatedAt),
