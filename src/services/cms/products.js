@@ -102,13 +102,24 @@ export function mapProduct(id, data = {}) {
   const agriculturalColumns = columns.length > 0 ? columns : DEFAULT_COLUMNS;
   const createdAt = toMillis(data.createdAt);
 
+  const gallery = Array.isArray(data.images)
+    ? data.images.map((item) => asString(item)).filter(Boolean)
+    : [];
+
   return {
     id,
     name: readLocalized(data, "name"),
     sectionId: asString(data.sectionId),
     subcategoryId: asString(data.subcategoryId),
     imageUrl: asString(data.imageUrl),
+    images: gallery,
     originCountry: readLocalized(data, "originCountry"),
+    packaging: readLocalized(data, "packaging"),
+    packageSize: readLocalized(data, "packageSize"),
+    datasheetUrl:
+      asString(data.datasheetUrl) ||
+      asString(data.pdfUrl) ||
+      asString(data.technicalSheetUrl),
     activeIngredients: Array.isArray(data.activeIngredients)
       ? data.activeIngredients.map(parseIngredient).filter(Boolean)
       : [],

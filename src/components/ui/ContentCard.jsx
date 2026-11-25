@@ -10,8 +10,10 @@ export default function ContentCard({
   category,
   secondary,
   layout = "default",
+  imageFit = "cover",
 }) {
   const horizontal = layout === "horizontal";
+  const contain = imageFit === "contain";
 
   return (
     <article className="h-full">
@@ -26,15 +28,19 @@ export default function ContentCard({
         <div
           className={`relative overflow-hidden rounded-md bg-surface-muted ${
             horizontal
-              ? "aspect-[16/10] w-full sm:aspect-auto sm:w-[46%] sm:min-h-[280px]"
-              : "aspect-[16/10] w-full"
+              ? "aspect-[4/3] w-full sm:aspect-auto sm:w-[46%] sm:min-h-[280px]"
+              : contain
+                ? "aspect-[4/3] w-full"
+                : "aspect-[16/10] w-full"
           }`}
         >
           {imageUrl ? (
             <SafeImage
               src={imageUrl}
               alt={title || ""}
-              className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+              className={`h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100 ${
+                contain ? "object-contain p-4" : "object-cover"
+              }`}
             />
           ) : (
             <div className="flex h-full min-h-[180px] items-center justify-center px-4 text-center text-sm font-semibold text-brand-ink/50">

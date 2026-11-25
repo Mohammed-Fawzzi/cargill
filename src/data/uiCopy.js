@@ -31,13 +31,26 @@ export const UI = {
   sendMessage: { ar: "إرسال الرسالة", en: "Send message" },
 
   origin: { ar: "بلد المنشأ", en: "Country of origin" },
+  originShort: { ar: "المنشأ", en: "Origin" },
   ingredients: { ar: "المواد الفعالة", en: "Active ingredients" },
+  composition: { ar: "التركيب", en: "Composition" },
   overview: { ar: "نظرة عامة", en: "Overview" },
   features: { ar: "المزايا", en: "Features" },
   usage: { ar: "جدول الاستخدام", en: "Usage table" },
+  phiLabel: {
+    ar: "فترة الأمان (PHI)",
+    en: "Pre-harvest interval (PHI)",
+  },
+  usageNote: {
+    ar: "الجرعات استرشادية — يُرجى الرجوع للمهندس الزراعي قبل الاستخدام.",
+    en: "Doses are indicative — please consult an agronomist before use.",
+  },
+  packaging: { ar: "العبوة", en: "Pack size" },
+  categoryFact: { ar: "الفئة", en: "Category" },
   allCategories: { ar: "كل التصنيفات", en: "All categories" },
   allSubcategories: { ar: "كل الفروع", en: "All subcategories" },
   allProducts: { ar: "كل المنتجات", en: "All products" },
+  filterAll: { ar: "الكل", en: "All" },
   clearFilters: { ar: "مسح الفلاتر", en: "Clear filters" },
   viewDetails: { ar: "عرض التفاصيل", en: "View details" },
   productsIntro: {
@@ -45,6 +58,7 @@ export const UI = {
     en: "Integrated solutions for crop protection and plant nutrition.",
   },
   resultsCount: { ar: "نتيجة", en: "results" },
+  productsCount: { ar: "منتج", en: "products" },
   pageLabel: {
     products: "PRODUCTS",
     articles: "ARTICLES",
@@ -58,8 +72,28 @@ export const UI = {
   of: { ar: "من", en: "of" },
   noProducts: { ar: "لا توجد منتجات في هذا التصنيف.", en: "No products in this category." },
   noSearchResults: {
-    ar: "لا توجد منتجات مطابقة لبحثك.",
-    en: "No products match your search.",
+    ar: "مفيش منتجات بالاسم ده",
+    en: "No products with that name",
+  },
+  downloadDatasheet: {
+    ar: "حمّل النشرة الفنية",
+    en: "Download technical sheet",
+  },
+  askAboutProductWa: {
+    ar: "اسأل عن المنتج على واتساب",
+    en: "Ask about this product on WhatsApp",
+  },
+  relatedSameCategory: {
+    ar: "منتجات من نفس الفئة",
+    en: "Products in the same category",
+  },
+  backToAllProducts: {
+    ar: "كل المنتجات",
+    en: "All products",
+  },
+  askAboutSearchMessage: {
+    ar: "مرحباً، بدوّر على منتج: {q}",
+    en: "Hi, I'm looking for a product: {q}",
   },
   noArticles: { ar: "لا توجد مقالات حالياً.", en: "No articles yet." },
   articlesIntro: {
@@ -112,7 +146,10 @@ export const UI = {
   emailField: { ar: "بريدك الإلكتروني", en: "Your email" },
   message: { ar: "الرسالة", en: "Message" },
   search: { ar: "بحث", en: "Search" },
-  searchProducts: { ar: "ابحث في المنتجات", en: "Search products" },
+  searchProducts: {
+    ar: "ابحث باسم المنتج أو المحصول…",
+    en: "Search by product or crop name…",
+  },
   openMenu: { ar: "فتح القائمة", en: "Open menu" },
   closeMenu: { ar: "إغلاق القائمة", en: "Close menu" },
   prevSlide: { ar: "الشريحة السابقة", en: "Previous slide" },
