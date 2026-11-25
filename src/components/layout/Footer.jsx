@@ -12,6 +12,7 @@ import { UI } from "@/data/uiCopy";
 import { resolveCompanySocial } from "@/utils/social";
 import { toMapLink } from "@/lib/map";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
+import LtrText from "@/components/ui/LtrText";
 import { easeOut } from "@/lib/motion";
 
 function BrandWordReveal({ word, active, reducedMotion }) {
@@ -150,10 +151,9 @@ export default function Footer() {
                 <li key={phone}>
                   <a
                     href={`tel:${phone.replace(/\s+/g, "")}`}
-                    dir="ltr"
                     className="transition-colors hover:text-brand-lime"
                   >
-                    {phone}
+                    <LtrText>{phone}</LtrText>
                   </a>
                 </li>
               ))}

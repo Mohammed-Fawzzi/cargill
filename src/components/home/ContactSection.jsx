@@ -5,6 +5,7 @@ import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { toMapEmbedSrc, toMapLink } from "@/lib/map";
 import { easeOut } from "@/lib/motion";
+import LtrText from "@/components/ui/LtrText";
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -99,15 +100,15 @@ export default function ContactSection({ section }) {
               ) : null}
               {phones.map((phone) => (
                 <li key={phone} className="border-b border-brand-ink/10 py-4">
+
                   <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
                     {t(UI.phone, locale)}
                   </p>
                   <a
                     href={`tel:${phone.replace(/\s+/g, "")}`}
-                    dir="ltr"
                     className="text-base font-semibold text-brand-ink transition-colors hover:text-brand-lime"
                   >
-                    {phone}
+                    <LtrText>{phone}</LtrText>
                   </a>
                 </li>
               ))}

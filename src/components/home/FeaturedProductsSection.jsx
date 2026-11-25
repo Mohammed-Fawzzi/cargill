@@ -130,7 +130,7 @@ export default function FeaturedProductsSection({ section }) {
           lineClassName="bg-brand-ink"
         />
 
-        <div className="mb-10 flex flex-col gap-4 sm:mb-14 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-8 flex flex-col gap-4 lg:mb-10 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <h2 className="text-clip-safe text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
               {heading}
@@ -189,12 +189,12 @@ export default function FeaturedProductsSection({ section }) {
                     {activeName}
                   </h3>
                   {activeOverview ? (
-                    <p className="mb-6 line-clamp-3 text-sm leading-7 text-text-muted sm:text-base sm:leading-8">
+                    <p className="mb-4 line-clamp-3 text-sm leading-7 text-text-muted sm:text-base sm:leading-8">
                       {activeOverview}
                     </p>
                   ) : null}
 
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <MagneticButton strength={6}>
                       <Link
                         to={`/products/${active.id}`}

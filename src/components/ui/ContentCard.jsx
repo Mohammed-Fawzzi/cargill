@@ -1,7 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
 import TiltCard from "@/components/ui/TiltCard";
+import { easeOut } from "@/lib/motion";
 
 export default function ContentCard({
   to,
@@ -13,6 +15,7 @@ export default function ContentCard({
   layout = "default",
   imageFit = "cover",
 }) {
+  const reduceMotion = useReducedMotion();
   const horizontal = layout === "horizontal";
   const contain = imageFit === "contain";
 
@@ -35,19 +38,29 @@ export default function ContentCard({
                 : "aspect-[16/10] w-full"
           }`}
         >
-          {imageUrl ? (
-            <SafeImage
-              src={imageUrl}
-              alt={title || ""}
-              className={`h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100 ${
-                contain ? "object-contain p-4" : "object-cover"
-              }`}
-            />
-          ) : (
-            <div className="flex h-full min-h-[180px] items-center justify-center px-4 text-center text-sm font-semibold text-brand-ink/50">
-              {title}
-            </div>
-          )}
+          <motion.div
+            className="h-full w-full"
+            initial={
+              reduceMotion ? false : { clipPath: "inset(100% 0 0 0)" }
+            }
+            whileInView={{ clipPath: "inset(0% 0 0 0)" }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.55, ease: easeOut }}
+          >
+            {imageUrl ? (
+              <SafeImage
+                src={imageUrl}
+                alt={title || ""}
+                className={`h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100 ${
+                  contain ? "object-contain p-4" : "object-cover"
+                }`}
+              />
+            ) : (
+              <div className="flex h-full min-h-[180px] items-center justify-center px-4 text-center text-sm font-semibold text-brand-ink/50">
+                {title}
+              </div>
+            )}
+          </motion.div>
         </TiltCard>
 
         <div
@@ -78,17 +91,10 @@ export default function ContentCard({
           ) : null}
 
           {body ? (
-            <p className="mb-4 line-clamp-2 text-sm leading-7 text-text-muted">
+            <p className="line-clamp-2 text-sm leading-7 text-text-muted">
               {body}
             </p>
           ) : null}
-
-          <span
-            className="mt-auto inline-flex h-8 w-8 items-center justify-center text-brand-ink transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
-            aria-hidden="true"
-          >
-            →
-          </span>
         </div>
 
         <span

@@ -1,10 +1,24 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
+import LtrText from "@/components/ui/LtrText";
 import { useLocale } from "@/context/LocaleContext";
 import { eventDayKey } from "@/lib/time";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
+import { easeOut } from "@/lib/motion";
+
+function daysUntil(date) {
+  const key = eventDayKey(date);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return null;
+  const [year, month, day] = key.split("-").map(Number);
+  const target = new Date(year, month - 1, day);
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diff = Math.ceil((target - start) / (1000 * 60 * 60 * 24));
+  return diff;
+}
 
 export function getEventParts(date, locale) {
   const key = eventDayKey(date);
@@ -37,6 +51,7 @@ export default function EventAgendaRow({
   showImage = true,
 }) {
   const { locale } = useLocale();
+  const reduceMotion = useReducedMotion();
   const title = t(item.title, locale);
   const details = t(item.details, locale);
   const location = t(item.location, locale);
@@ -44,6 +59,13 @@ export default function EventAgendaRow({
   const parts = getEventParts(item.date, locale);
   const upcoming = item.status === "upcoming";
   const meta = [location, time].filter(Boolean).join(" · ");
+  const remaining = useMemo(() => daysUntil(item.date), [item.date]);
+  const countdownLabel =
+    upcoming && remaining != null && remaining > 0
+      ? remaining === 1
+        ? t(UI.dayLeft, locale)
+        : t(UI.daysLeft, locale).replace("{n}", String(remaining))
+      : "";
 
   return (
     <Link
@@ -124,16 +146,25 @@ export default function EventAgendaRow({
               </p>
             ) : null}
             {parts.day ? (
-              <p
-                className={`text-[4.5rem] font-extrabold leading-none tracking-tight ${
+              <motion.p
+                className={`overflow-hidden text-[4.5rem] font-extrabold leading-none tracking-tight ${
                   upcoming ? "text-brand-ink" : "text-text-muted"
                 }`}
+                initial={reduceMotion ? false : { y: "100%", opacity: 0 }}
+                whileInView={{ y: "0%", opacity: 1 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.45, ease: easeOut }}
               >
-                {parts.day}
-              </p>
+                <LtrText>{parts.day}</LtrText>
+              </motion.p>
             ) : null}
             {parts.monthYear ? (
               <p className="mt-2 text-sm text-text-muted">{parts.monthYear}</p>
+            ) : null}
+            {countdownLabel ? (
+              <p className="mt-3 text-xs font-bold tracking-wide text-brand-lime">
+                {countdownLabel}
+              </p>
             ) : null}
           </div>
 

@@ -1,59 +1,58 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
-import OrganicFloat from "@/components/ui/OrganicFloat";
-import MagneticButton from "@/components/ui/MagneticButton";
-import SiteLogo from "@/components/ui/SiteLogo";
+import { TriangleAccent } from "@/components/ui/TriangleMask";
 import { useLocale } from "@/context/LocaleContext";
-import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 
+const BrandTriangle3D = lazy(() => import("@/components/ui/BrandTriangle3D"));
+
 export default function NotFound() {
   const { locale } = useLocale();
-  const { contact, footer } = useSiteData();
-  const company =
-    t(contact?.companyName, locale) || t(footer?.title, locale) || "";
-  const body =
-    t(footer?.body, locale) || t(UI.notFoundBody, locale);
+  const reduceMotion = useReducedMotion();
 
   return (
     <>
       <Seo title="404" path="/404" noindex />
-      <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-brand-forest-deep px-4 pt-navbar text-center">
-        <OrganicFloat className="opacity-50 mix-blend-screen" />
+      <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-brand-forest-deep px-4 pt-navbar text-center text-white">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-40">
+          <Suspense
+            fallback={<TriangleAccent className="h-40 w-48 opacity-40" />}
+          >
+            <BrandTriangle3D className="h-48 w-56 sm:h-60 sm:w-72" />
+          </Suspense>
+        </div>
+
         <motion.div
-          className="relative"
-          initial={{ opacity: 0, y: 24 }}
+          className="relative z-10 max-w-xl"
+          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: easeOut }}
+          transition={{ duration: 0.45, ease: easeOut }}
         >
-          <div className="mb-8 inline-flex rounded-2xl bg-white/95 px-5 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.2)]">
-            <SiteLogo className="h-12 w-auto object-contain" />
-          </div>
-          {company ? (
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-brand-lime">
-              {company}
-            </p>
-          ) : (
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-brand-lime">
-              404
-            </p>
-          )}
-          <h1 className="mb-4 text-4xl font-extrabold text-white sm:text-5xl">
+          <p className="mb-4 text-[11px] font-bold tracking-[0.22em] text-brand-lime">
+            404
+          </p>
+          <h1 className="mb-8 text-[clamp(2rem,6vw,3.5rem)] font-extrabold leading-tight">
             {t(UI.notFoundTitle, locale)}
           </h1>
-          <p className="mb-8 max-w-md text-lg text-white/75">{body}</p>
-          <MagneticButton className="inline-flex">
+          <div className="flex flex-wrap items-center justify-center gap-6">
             <Link
               to="/"
-              className="inline-flex min-h-12 items-center justify-center rounded-md border-2 border-brand-lime px-7 py-3 font-bold text-brand-lime transition-all hover:bg-brand-lime hover:text-brand-ink"
+              className="inline-flex min-h-11 items-center justify-center bg-brand-lime px-6 text-sm font-extrabold text-brand-ink transition-colors hover:bg-brand-lime-hover"
             >
-              {t(UI.backHome, locale)}
+              {t(UI.nav.home, locale)}
             </Link>
-          </MagneticButton>
+            <Link
+              to="/products"
+              className="inline-flex items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-white"
+            >
+              {t(UI.nav.products, locale)}
+              <span aria-hidden="true">←</span>
+            </Link>
+          </div>
         </motion.div>
       </main>
     </>

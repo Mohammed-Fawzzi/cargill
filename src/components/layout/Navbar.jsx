@@ -69,11 +69,14 @@ function ProductsMegaMenu({ categories, locale, onNavigate }) {
   const tiles = categories.slice(0, 4);
 
   return (
-    <div className="absolute inset-x-0 top-full z-40 pt-3">
+    <div
+      className="absolute inset-x-0 top-full z-40 pt-3"
+      style={{ visibility: "visible", pointerEvents: "auto" }}
+    >
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 6 }}
+        exit={{ opacity: 0, y: 6, transitionEnd: { visibility: "hidden" } }}
         transition={{ duration: 0.2, ease: easeOut }}
         className="border border-brand-ink/10 bg-white p-3 shadow-[0_18px_40px_rgba(24,16,96,0.12)] sm:p-4"
       >
@@ -187,7 +190,13 @@ function NavItem({ to, end, label, children, onNavigate, mega, solid }) {
           </>
         )}
       </NavLink>
-      <AnimatePresence>{open ? children : null}</AnimatePresence>
+      <AnimatePresence>
+        {open ? (
+          <div className="contents" style={{ visibility: "visible" }}>
+            {children}
+          </div>
+        ) : null}
+      </AnimatePresence>
     </li>
   );
 }
@@ -335,9 +344,10 @@ export default function Navbar() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transitionEnd: { visibility: "hidden" } }}
             transition={{ duration: 0.22 }}
             className="fixed inset-0 z-30 bg-brand-forest-deep lg:hidden"
+            style={{ visibility: "visible", pointerEvents: "auto" }}
           >
             <div className="flex h-full flex-col px-6 pb-8 pt-24">
               <div className="mb-8 flex items-center justify-between border-b border-white/10 pb-4">

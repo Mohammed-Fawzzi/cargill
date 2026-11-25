@@ -22,12 +22,14 @@ export default function PageTransition() {
 
     setWipe("in");
     const mid = window.setTimeout(() => setWipe("out"), 350);
-    const end = window.setTimeout(() => setWipe(null), 700);
+    const end = window.setTimeout(() => setWipe(null), 720);
     return () => {
       window.clearTimeout(mid);
       window.clearTimeout(end);
     };
   }, [location.pathname, reducedMotion]);
+
+  const active = Boolean(wipe);
 
   return (
     <>
@@ -36,10 +38,11 @@ export default function PageTransition() {
       </div>
 
       <AnimatePresence>
-        {wipe ? (
+        {active ? (
           <motion.div
             key="page-wipe"
             className="pointer-events-none fixed inset-0 z-[60] bg-brand-forest-deep"
+            style={{ visibility: active ? "visible" : "hidden" }}
             initial={{
               clipPath: "polygon(0% 0%, 0% 0%, -20% 100%, -20% 100%)",
             }}
@@ -52,7 +55,10 @@ export default function PageTransition() {
                     clipPath: "polygon(100% 0%, 100% 0%, 120% 100%, 120% 100%)",
                   }
             }
-            exit={{ opacity: 0 }}
+            exit={{
+              clipPath: "polygon(100% 0%, 100% 0%, 120% 100%, 120% 100%)",
+              opacity: 0,
+            }}
             transition={{ duration: 0.35, ease: easeOut }}
             aria-hidden="true"
           />

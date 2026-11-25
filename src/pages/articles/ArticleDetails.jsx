@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, useReducedMotion } from "framer-motion";
@@ -88,6 +88,7 @@ export default function ArticleDetails() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
   const reduceMotion = useReducedMotion();
+  const bodyRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
   const articleQuery = useQuery({
@@ -111,6 +112,26 @@ export default function ArticleDetails() {
   const dateLabel = formatMillis(article?.createdAt, locale);
   const minutes = readingMinutes(`${excerpt} ${content}`);
   const htmlBody = looksLikeHtml(content);
+
+  useEffect(() => {
+    const root = bodyRef.current;
+    if (!root || reduceMotion) return undefined;
+    const nodes = root.querySelectorAll("img, blockquote");
+    if (!nodes.length) return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-inview");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.2 },
+    );
+    nodes.forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
+  }, [content, reduceMotion]);
 
   const related = useMemo(() => {
     const list = (articlesQuery.data || []).filter((item) => item.id !== id);
@@ -247,11 +268,12 @@ export default function ArticleDetails() {
                 {content ? (
                   htmlBody ? (
                     <div
+                      ref={bodyRef}
                       className="article-body"
                       dangerouslySetInnerHTML={{ __html: content }}
                     />
                   ) : (
-                    <div className="article-body whitespace-pre-wrap">
+                    <div ref={bodyRef} className="article-body whitespace-pre-wrap">
                       {content}
                     </div>
                   )

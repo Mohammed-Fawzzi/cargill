@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 import SectionRule from "@/components/ui/SectionRule";
 import PlantStroke from "@/components/ui/PlantStroke";
+import ScrollWords from "@/components/ui/ScrollWords";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
@@ -59,54 +60,6 @@ function accentLastWord(text) {
       </span>
     );
   });
-}
-
-function ScrollWords({ text, progress, reducedMotion, mobile }) {
-  const words = useMemo(
-    () =>
-      String(text || "")
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean),
-    [text],
-  );
-
-  if (!text) return null;
-
-  if (reducedMotion || mobile) {
-    return (
-      <p className="text-[20px] font-medium leading-[1.8] text-brand-ink/85 sm:text-[22px]">
-        {text}
-      </p>
-    );
-  }
-
-  return (
-    <p className="text-[20px] font-medium leading-[1.8] text-brand-ink sm:text-[22px]">
-      {words.map((word, index) => (
-        <Word
-          key={`${word}-${index}`}
-          word={word}
-          index={index}
-          total={words.length}
-          progress={progress}
-        />
-      ))}
-    </p>
-  );
-}
-
-function Word({ word, index, total, progress }) {
-  const start = index / total;
-  const end = (index + 0.85) / total;
-  const opacity = useTransform(progress, [start, end], [0.25, 1]);
-
-  return (
-    <motion.span style={{ opacity }} className="inline">
-      {word}
-      {index < total - 1 ? " " : ""}
-    </motion.span>
-  );
 }
 
 function ExperienceBlock({ locale }) {
@@ -221,7 +174,7 @@ export default function ValuesTrio() {
 
         <div
           ref={paragraphRef}
-          className="mb-12 grid grid-cols-1 gap-10 lg:mb-14 lg:grid-cols-12 lg:gap-8"
+          className="mb-10 grid grid-cols-1 gap-10 lg:mb-12 lg:grid-cols-12 lg:gap-8"
         >
           <div className="lg:col-span-7">
             {about ? (
@@ -239,7 +192,7 @@ export default function ValuesTrio() {
           </div>
         </div>
 
-        <div className="mb-10">
+        <div className="mb-8">
           {vision ? (
             <IndexRow
               number="02"

@@ -164,12 +164,18 @@ export const UI = {
   openInMapsLink: { ar: "افتح في خرائط جوجل", en: "Open in Google Maps" },
   followFacebook: { ar: "فيسبوك", en: "Facebook" },
 
-  notFoundTitle: { ar: "الصفحة غير موجودة", en: "Page not found" },
+  notFoundTitle: { ar: "الصفحة دي مش موجودة", en: "This page isn't here" },
   notFoundBody: {
     ar: "عذراً، الصفحة التي تبحث عنها غير متوفرة.",
     en: "Sorry, the page you are looking for is not available.",
   },
   backHome: { ar: "العودة إلى الصفحة الرئيسية", en: "Back to homepage" },
+  daysLeft: { ar: "باقي {n} يوم", en: "{n} days left" },
+  dayLeft: { ar: "باقي يوم واحد", en: "1 day left" },
+  formSuccessTitle: {
+    ar: "وصلتنا رسالتك، هنكلمك قريب.",
+    en: "We got your message — we'll call you soon.",
+  },
   aboutIntro: {
     ar: "تعرف على رؤيتنا وحلولنا الزراعية المتكاملة.",
     en: "Learn about our vision and integrated agricultural solutions.",

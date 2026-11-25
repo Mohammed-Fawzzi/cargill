@@ -90,6 +90,7 @@ export default function Contact() {
     email: "",
     message: "",
   });
+  const [submitted, setSubmitted] = useState(false);
 
   const onChange = (event) => {
     const { name, value } = event.target;
@@ -106,6 +107,7 @@ export default function Contact() {
       `${form.firstName} ${form.lastName}\n${form.phone}\n${form.email}\n\n${form.message}`,
     );
     window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+    setSubmitted(true);
   };
 
   const pending = isPending;
@@ -270,6 +272,28 @@ export default function Contact() {
                     className="order-1 lg:order-2 lg:col-span-6 lg:col-start-7"
                   >
                     <div className="rounded-lg border border-brand-ink/10 bg-white p-5 sm:p-8">
+                      {submitted ? (
+                        <div className="flex min-h-[280px] flex-col items-center justify-center gap-6 text-center">
+                          <svg
+                            viewBox="0 0 64 56"
+                            className="h-14 w-16"
+                            fill="none"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M32 4 L60 52 H4 Z"
+                              stroke="#88c43c"
+                              strokeWidth="2"
+                              strokeLinejoin="round"
+                              pathLength="1"
+                              className="contact-success-triangle"
+                            />
+                          </svg>
+                          <p className="max-w-xs text-lg font-extrabold leading-8 text-brand-ink">
+                            {t(UI.formSuccessTitle, locale)}
+                          </p>
+                        </div>
+                      ) : (
                       <form
                         onSubmit={onSubmit}
                         className="grid grid-cols-1 gap-6 sm:grid-cols-2"
@@ -356,6 +380,7 @@ export default function Contact() {
                           </p>
                         ) : null}
                       </form>
+                      )}
                     </div>
                   </Reveal>
                 </div>

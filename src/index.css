@@ -69,18 +69,15 @@ html {
   scroll-behavior: smooth;
   overflow-x: clip;
   overflow-y: auto;
-  scrollbar-gutter: stable both-edges;
-  background-color: #181060;
+  scrollbar-gutter: stable;
+  background-color: var(--color-bg);
 }
 
 body {
   overflow-x: clip;
-}
-
-body {
   font-family: "DIN Next LT Arabic", sans-serif;
   font-weight: 500;
-  background-color: #181060;
+  background-color: var(--color-bg);
   color: var(--color-text);
 }
 
@@ -110,10 +107,11 @@ footer {
 }
 
 .nav-glass {
-  background-color: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background-color: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   box-shadow: 0 8px 28px rgba(24, 16, 96, 0.1);
+  isolation: isolate;
 }
 
 @keyframes loading-logo-pulse {
@@ -248,11 +246,29 @@ footer {
 .article-body blockquote {
   margin: 1.75rem 0;
   padding-inline-start: 1.25rem;
-  border-inline-start: 2px solid #88c43c;
+  border-inline-start: 2px solid transparent;
   color: #181060;
   font-size: 1.35rem;
   font-weight: 700;
   line-height: 1.7;
+  position: relative;
+}
+
+.article-body blockquote::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: #88c43c;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.article-body blockquote.is-inview::before {
+  transform: scaleY(1);
 }
 
 .article-body img {
@@ -260,6 +276,37 @@ footer {
   width: 100%;
   border-radius: 6px;
   margin: 1.75rem 0;
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.article-body img.is-inview {
+  clip-path: inset(0% 0 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-body blockquote::before,
+  .article-body img {
+    transition: none;
+    transform: none;
+    clip-path: none;
+  }
+
+  .article-body blockquote::before {
+    transform: scaleY(1);
+  }
+}
+
+.contact-success-triangle {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: contact-triangle-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes contact-triangle-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 .article-body table {

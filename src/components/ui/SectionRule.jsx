@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import useCountUp from "@/hooks/useCountUp";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 import { easeOut } from "@/lib/motion";
 
@@ -15,22 +14,7 @@ export default function SectionRule({
   const { reducedMotion } = useMotionPrefs();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, amount: 0.6 });
-  const [active, setActive] = useState(false);
-
-  const target = useMemo(() => {
-    const digits = String(number ?? "").replace(/\D/g, "");
-    return Number(digits) || 0;
-  }, [number]);
-
-  const pad = String(number ?? "").replace(/\D/g, "").length || 2;
-  const counted = useCountUp(target, active, 600);
-  const display = reducedMotion || !active
-    ? String(number).padStart(pad, "0")
-    : String(counted).padStart(pad, "0");
-
-  useEffect(() => {
-    if (inView) setActive(true);
-  }, [inView]);
+  const display = String(number ?? "").padStart(2, "0");
 
   return (
     <div ref={ref} className={className}>
@@ -45,9 +29,14 @@ export default function SectionRule({
           transition={{ duration: 0.6, ease: easeOut }}
         />
       </span>
-      <p className={`shrink-0 text-[11px] font-bold tracking-[0.2em] ${numberClassName}`}>
+      <motion.p
+        className={`shrink-0 text-[11px] font-bold tracking-[0.2em] ${numberClassName}`}
+        initial={reducedMotion ? false : { opacity: 0 }}
+        animate={inView || reducedMotion ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.45, ease: easeOut }}
+      >
         {display}
-      </p>
+      </motion.p>
     </div>
   );
 }

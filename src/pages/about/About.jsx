@@ -1,13 +1,16 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useScroll } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import SectionRule from "@/components/ui/SectionRule";
 import PlantStroke from "@/components/ui/PlantStroke";
+import ScrollWords from "@/components/ui/ScrollWords";
 import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
+import useMotionPrefs from "@/hooks/useMotionPrefs";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories } from "@/services/cms/products";
 import { useLocale } from "@/context/LocaleContext";
@@ -38,7 +41,13 @@ function SectionLabel({ number, label }) {
 
 export default function About() {
   const { locale } = useLocale();
+  const { reducedMotion } = useMotionPrefs();
   const { contact, isPending, isError } = useSiteData();
+  const aboutRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: aboutRef,
+    offset: ["start 0.85", "end 0.35"],
+  });
 
   const categoriesQuery = useQuery({
     queryKey: ["cms", "categories"],
@@ -112,17 +121,24 @@ export default function About() {
                         number="01"
                         label={t(UI.whoWeAre, locale)}
                       />
-                      <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
+                      <div
+                        ref={aboutRef}
+                        className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8"
+                      >
                         <div className="lg:col-span-7">
                           {lead ? (
                             <p className="mb-5 text-[1.35rem] font-extrabold leading-[1.7] text-brand-ink sm:text-[1.5rem]">
                               {lead}
                             </p>
                           ) : null}
-                          {rest ? (
-                            <p className="whitespace-pre-wrap text-[1.3125rem] font-medium leading-[1.9] text-brand-ink/85">
-                              {rest}
-                            </p>
+                          {rest || about ? (
+                            <ScrollWords
+                              text={rest || about}
+                              progress={scrollYProgress}
+                              reducedMotion={reducedMotion}
+                              mobile={false}
+                              className="whitespace-pre-wrap text-[1.3125rem] font-medium leading-[1.9] text-brand-ink sm:text-[1.4rem]"
+                            />
                           ) : null}
                         </div>
                         <div className="lg:col-span-4 lg:col-start-9">

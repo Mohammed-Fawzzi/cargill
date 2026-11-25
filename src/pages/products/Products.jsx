@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { IoSearchOutline } from "react-icons/io5";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
@@ -19,6 +20,7 @@ import { resolvePageHero } from "@/lib/pageHero";
 import { toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
+import { easeOut } from "@/lib/motion";
 
 function productMatchesNeedle(item, needle, categoryMap) {
   if (!needle) return true;
@@ -75,17 +77,25 @@ function ProductGroup({ group, locale, index }) {
         </span>
       </div>
 
-      <ContentGrid count={group.items.length}>
-        {group.items.map((item) => (
-          <ProductCard
+      <ContentGrid>
+        {group.items.map((item, itemIndex) => (
+          <motion.div
             key={item.id}
-            to={`/products/${item.id}`}
-            imageUrl={item.imageUrl}
-            title={t(item.name, locale)}
-            subcategory={t(item._subName, locale)}
-            origin={t(item.originCountry, locale)}
-            layout={layout}
-          />
+            layout
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, delay: itemIndex * 0.06, ease: easeOut }}
+          >
+            <ProductCard
+              to={`/products/${item.id}`}
+              imageUrl={item.imageUrl}
+              title={t(item.name, locale)}
+              subcategory={t(item._subName, locale)}
+              origin={t(item.originCountry, locale)}
+              layout={layout}
+            />
+          </motion.div>
         ))}
       </ContentGrid>
     </section>
@@ -95,6 +105,7 @@ function ProductGroup({ group, locale, index }) {
 export default function Products() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
+  const reduceMotion = useReducedMotion();
   const sectionQuery = useHomepageSection("product_categories");
   const [params, setParams] = useSearchParams();
   const sectionId = params.get("section") || "";
@@ -310,27 +321,55 @@ export default function Products() {
                   </SecondaryButton>
                 ) : null}
               </div>
-            ) : showGrouped ? (
-              groups.map((group, index) => (
-                <Reveal key={group.id} delay={Math.min(index * 0.04, 0.16)}>
-                  <ProductGroup group={group} locale={locale} index={index} />
-                </Reveal>
-              ))
             ) : (
-              <ContentGrid count={filtered.length}>
-                {filtered.map((item, index) => (
-                  <Reveal key={item.id} delay={Math.min(index * 0.03, 0.18)}>
-                    <ProductCard
-                      to={`/products/${item.id}`}
-                      imageUrl={item.imageUrl}
-                      title={t(item.name, locale)}
-                      subcategory={t(item._subName, locale)}
-                      origin={t(item.originCountry, locale)}
-                      layout={flatLayout}
-                    />
-                  </Reveal>
-                ))}
-              </ContentGrid>
+              <LayoutGroup>
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {showGrouped ? (
+                    groups.map((group, index) => (
+                      <motion.div
+                        key={group.id}
+                        layout={!reduceMotion}
+                        initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{
+                          duration: 0.3,
+                          delay: Math.min(index * 0.04, 0.16),
+                          ease: easeOut,
+                        }}
+                      >
+                        <ProductGroup group={group} locale={locale} index={index} />
+                      </motion.div>
+                    ))
+                  ) : (
+                    <ContentGrid>
+                      {filtered.map((item, index) => (
+                        <motion.div
+                          key={item.id}
+                          layout={!reduceMotion}
+                          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{
+                            duration: 0.3,
+                            delay: Math.min(index * 0.06, 0.3),
+                            ease: easeOut,
+                          }}
+                        >
+                          <ProductCard
+                            to={`/products/${item.id}`}
+                            imageUrl={item.imageUrl}
+                            title={t(item.name, locale)}
+                            subcategory={t(item._subName, locale)}
+                            origin={t(item.originCountry, locale)}
+                            layout={flatLayout}
+                          />
+                        </motion.div>
+                      ))}
+                    </ContentGrid>
+                  )}
+                </AnimatePresence>
+              </LayoutGroup>
             )}
           </div>
         </main>

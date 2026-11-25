@@ -1,9 +1,46 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
 import { TriangleAccent } from "@/components/ui/TriangleMask";
 import { easeOut } from "@/lib/motion";
+
+function TitleLines({ title, reduceMotion }) {
+  const lines = useMemo(() => {
+    const parts = String(title || "")
+      .trim()
+      .split(/\n+/)
+      .filter(Boolean);
+    if (parts.length > 1) return parts;
+    const words = String(title || "").trim().split(/\s+/).filter(Boolean);
+    if (words.length <= 3) return [words.join(" ")];
+    const mid = Math.ceil(words.length / 2);
+    return [words.slice(0, mid).join(" "), words.slice(mid).join(" ")];
+  }, [title]);
+
+  if (!title) return null;
+
+  return (
+    <h1 className="text-[clamp(2.75rem,8vw,6.5rem)] font-extrabold leading-[0.95] tracking-tight text-brand-ink">
+      {lines.map((line, index) => (
+        <span key={`${line}-${index}`} className="block overflow-hidden">
+          <motion.span
+            className="text-clip-safe block"
+            initial={reduceMotion ? false : { y: "110%", opacity: 0 }}
+            animate={{ y: "0%", opacity: 1 }}
+            transition={{
+              duration: 0.55,
+              delay: reduceMotion ? 0 : 0.12 + index * 0.1,
+              ease: easeOut,
+            }}
+          >
+            {line}
+          </motion.span>
+        </span>
+      ))}
+    </h1>
+  );
+}
 
 export default function PageBanner({
   title,
@@ -19,12 +56,7 @@ export default function PageBanner({
 
   return (
     <header className="bg-white pt-[140px] pb-16">
-      <motion.div
-        className="container mx-auto px-4 lg:px-8"
-        initial={reduceMotion ? false : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.45, ease: easeOut }}
-      >
+      <div className="container mx-auto px-4 lg:px-8">
         {crumbs.length > 0 ? (
           <div className="mb-8 flex items-center gap-4">
             <nav
@@ -58,7 +90,14 @@ export default function PageBanner({
                 })}
               </ol>
             </nav>
-            <div className="h-px min-w-0 flex-1 bg-brand-ink" aria-hidden="true" />
+            <span className="relative h-px min-w-0 flex-1 overflow-hidden" aria-hidden="true">
+              <motion.span
+                className="absolute inset-0 origin-left bg-brand-ink rtl:origin-right"
+                initial={reduceMotion ? false : { scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.6, ease: easeOut, delay: 0.08 }}
+              />
+            </span>
           </div>
         ) : null}
 
@@ -86,15 +125,16 @@ export default function PageBanner({
                 ))}
               </p>
             ) : null}
-            {title ? (
-              <h1 className="text-[clamp(2.75rem,8vw,6.5rem)] font-extrabold leading-[0.95] tracking-tight text-brand-ink">
-                {title}
-              </h1>
-            ) : null}
+            <TitleLines title={title} reduceMotion={reduceMotion} />
             {subtitle ? (
-              <p className="mt-5 max-w-[560px] text-base leading-8 text-text-muted sm:text-lg sm:leading-9">
+              <motion.p
+                className="mt-5 max-w-[560px] text-base leading-8 text-text-muted sm:text-lg sm:leading-9"
+                initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.28, ease: easeOut }}
+              >
                 {subtitle}
-              </p>
+              </motion.p>
             ) : null}
           </div>
 
@@ -109,16 +149,23 @@ export default function PageBanner({
         </div>
 
         {imageUrl ? (
-          <div className="mt-10 overflow-hidden rounded-lg bg-surface-muted">
+          <motion.div
+            className="mt-10 overflow-hidden rounded-lg bg-surface-muted"
+            initial={
+              reduceMotion ? false : { clipPath: "inset(100% 0 0 0)" }
+            }
+            animate={{ clipPath: "inset(0% 0 0 0)" }}
+            transition={{ duration: 0.7, delay: 0.2, ease: easeOut }}
+          >
             <SafeImage
               src={imageUrl}
               alt=""
               className="h-[32vh] w-full object-cover"
               aria-hidden="true"
             />
-          </div>
+          </motion.div>
         ) : null}
-      </motion.div>
+      </div>
     </header>
   );
 }

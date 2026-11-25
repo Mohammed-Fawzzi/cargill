@@ -1,11 +1,13 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import Reveal from "@/components/ui/Reveal";
 import SafeImage from "@/components/ui/SafeImage";
+import TiltCard from "@/components/ui/TiltCard";
+import LtrText from "@/components/ui/LtrText";
 import ContentGrid, { cardLayoutForCount } from "@/components/ui/ContentGrid";
 import { PrimaryButton, SecondaryButton } from "@/components/ui/AppButton";
 import { TriangleAccent } from "@/components/ui/TriangleMask";
@@ -19,12 +21,22 @@ import { easeOut } from "@/lib/motion";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 
+function looksLtrValue(value) {
+  return /[\d%]/.test(String(value || "")) || /سم3|لتر|ml|L\b/i.test(String(value || ""));
+}
+
+function ValueText({ value }) {
+  if (!value) return null;
+  if (looksLtrValue(value)) return <LtrText>{value}</LtrText>;
+  return value;
+}
+
 function columnLabel(column, locale) {
   if (column?.id === "phi") return t(UI.phiLabel, locale);
   return t(column?.name, locale);
 }
 
-function UsageTable({ columns, rows, locale }) {
+function UsageTable({ columns, rows, locale, reduceMotion }) {
   if (!columns?.length || !rows?.length) return null;
 
   return (
@@ -44,10 +56,18 @@ function UsageTable({ columns, rows, locale }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr
+            {rows.map((row, index) => (
+              <motion.tr
                 key={row.id}
                 className="border-b border-brand-ink/10 transition-colors hover:bg-surface-muted"
+                initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{
+                  duration: 0.3,
+                  delay: index * 0.05,
+                  ease: easeOut,
+                }}
               >
                 {columns.map((col) => {
                   const value = t(row.cells?.[col.id], locale);
@@ -61,25 +81,33 @@ function UsageTable({ columns, rows, locale }) {
                           : "text-text-muted"
                       }`}
                     >
-                      {value}
+                      <ValueText value={value} />
                     </td>
                   );
                 })}
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
       </div>
 
       <div className="space-y-4 md:hidden">
-        {rows.map((row) => {
+        {rows.map((row, index) => {
           const cropCol = columns.find((col) => col.id === "crop") || columns[0];
           const title = t(row.cells?.[cropCol?.id], locale);
           const rest = columns.filter((col) => col.id !== cropCol?.id);
           return (
-            <article
+            <motion.article
               key={row.id}
               className="border-b border-brand-ink/15 pb-4"
+              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{
+                duration: 0.3,
+                delay: index * 0.05,
+                ease: easeOut,
+              }}
             >
               {title ? (
                 <h3 className="mb-3 text-base font-extrabold text-brand-ink">
@@ -105,13 +133,13 @@ function UsageTable({ columns, rows, locale }) {
                             : "text-brand-ink"
                         }`}
                       >
-                        {value}
+                        <ValueText value={value} />
                       </dd>
                     </div>
                   );
                 })}
               </dl>
-            </article>
+            </motion.article>
           );
         })}
       </div>
@@ -125,6 +153,8 @@ export default function ProductDetails() {
   const { contact } = useSiteData();
   const reduceMotion = useReducedMotion();
   const [activeImage, setActiveImage] = useState(0);
+  const mainCtaRef = useRef(null);
+  const [showStickyWa, setShowStickyWa] = useState(false);
 
   const productQuery = useQuery({
     queryKey: ["cms", "product", id],
@@ -206,6 +236,20 @@ export default function ProductDetails() {
     name || "",
   );
   const waHref = toWhatsAppHref(phone, waMessage);
+
+  useEffect(() => {
+    const node = mainCtaRef.current;
+    if (!node || !waHref) {
+      setShowStickyWa(false);
+      return undefined;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyWa(!entry.isIntersecting),
+      { threshold: 0.15 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [waHref, product?.id]);
 
   const crumbs = [
     { label: t(UI.nav.products, locale), to: "/products" },
@@ -295,23 +339,34 @@ export default function ProductDetails() {
 
                     {facts.length ? (
                       <dl className="mt-8 border-t border-brand-ink/15">
-                        {facts.map((fact) => (
-                          <div
+                        {facts.map((fact, index) => (
+                          <motion.div
                             key={fact.label}
                             className="grid grid-cols-[7.5rem_1fr] gap-4 border-b border-brand-ink/15 py-3.5 sm:grid-cols-[9rem_1fr]"
+                            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, amount: 0.4 }}
+                            transition={{
+                              duration: 0.35,
+                              delay: index * 0.05,
+                              ease: easeOut,
+                            }}
                           >
                             <dt className="text-xs font-semibold text-text-muted">
                               {fact.label}
                             </dt>
                             <dd className="text-sm font-semibold leading-6 text-brand-ink">
-                              {fact.value}
+                              <ValueText value={fact.value} />
                             </dd>
-                          </div>
+                          </motion.div>
                         ))}
                       </dl>
                     ) : null}
 
-                    <div className="mt-8 hidden flex-wrap items-center gap-5 md:flex">
+                    <div
+                      ref={mainCtaRef}
+                      className="mt-8 flex flex-wrap items-center gap-5"
+                    >
                       {waHref ? (
                         <PrimaryButton href={waHref}>
                           {t(UI.askAboutProductWa, locale)}
@@ -326,7 +381,7 @@ export default function ProductDetails() {
                   </div>
 
                   <div className="order-1 lg:order-2 lg:col-span-6">
-                    <div className="relative overflow-hidden rounded-lg bg-surface-muted">
+                    <TiltCard className="relative overflow-hidden rounded-lg bg-surface-muted">
                       <TriangleAccent className="absolute end-4 top-4 z-10 h-3.5 w-4" />
                       {images[activeImage] ? (
                         <motion.div
@@ -346,7 +401,7 @@ export default function ProductDetails() {
                           {name}
                         </div>
                       )}
-                    </div>
+                    </TiltCard>
                     {images.length > 1 ? (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {images.map((src, index) => (
@@ -394,7 +449,7 @@ export default function ProductDetails() {
                       </span>
                       {item.percentage ? (
                         <span className="text-[40px] font-extrabold leading-none tracking-tight text-brand-ink">
-                          {item.percentage}
+                          <LtrText>{item.percentage}</LtrText>
                         </span>
                       ) : null}
                     </li>
@@ -450,6 +505,7 @@ export default function ProductDetails() {
                   columns={product.agriculturalColumns}
                   rows={product.agriculturalUses}
                   locale={locale}
+                  reduceMotion={reduceMotion}
                 />
                 <p className="mt-5 text-xs leading-6 text-text-muted">
                   {t(UI.usageNote, locale)}
@@ -492,13 +548,22 @@ export default function ProductDetails() {
             </section>
           ) : null}
 
-          {waHref ? (
-            <div className="fixed inset-x-0 bottom-0 z-30 border-t border-brand-ink/15 bg-white p-3 md:hidden">
-              <PrimaryButton href={waHref} className="w-full">
-                {t(UI.askAboutProductWa, locale)}
-              </PrimaryButton>
-            </div>
-          ) : null}
+          <AnimatePresence>
+            {waHref && showStickyWa ? (
+              <motion.div
+                key="sticky-wa"
+                initial={reduceMotion ? false : { y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ duration: 0.3, ease: easeOut }}
+                className="fixed inset-x-0 bottom-0 z-30 border-t border-brand-ink/15 bg-white p-3 md:hidden"
+              >
+                <PrimaryButton href={waHref} className="w-full">
+                  {t(UI.askAboutProductWa, locale)}
+                </PrimaryButton>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </main>
       ) : null}
     </>
