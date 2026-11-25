@@ -1,16 +1,13 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import CurtainCard from "@/components/ui/CurtainCard";
-import DragRail from "@/components/ui/DragRail";
+import SafeImage from "@/components/ui/SafeImage";
 import SectionIntro from "@/components/ui/SectionIntro";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
-
-const MAX_CARDS = 6;
 
 function stripHtml(value) {
   return String(value || "")
@@ -38,7 +35,7 @@ function formatArticleDate(value, locale) {
   }
 }
 
-function FieldNoteCard({ item, locale, index, reducedMotion }) {
+function FieldCard({ item, locale, large, index, reducedMotion }) {
   const title = t(item.title, locale);
   const excerpt = t(item.excerpt, locale);
   const content = t(item.content, locale);
@@ -48,10 +45,21 @@ function FieldNoteCard({ item, locale, index, reducedMotion }) {
   const minutesLabel =
     minutes > 0 ? `${minutes} ${t(UI.readingMinutes, locale)}` : "";
   const label = [category, dateLabel, minutesLabel].filter(Boolean).join(" / ");
+  const meta = large ? label : dateLabel;
+  const showExcerpt = large && excerpt;
+  const shellClass = large
+    ? "group flex h-full min-h-[26rem] flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-[#110E33] lg:min-h-[34rem]"
+    : "group flex h-full min-h-40 overflow-hidden rounded-2xl border border-white/[0.06] bg-[#110E33]";
+  const frameClass = large
+    ? "curtain-frame relative min-h-[14rem] flex-1"
+    : "curtain-frame relative w-[42%] shrink-0";
+  const titleClass = large
+    ? "font-display text-2xl font-bold leading-snug text-white md:text-[2rem]"
+    : "font-display text-lg font-bold leading-snug text-white";
 
   return (
-    <motion.article
-      className="w-[min(78vw,20rem)] shrink-0 snap-start self-start md:w-[22rem]"
+    <motion.div
+      className="h-full"
       initial={reducedMotion ? false : { opacity: 0, y: 22 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -61,20 +69,46 @@ function FieldNoteCard({ item, locale, index, reducedMotion }) {
         ease: easeOut,
       }}
     >
-      <CurtainCard
-        to={`/articles/${item.id}`}
-        imageUrl={item.imageUrl}
-        imageAlt={title}
-        label={label}
-        title={title}
-        description={excerpt}
-        className="h-full rounded-xl"
-      >
-        <span className="mt-4 text-xs font-semibold text-brand-lime">
-          {t(UI.readFieldGuide, locale)}
-        </span>
-      </CurtainCard>
-    </motion.article>
+      <Link to={`/articles/${item.id}`} className={shellClass}>
+        <div className={frameClass}>
+          {item.imageUrl ? (
+            <SafeImage
+              src={item.imageUrl}
+              alt={title}
+              width={large ? 1200 : 640}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-[#0A0820]" />
+          )}
+          {item.imageUrl ? (
+            <div className="curtain-card__cover">
+              <SafeImage
+                src={item.imageUrl}
+                alt=""
+                width={large ? 1200 : 640}
+                className="curtain-card__photo"
+              />
+              <div className="curtain-card__shade" />
+            </div>
+          ) : null}
+        </div>
+        <div className={large ? "p-6 md:p-8" : "flex min-w-0 flex-1 flex-col justify-end p-4"}>
+          {meta ? (
+            <p className="mb-2 text-xs text-white/55">{meta}</p>
+          ) : null}
+          <h3 className={titleClass}>{title}</h3>
+          {showExcerpt ? (
+            <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-white/60">
+              {excerpt}
+            </p>
+          ) : null}
+          <span className="mt-3 inline-block text-sm font-semibold text-brand-lime">
+            {t(UI.readFieldGuide, locale)}
+          </span>
+        </div>
+      </Link>
+    </motion.div>
   );
 }
 
@@ -83,15 +117,16 @@ export default function ArticlesSection({ section }) {
   const { reducedMotion } = useMotionPrefs();
 
   const items = useMemo(
-    () => (section?.items || []).filter(Boolean).slice(0, MAX_CARDS),
+    () => (section?.items || []).filter(Boolean).slice(0, 3),
     [section?.items],
   );
 
   const heading =
     t(section?.data?.title, locale) || t(UI.knowledgeTitle, locale);
   const body = t(section?.data?.body, locale) || t(UI.knowledgeBody, locale);
+  const [lead, ...rest] = items;
 
-  if (!items.length) return null;
+  if (!lead) return null;
 
   return (
     <motion.section
@@ -104,7 +139,7 @@ export default function ArticlesSection({ section }) {
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionIntro
-          className="md:mb-14"
+          className="md:mb-10"
           label={t(UI.nav.articles, locale)}
           title={heading}
           body={body}
@@ -115,17 +150,28 @@ export default function ArticlesSection({ section }) {
           }
         />
 
-        <DragRail dots>
-          {items.map((item, index) => (
-            <FieldNoteCard
-              key={item.id}
-              item={item}
-              locale={locale}
-              index={index}
-              reducedMotion={reducedMotion}
-            />
-          ))}
-        </DragRail>
+        <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[1.45fr_1fr]">
+          <FieldCard
+            item={lead}
+            locale={locale}
+            large
+            index={0}
+            reducedMotion={reducedMotion}
+          />
+          {rest.length ? (
+            <div className="grid gap-4">
+              {rest.map((item, index) => (
+                <FieldCard
+                  key={item.id}
+                  item={item}
+                  locale={locale}
+                  index={index + 1}
+                  reducedMotion={reducedMotion}
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
       </div>
     </motion.section>
   );
