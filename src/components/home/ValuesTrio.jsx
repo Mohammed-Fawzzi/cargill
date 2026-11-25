@@ -66,7 +66,7 @@ export default function ValuesTrio() {
 
   return (
     <motion.section
-      className="relative bg-[#0A0820] py-20 md:py-24"
+      className="relative bg-transparent py-20 md:py-24"
       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
@@ -118,16 +118,29 @@ export default function ValuesTrio() {
           </div>
 
           <div className="order-1 space-y-6 lg:order-2 lg:col-span-7">
-            <p className="text-xs font-medium tracking-wide text-brand-lime">
+            <motion.p
+              className="text-xs font-medium tracking-wide text-brand-lime"
+              initial={reducedMotion ? false : { opacity: 0, y: 6 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.4, ease: easeOut }}
+            >
               {t(UI.whoWeAre, locale)}
-            </p>
+            </motion.p>
 
             {heading ? (
-              <AccentHeading
-                as="h2"
-                text={heading}
-                className="font-display text-3xl font-bold leading-tight text-white md:text-5xl"
-              />
+              <motion.div
+                initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 0.45, ease: easeOut, delay: reducedMotion ? 0 : 0.12 }}
+              >
+                <AccentHeading
+                  as="h2"
+                  text={heading}
+                  className="font-display text-3xl font-bold leading-tight text-white md:text-5xl"
+                />
+              </motion.div>
             ) : null}
 
             {about ? (

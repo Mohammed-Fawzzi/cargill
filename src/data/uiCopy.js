@@ -162,7 +162,7 @@ export const UI = {
     en: "No upcoming events right now — follow us on Facebook for updates",
   },
   noPastEvents: {
-    ar: "مفيش فعاليات منتهية للعرض حالياً.",
+    ar: "لا توجد فعاليات منتهية للعرض حالياً.",
     en: "No past events to show right now.",
   },
   viewEvent: { ar: "عرض التفاصيل", en: "View details" },

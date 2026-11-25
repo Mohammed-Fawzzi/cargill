@@ -198,13 +198,13 @@ export default function EventDetails() {
         <ErrorState onRetry={eventQuery.refetch} />
       ) : null}
       {!eventQuery.isPending && !eventQuery.isError && !event ? (
-        <main className="pt-navbar min-h-screen bg-[#0A0820]">
+        <main className="pt-navbar min-h-screen bg-transparent">
           <EmptyState message={t(UI.missingEvent, locale)} />
         </main>
       ) : null}
       {!eventQuery.isPending && event ? (
         <main
-          className={`min-h-screen bg-[#0A0820] text-white ${
+          className={`min-h-screen bg-transparent text-white ${
             !isEnded ? "pb-28 md:pb-0" : ""
           }`}
         >
@@ -387,7 +387,7 @@ export default function EventDetails() {
                 <iframe
                   title={location}
                   src={mapSrc}
-                  className="h-[320px] w-full border-0 grayscale"
+                  className="h-[320px] w-full border-0"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />

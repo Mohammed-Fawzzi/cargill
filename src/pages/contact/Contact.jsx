@@ -131,7 +131,7 @@ export default function Contact() {
       {pending ? <Loading /> : null}
       {!pending && error ? <ErrorState /> : null}
       {!pending && !error ? (
-        <main className="min-h-screen bg-[#0A0820] text-white">
+        <main className="min-h-screen bg-transparent text-white">
           <PageBanner
             title={heading}
             subtitle={hoursLine || description}
@@ -411,7 +411,7 @@ export default function Contact() {
                     <iframe
                       title={heading}
                       src={mapSrc}
-                      className="h-[280px] w-full border-0 grayscale md:h-[380px]"
+                      className="h-[280px] w-full border-0 md:h-[380px]"
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
                     />

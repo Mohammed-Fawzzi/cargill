@@ -20,12 +20,13 @@ export default function ProductCard({
   const badge = subcategory || category || "";
   const metaLabel = subcategory || category || "";
   const mediaH = "16rem";
+  const mediaHover = "19.2rem";
 
   return (
     <Link
       to={to}
-      className="ix-card group relative flex h-full flex-col justify-between overflow-hidden bg-[#1B1931] text-white transition-colors duration-300 hover:bg-[#1F1D35]"
-      style={{ "--ix-media-h": mediaH }}
+      className="ix-card group relative flex flex-col justify-between overflow-hidden bg-[#1B1931] text-white transition-colors duration-300 hover:bg-[#1F1D35]"
+      style={{ "--ix-media-h": mediaH, "--ix-media-h-hover": mediaHover }}
     >
       <span
         className="absolute inset-x-0 top-0 h-1 bg-transparent transition-colors duration-300 group-hover:bg-brand-lime"
@@ -33,24 +34,21 @@ export default function ProductCard({
       />
 
       <div>
-        <div
-          className="ix-card__media product-stage relative mx-5 mt-5 overflow-hidden bg-[#0D0B23] p-6"
-          style={{ height: mediaH }}
-        >
-          {imageUrl ? (
-            <div className="relative z-10 flex h-full w-full items-center justify-center">
+        <div className="ix-card__media product-stage relative mx-5 mt-5 overflow-hidden bg-[#0D0B23]">
+          <div className="ix-card__zoom p-6">
+            {imageUrl ? (
               <SafeImage
                 src={imageUrl}
                 alt={title || ""}
                 width={640}
                 className="max-h-full max-w-[80%] object-contain"
               />
-            </div>
-          ) : (
-            <div className="relative z-10 flex h-full items-center justify-center px-4 text-center text-sm font-semibold text-white/40">
-              {title}
-            </div>
-          )}
+            ) : (
+              <span className="px-4 text-center text-sm font-semibold text-white/40">
+                {title}
+              </span>
+            )}
+          </div>
 
           {badge ? (
             <span className="absolute end-3 top-3 z-20 bg-[#292740] px-2 py-0.5 text-[11px] font-medium tracking-wide text-brand-lime">

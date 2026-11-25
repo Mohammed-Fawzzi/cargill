@@ -16,6 +16,7 @@ import { eventDayKey } from "@/lib/time";
 import { resolveCompanySocial } from "@/utils/social";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
+import SlidingTabs from "@/components/ui/SlidingTabs";
 
 const FILTERS = [
   ["all", UI.allEvents],
@@ -129,7 +130,7 @@ export default function Events() {
         />
       ) : null}
       {!pending && !error ? (
-        <main className="min-h-screen bg-[#0A0820] text-white">
+        <main className="min-h-screen bg-transparent text-white">
           <PageBanner
             title={hero.title}
             subtitle={hero.subtitle}
@@ -141,32 +142,29 @@ export default function Events() {
           />
 
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <div className="inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-full bg-[#1B1931] p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {FILTERS.map(([key, label]) => {
-                const active = filter === key;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setFilter(key)}
-                    className={`whitespace-nowrap rounded-full px-4 py-2 text-sm transition-all ${
-                      active
-                        ? "bg-brand-lime font-semibold text-[#0A0820]"
-                        : "font-medium text-white/55 hover:text-white"
+            <SlidingTabs
+              rounded
+              value={filter}
+              onChange={setFilter}
+              trackClassName="bg-[#1B1931] p-1.5"
+              items={FILTERS.map(([key, label]) => ({
+                id: key,
+                label: t(label, locale),
+                count: counts[key] || 0,
+              }))}
+              renderLabel={(item, active) => (
+                <>
+                  {item.label}
+                  <span
+                    className={`ms-1 text-[11px] ${
+                      active ? "opacity-80" : "text-brand-lime/80"
                     }`}
                   >
-                    {t(label, locale)}
-                    <span
-                      className={`ms-1 text-[11px] ${
-                        active ? "opacity-80" : "text-brand-lime/80"
-                      }`}
-                    >
-                      ({counts[key] || 0})
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                    ({item.count})
+                  </span>
+                </>
+              )}
+            />
           </div>
 
           <section className="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 md:py-14">

@@ -106,7 +106,7 @@ export default function Articles() {
         />
       ) : null}
       {!pending && !error ? (
-        <main className="min-h-screen bg-[#0A0820] text-white">
+        <main className="min-h-screen bg-transparent text-white">
           <PageBanner
             title={hero.title}
             subtitle={hero.subtitle}
@@ -226,10 +226,11 @@ export default function Articles() {
                 ) : null}
 
                 {visibleRest.length > 0 ? (
-                  <div className="mt-10 grid grid-cols-1 gap-6 md:mt-14 md:grid-cols-2">
+                  <div className="mt-10 grid grid-cols-1 items-start gap-6 md:mt-14 md:grid-cols-2">
                     {visibleRest.map((item, index) => (
                       <motion.div
                         key={item.id}
+                        className="self-start"
                         initial={reducedMotion ? false : { opacity: 0, y: 22 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, amount: 0.15 }}

@@ -59,11 +59,57 @@ function BrandWordReveal({ word, active, reducedMotion }) {
   );
 }
 
+function FooterColumn({ children, delay = 0, active, reducedMotion, className = "" }) {
+  return (
+    <motion.div
+      className={className}
+      initial={reducedMotion ? false : { opacity: 0, y: 14 }}
+      animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
+      transition={{ duration: 0.4, ease: easeOut, delay: reducedMotion ? 0 : delay }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function FooterLink({ to, href, children, delay = 0, active, reducedMotion, className = "" }) {
+  const motionProps = {
+    initial: reducedMotion ? false : { opacity: 0, y: 10 },
+    animate: active ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 },
+    transition: {
+      duration: 0.35,
+      ease: easeOut,
+      delay: reducedMotion ? 0 : delay,
+    },
+  };
+
+  if (to) {
+    return (
+      <motion.li {...motionProps}>
+        <Link to={to} className={`ix-link ix-footer-link ${className}`.trim()}>
+          {children}
+        </Link>
+      </motion.li>
+    );
+  }
+
+  return (
+    <motion.div {...motionProps} className={className}>
+      <a href={href} className="ix-link ix-footer-link">
+        {children}
+      </a>
+    </motion.div>
+  );
+}
+
 export default function Footer() {
   const { locale } = useLocale();
   const { reducedMotion } = useMotionPrefs();
   const brandRef = useRef(null);
+  const rootRef = useRef(null);
   const brandInView = useInView(brandRef, { once: true, amount: 0.4 });
+  const footerInView = useInView(rootRef, { once: true, amount: 0.18 });
+  const active = reducedMotion || footerInView;
   const { contact, footer } = useSiteData();
   const companyName = t(contact?.companyName, locale);
   const description = t(footer?.body, locale) || t(contact?.about, locale);
@@ -89,14 +135,27 @@ export default function Footer() {
   const brandWord =
     (companyName || title || "كارجيل").split(/\s+/)[0] || "كارجيل";
 
+  let linkStep = 0;
+  const nextDelay = () => {
+    const value = 0.08 + linkStep * 0.04;
+    linkStep += 1;
+    return value;
+  };
+
   return (
     <footer
-      className="relative border-t border-white/8 bg-[#070517] pt-16 pb-10 text-sm text-white"
+      ref={rootRef}
+      className="relative border-t border-white/8 bg-transparent pt-16 pb-10 text-sm text-white"
       aria-label="footer"
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="grid grid-cols-1 gap-10 border-b border-white/8 pb-12 md:grid-cols-2 lg:grid-cols-12">
-          <div className="space-y-4 lg:col-span-4">
+          <FooterColumn
+            className="space-y-4 lg:col-span-4"
+            delay={0}
+            active={active}
+            reducedMotion={reducedMotion}
+          >
             <Link to="/" className="inline-flex" dir="ltr">
               <SiteLogo
                 variant="white"
@@ -116,56 +175,88 @@ export default function Footer() {
                 </span>{" "}
                 <a
                   href={mapLink || undefined}
-                  className="transition-colors hover:text-white"
+                  className="ix-link ix-footer-link"
                 >
                   {address}
                 </a>
               </p>
             ) : null}
-          </div>
+          </FooterColumn>
 
-          <div className="space-y-3 lg:col-span-2">
+          <FooterColumn
+            className="space-y-3 lg:col-span-2"
+            delay={0.04}
+            active={active}
+            reducedMotion={reducedMotion}
+          >
             <h4 className="text-xs font-medium tracking-wide text-brand-lime">
               {t(UI.usefulLinks, locale)}
             </h4>
             <ul className="space-y-2 text-xs">
               {NAV_LINKS.map((link) => (
-                <li key={link.path}>
-                  <Link to={link.path} className="ix-link ix-footer-link">
-                    {t(UI.nav[link.key], locale)}
-                  </Link>
-                </li>
+                <FooterLink
+                  key={link.path}
+                  to={link.path}
+                  delay={nextDelay()}
+                  active={active}
+                  reducedMotion={reducedMotion}
+                >
+                  {t(UI.nav[link.key], locale)}
+                </FooterLink>
               ))}
             </ul>
-          </div>
+          </FooterColumn>
 
           {categories.length > 0 ? (
-            <div className="space-y-3 lg:col-span-2">
+            <FooterColumn
+              className="space-y-3 lg:col-span-2"
+              delay={0.08}
+              active={active}
+              reducedMotion={reducedMotion}
+            >
               <h4 className="text-xs font-medium tracking-wide text-brand-lime">
                 {t(UI.nav.products, locale)}
               </h4>
               <ul className="space-y-2 text-xs">
                 {categories.map((category) => (
-                  <li key={category.id}>
-                    <Link
-                      to={`/products?section=${encodeURIComponent(category.id)}`}
-                      className="ix-link ix-footer-link"
-                    >
-                      {t(category.name, locale)}
-                    </Link>
-                  </li>
+                  <FooterLink
+                    key={category.id}
+                    to={`/products?section=${encodeURIComponent(category.id)}`}
+                    delay={nextDelay()}
+                    active={active}
+                    reducedMotion={reducedMotion}
+                  >
+                    {t(category.name, locale)}
+                  </FooterLink>
                 ))}
               </ul>
-            </div>
+            </FooterColumn>
           ) : null}
 
-          <div className="space-y-3 lg:col-span-4">
+          <FooterColumn
+            className="space-y-3 lg:col-span-4"
+            delay={0.12}
+            active={active}
+            reducedMotion={reducedMotion}
+          >
             <h4 className="text-xs font-medium tracking-wide text-brand-lime">
               {t(UI.contactLabel, locale)}
             </h4>
-            <div className="space-y-2 text-xs text-white/55">
+            <div className="space-y-2 text-xs">
               {phones.map((phone) => (
-                <div key={phone} className="flex flex-wrap items-center gap-2">
+                <motion.div
+                  key={phone}
+                  className="flex flex-wrap items-center gap-2"
+                  initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+                  animate={
+                    active ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }
+                  }
+                  transition={{
+                    duration: 0.35,
+                    ease: easeOut,
+                    delay: reducedMotion ? 0 : nextDelay(),
+                  }}
+                >
                   <span className="text-brand-lime">
                     {t(UI.phone, locale)}:
                   </span>
@@ -175,10 +266,22 @@ export default function Footer() {
                   >
                     <LtrText>{phone}</LtrText>
                   </a>
-                </div>
+                </motion.div>
               ))}
               {emails.map((email) => (
-                <div key={email} className="flex flex-wrap items-center gap-2">
+                <motion.div
+                  key={email}
+                  className="flex flex-wrap items-center gap-2"
+                  initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+                  animate={
+                    active ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }
+                  }
+                  transition={{
+                    duration: 0.35,
+                    ease: easeOut,
+                    delay: reducedMotion ? 0 : nextDelay(),
+                  }}
+                >
                   <span className="text-brand-lime">
                     {t(UI.email, locale)}:
                   </span>
@@ -189,25 +292,34 @@ export default function Footer() {
                   >
                     {email}
                   </a>
-                </div>
+                </motion.div>
               ))}
             </div>
             {socials.length > 0 ? (
               <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2 text-xs font-medium">
                 {socials.map((link) => (
-                  <a
+                  <motion.a
                     key={link.id}
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="ix-link ix-footer-link"
+                    initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+                    animate={
+                      active ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }
+                    }
+                    transition={{
+                      duration: 0.35,
+                      ease: easeOut,
+                      delay: reducedMotion ? 0 : nextDelay(),
+                    }}
                   >
                     {link.label}
-                  </a>
+                  </motion.a>
                 ))}
               </div>
             ) : null}
-          </div>
+          </FooterColumn>
         </div>
 
         <div className="flex flex-col items-start justify-between gap-4 pt-6 text-xs text-white/40 sm:flex-row sm:items-center">

@@ -14,6 +14,7 @@ import SafeImage from "@/components/ui/SafeImage";
 import SplitArrowButton from "@/components/ui/SplitArrowButton";
 import LanguageSwitch from "@/components/layout/LanguageSwitch";
 import ThemeToggle from "@/components/layout/ThemeToggle";
+import FullscreenMenu from "@/components/layout/FullscreenMenu";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { getCategories, getProducts } from "@/services/cms/products";
@@ -266,7 +267,7 @@ function NavItem({ to, end, label, children, onNavigate, mega, solid, className 
     return (
       <li className={className}>
         <NavLink to={to} end={end} onClick={onNavigate} className={classes}>
-            {({ isActive }) => (
+          {({ isActive }) => (
             <>
               {label}
               <span className="sr-only">{isActive ? "active" : ""}</span>
@@ -327,9 +328,12 @@ export default function Navbar() {
   const { contact } = useSiteData();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuOrigin, setMenuOrigin] = useState({ x: 0, y: 0 });
   const [scrolled, setScrolled] = useState(false);
   const [mobileCapsule, setMobileCapsule] = useState(false);
   const lastScrollY = useRef(0);
+  const menuBtnRef = useRef(null);
+  const capsuleBtnRef = useRef(null);
   const [isWide, setIsWide] = useState(() =>
     typeof window !== "undefined"
       ? window.matchMedia("(min-width: 1536px)").matches
@@ -341,6 +345,17 @@ export default function Navbar() {
   const askMessage = t(UI.askAgronomistMessage, locale);
   const waHref = toWhatsAppHref(phone, askMessage);
   const closeMenu = () => setIsMenuOpen(false);
+
+  const openMenuFrom = (node) => {
+    if (node) {
+      const rect = node.getBoundingClientRect();
+      setMenuOrigin({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      });
+    }
+    setIsMenuOpen(true);
+  };
 
   const categoriesQuery = useQuery({
     queryKey: ["cms", "categories"],
@@ -409,17 +424,11 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const desktop = window.matchMedia("(min-width: 1024px)");
     const wide = window.matchMedia("(min-width: 1536px)");
-    const onDesktop = (event) => {
-      if (event.matches) closeMenu();
-    };
     const onWide = (event) => setIsWide(event.matches);
     setIsWide(wide.matches);
-    desktop.addEventListener("change", onDesktop);
     wide.addEventListener("change", onWide);
     return () => {
-      desktop.removeEventListener("change", onDesktop);
       wide.removeEventListener("change", onWide);
     };
   }, []);
@@ -451,7 +460,7 @@ export default function Navbar() {
     (item) => isWide || !item.compactHide,
   );
 
-  const mobileLinks = [
+  const menuLinks = [
     ...navLinks,
     { to: "/finder", label: t(UI.findSolution, locale) },
   ];
@@ -542,9 +551,14 @@ export default function Navbar() {
               <IoSearchOutline className="text-xl" aria-hidden="true" />
             </Link>
             <button
+              ref={menuBtnRef}
               type="button"
-              onClick={() => setIsMenuOpen((open) => !open)}
-              className="ix-icon-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink lg:hidden"
+              onClick={() =>
+                isMenuOpen
+                  ? closeMenu()
+                  : openMenuFrom(menuBtnRef.current)
+              }
+              className="ix-icon-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink"
               aria-label={isMenuOpen ? t(UI.closeMenu, locale) : t(UI.openMenu, locale)}
               aria-expanded={isMenuOpen}
             >
@@ -576,8 +590,9 @@ export default function Navbar() {
           />
         </Link>
         <button
+          ref={capsuleBtnRef}
           type="button"
-          onClick={() => setIsMenuOpen(true)}
+          onClick={() => openMenuFrom(capsuleBtnRef.current)}
           className="ix-icon-btn inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/12 text-white"
           aria-label={t(UI.openMenu, locale)}
         >
@@ -585,91 +600,12 @@ export default function Navbar() {
         </button>
       </div>
 
-      <AnimatePresence>
-        {isMenuOpen ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transitionEnd: { visibility: "hidden" } }}
-            transition={{ duration: 0.22 }}
-            className="fixed inset-0 z-30 bg-brand-navy lg:hidden"
-            style={{ visibility: "visible", pointerEvents: "auto" }}
-          >
-            <div className="flex h-full flex-col px-6 pb-8 pt-[calc(var(--ticker-height)+6rem)]">
-              <div className="mb-8 flex items-center justify-between border-b border-white/10 pb-4">
-                <p className="font-mono text-[10px] font-medium uppercase tracking-[0.24em] text-brand-lime">
-                  Menu
-                </p>
-                <div className="flex items-center gap-2">
-                  <ThemeToggle className="text-white hover:bg-white/10" />
-                  <LanguageSwitch variant="toggle" tone="dark" />
-                </div>
-              </div>
-
-              <ul className="flex flex-1 flex-col justify-center gap-1 overflow-y-auto">
-                {mobileLinks.map((item, index) => (
-                  <motion.li
-                    key={item.to}
-                    initial={{ opacity: 0, y: 14 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.32,
-                      ease: easeOut,
-                      delay: 0.04 + index * 0.05,
-                    }}
-                  >
-                    <NavLink
-                      to={item.to}
-                      end={item.end}
-                      onClick={closeMenu}
-                      className={({ isActive }) =>
-                        `block border-b border-white/10 py-3 text-[clamp(1.75rem,8vw,2.25rem)] font-extrabold tracking-tight sm:text-4xl ${
-                          isActive ? "text-brand-lime" : "text-white"
-                        }`
-                      }
-                    >
-                      <span className="inline-flex max-w-full items-baseline gap-3">
-                        <span className="shrink-0 text-xs font-bold tracking-[0.18em] text-brand-lime/80">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                        <span className="min-w-0 break-words">{item.label}</span>
-                      </span>
-                    </NavLink>
-                    {item.mega && categories.length ? (
-                      <div className="flex flex-wrap gap-2 pb-3 pt-2">
-                        {categories.slice(0, 4).map((category) => (
-                          <Link
-                            key={category.id}
-                            to={`/products?section=${encodeURIComponent(category.id)}`}
-                            onClick={closeMenu}
-                            className="border border-white/15 px-3 py-1.5 text-sm font-semibold text-white/85 transition-colors hover:border-brand-lime hover:text-brand-lime"
-                          >
-                            {t(category.name, locale)}
-                          </Link>
-                        ))}
-                      </div>
-                    ) : null}
-                  </motion.li>
-                ))}
-              </ul>
-
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, ease: easeOut, delay: 0.34 }}
-                className="mt-auto"
-              >
-                <AskAgronomistButton
-                  href={waHref}
-                  label={askLabel}
-                  className="min-h-12 w-full text-base"
-                  onClick={closeMenu}
-                />
-              </motion.div>
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+      <FullscreenMenu
+        open={isMenuOpen}
+        onClose={closeMenu}
+        origin={menuOrigin}
+        links={menuLinks}
+      />
     </>
   );
 }

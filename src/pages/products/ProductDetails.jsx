@@ -9,6 +9,7 @@ import LtrText from "@/components/ui/LtrText";
 import RevealHeading from "@/components/ui/RevealHeading";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import RegistrationBadge from "@/components/products/RegistrationBadge";
+import ProductCard from "@/components/products/ProductCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories, getProduct, getProducts } from "@/services/cms/products";
 import { useLocale } from "@/context/LocaleContext";
@@ -341,12 +342,12 @@ export default function ProductDetails() {
         <ErrorState onRetry={productQuery.refetch} />
       ) : null}
       {!productQuery.isPending && !productQuery.isError && !product ? (
-        <main className="pt-navbar min-h-screen bg-[#0A0820]">
+        <main className="pt-navbar min-h-screen bg-transparent">
           <EmptyState message={t(UI.missingProduct, locale)} />
         </main>
       ) : null}
       {!productQuery.isPending && product ? (
-        <main className="min-h-screen bg-[#0A0820] pb-28 text-white md:pb-0">
+        <main className="min-h-screen bg-transparent pb-28 text-white md:pb-0">
           <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-5 py-6 sm:px-8 lg:px-14">
             <div className="flex items-center justify-between gap-4 pt-[calc(var(--navbar-height)+0.5rem)]">
               {crumbParts.length ? (
@@ -693,18 +694,15 @@ export default function ProductDetails() {
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
                   {related.map((item, index) => {
                     const relatedCategory = categories.find(
                       (entry) => entry.id === item.sectionId,
                     );
-                    const relatedName = t(item.name, locale);
-                    const relatedOverview = t(item.overview, locale);
-                    const relatedOrigin = t(item.originCountry, locale);
-                    const relatedCategoryName = t(relatedCategory?.name, locale);
                     return (
                       <motion.div
                         key={item.id}
+                        className="self-start"
                         initial={reducedMotion ? false : { opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, amount: 0.2 }}
@@ -716,51 +714,17 @@ export default function ProductDetails() {
                           ease: easeOut,
                         }}
                       >
-                        <Link
+                        <ProductCard
                           to={`/products/${item.id}`}
-                          className="group flex flex-col items-center gap-4 rounded-lg bg-[#1B1931] p-4 transition-colors hover:bg-[#1F1D35] sm:flex-row"
-                        >
-                          <div className="relative h-36 w-full shrink-0 overflow-hidden rounded-lg bg-[#0D0B23] sm:w-36">
-                            {item.imageUrl ? (
-                              <SafeImage
-                                src={item.imageUrl}
-                                alt={relatedName}
-                                width={288}
-                                className="h-full w-full object-contain p-3 transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-                              />
-                            ) : null}
-                          </div>
-                          <div className="flex flex-1 flex-col gap-2 text-start">
-                            {relatedCategoryName ? (
-                              <span className="w-fit rounded bg-[#292740] px-2 py-0.5 text-[11px] font-semibold text-brand-lime">
-                                {relatedCategoryName}
-                              </span>
-                            ) : null}
-                            {relatedName ? (
-                              <h3 className="font-display text-[22px] font-medium text-white transition-colors group-hover:text-brand-lime">
-                                {relatedName}
-                              </h3>
-                            ) : null}
-                            {relatedOverview ? (
-                              <p className="line-clamp-2 text-[13px] leading-relaxed text-white/55">
-                                {relatedOverview}
-                              </p>
-                            ) : null}
-                            <div className="flex items-center justify-between gap-3 pt-1">
-                              {relatedOrigin ? (
-                                <span className="text-[11px] font-medium tracking-wide text-white/45">
-                                  {relatedOrigin}
-                                </span>
-                              ) : (
-                                <span />
-                              )}
-                              <span className="inline-flex items-center gap-0.5 text-[13px] font-semibold text-brand-lime">
-                                <span>{t(UI.viewProduct, locale)}</span>
-                                <span aria-hidden="true">←</span>
-                              </span>
-                            </div>
-                          </div>
-                        </Link>
+                          imageUrl={item.imageUrl}
+                          title={t(item.name, locale)}
+                          category={t(relatedCategory?.name, locale)}
+                          origin={t(item.originCountry, locale)}
+                          overview={
+                            t(item.overview, locale) || t(item.details, locale)
+                          }
+                          index={index}
+                        />
                       </motion.div>
                     );
                   })}

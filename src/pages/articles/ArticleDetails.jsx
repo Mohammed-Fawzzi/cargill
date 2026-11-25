@@ -170,12 +170,12 @@ export default function ArticleDetails() {
         <ErrorState onRetry={articleQuery.refetch} />
       ) : null}
       {!articleQuery.isPending && !articleQuery.isError && !article ? (
-        <main className="pt-navbar min-h-screen bg-[#0A0820]">
+        <main className="pt-navbar min-h-screen bg-transparent">
           <EmptyState message={t(UI.missingArticle, locale)} />
         </main>
       ) : null}
       {!articleQuery.isPending && article ? (
-        <main className="min-h-screen bg-[#0A0820] text-white">
+        <main className="min-h-screen bg-transparent text-white">
           <ReadingProgress />
 
           <article>
@@ -327,10 +327,11 @@ export default function ArticleDetails() {
                       {t(UI.backToArticles, locale)}
                     </Link>
                   </div>
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
                     {related.map((item, index) => (
                       <motion.div
                         key={item.id}
+                        className="self-start"
                         initial={
                           reducedMotion ? false : { opacity: 0, y: 20 }
                         }
@@ -351,6 +352,7 @@ export default function ArticleDetails() {
                           body={t(item.excerpt, locale)}
                           meta={formatMillis(item.createdAt, locale)}
                           category={t(item.category, locale)}
+                          index={index}
                         />
                       </motion.div>
                     ))}

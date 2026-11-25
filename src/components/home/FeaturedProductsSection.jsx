@@ -5,6 +5,7 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { IoLogoWhatsapp } from "react-icons/io5";
 import SafeImage from "@/components/ui/SafeImage";
 import DragRail from "@/components/ui/DragRail";
+import SectionIntro from "@/components/ui/SectionIntro";
 import SplitArrowButton from "@/components/ui/SplitArrowButton";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
@@ -54,6 +55,7 @@ function ProductStageCard({
   const waHref = toWhatsAppHref(phone, waMessage);
   const number = `${String(index + 1).padStart(2, "0")}.`;
   const mediaH = "14rem";
+  const mediaHover = "16.8rem";
 
   const rotateX = useMotionValue(0);
   const rotateY = useMotionValue(0);
@@ -86,7 +88,7 @@ function ProductStageCard({
 
   return (
     <motion.div
-      className="w-[min(82vw,21rem)] shrink-0 snap-start md:w-[22rem]"
+      className="w-[min(82vw,21rem)] shrink-0 snap-start self-start md:w-[22rem]"
       initial={reducedMotion ? false : { opacity: 0, y: 22 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -98,11 +100,12 @@ function ProductStageCard({
     >
       <motion.article
         ref={cardRef}
-        className={`product-stage ix-card group flex h-full flex-col justify-between rounded-3xl border border-white/8 p-6 transition-colors duration-300 hover:border-brand-lime/60 ${
+        className={`product-stage ix-card group flex flex-col justify-between rounded-3xl border border-white/8 p-6 transition-colors duration-300 hover:border-brand-lime/60 ${
           hot ? "is-hot" : ""
         }`}
         style={{
           "--ix-media-h": mediaH,
+          "--ix-media-h-hover": mediaHover,
           rotateX: canTilt ? springX : 0,
           rotateY: canTilt ? springY : 0,
           y: reducedMotion ? 0 : liftY,
@@ -112,22 +115,21 @@ function ProductStageCard({
         onMouseEnter={onEnter}
         onMouseLeave={onLeave}
       >
-        <div
-          className="ix-card__media relative mb-5 flex items-center justify-center overflow-hidden border border-white/8 bg-[#0A0820]/50"
-          style={{ height: mediaH }}
-        >
+        <div className="ix-card__media relative mb-5 overflow-hidden border border-white/8 bg-[#0A0820]/50">
+          <div className="ix-card__zoom">
+            {item.imageUrl ? (
+              <SafeImage
+                src={item.imageUrl}
+                alt={name}
+                width={420}
+                className="max-h-[85%] max-w-[70%] object-contain"
+              />
+            ) : null}
+          </div>
           {categoryName ? (
-            <span className="absolute end-3 top-3 rounded-full border border-white/8 bg-[#110E33] px-2.5 py-0.5 font-mono text-[10px] text-brand-lime">
+            <span className="absolute end-3 top-3 z-20 rounded-full border border-white/8 bg-[#110E33] px-2.5 py-0.5 font-mono text-[10px] text-brand-lime">
               {categoryName}
             </span>
-          ) : null}
-          {item.imageUrl ? (
-            <SafeImage
-              src={item.imageUrl}
-              alt={name}
-              width={420}
-              className="max-h-[85%] max-w-[70%] object-contain"
-            />
           ) : null}
         </div>
 
@@ -215,31 +217,27 @@ export default function FeaturedProductsSection({ section }) {
 
   return (
     <motion.section
-      className="border-t border-white/8 bg-[#0D0B2B] py-20 md:py-24"
+      className="border-t border-white/8 bg-transparent py-20 md:py-24"
       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.12 }}
       transition={{ duration: 0.5, ease: easeOut }}
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mb-12 flex flex-col justify-between gap-4 md:mb-16 md:flex-row md:items-end">
-          <div>
-            <p className="mb-2 text-xs font-medium tracking-wide text-brand-lime">
-              {t(UI.productsIndexLabel, locale)}
-            </p>
-            <h2 className="font-display text-3xl font-bold text-white md:text-4xl">
-              {t(UI.featuredLabel, locale)}
-            </h2>
-          </div>
-          <Link
-            to="/products"
-            className="ix-link text-sm font-medium text-brand-lime"
-          >
-            {t(UI.viewAllProducts, locale)}
-          </Link>
-        </div>
+        <SectionIntro
+          label={t(UI.productsIndexLabel, locale)}
+          title={t(UI.featuredLabel, locale)}
+          action={
+            <Link
+              to="/products"
+              className="ix-link text-sm font-medium text-brand-lime"
+            >
+              {t(UI.viewAllProducts, locale)}
+            </Link>
+          }
+        />
 
-        <DragRail>
+        <DragRail dots>
           {items.map((item, index) => (
             <ProductStageCard
               key={item.id}

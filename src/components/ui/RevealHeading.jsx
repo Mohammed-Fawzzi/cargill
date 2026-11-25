@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { easeOut } from "@/lib/motion";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
@@ -10,6 +10,7 @@ export default function RevealHeading({
   children,
 }) {
   const { reducedMotion } = useMotionPrefs();
+  const [forceVisible, setForceVisible] = useState(Boolean(reducedMotion));
   const words = useMemo(() => {
     if (children) return null;
     return String(text || "")
@@ -18,14 +19,25 @@ export default function RevealHeading({
       .filter((part) => part.length > 0);
   }, [text, children]);
 
+  useEffect(() => {
+    if (reducedMotion) {
+      setForceVisible(true);
+      return undefined;
+    }
+    setForceVisible(false);
+    const timer = window.setTimeout(() => setForceVisible(true), 1200);
+    return () => window.clearTimeout(timer);
+  }, [text, children, reducedMotion]);
+
   if (children) {
     return (
       <Tag className={className}>
         <motion.span
-          className="block overflow-hidden py-[0.12em]"
+          className={`block overflow-hidden py-[0.12em] ${
+            forceVisible ? "reveal-heading__done" : ""
+          }`}
           initial={reducedMotion ? false : { opacity: 0.3 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, amount: 0.45 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.55, ease: easeOut }}
         >
           {children}
@@ -48,14 +60,15 @@ export default function RevealHeading({
         }
         return (
           <span
-            key={`w-${index}`}
+            key={`w-${index}-${part}`}
             className="inline-block overflow-hidden align-bottom px-[0.04em] py-[0.12em]"
           >
             <motion.span
-              className="inline-block"
+              className={`inline-block ${
+                forceVisible ? "reveal-heading__done" : ""
+              }`}
               initial={{ y: "110%", opacity: 0 }}
-              whileInView={{ y: "0%", opacity: 1 }}
-              viewport={{ once: true, amount: 0.5 }}
+              animate={{ y: "0%", opacity: 1 }}
               transition={{
                 duration: 0.45,
                 delay: Math.min(index * 0.03, 0.45),

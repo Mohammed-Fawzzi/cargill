@@ -1,18 +1,17 @@
-import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
+import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { motion, useScroll } from "framer-motion";
+import { AnimatePresence, motion, useScroll } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import SafeImage from "@/components/ui/SafeImage";
 import LogoTriangle from "@/components/ui/LogoTriangle";
-import ScrollWords from "@/components/ui/ScrollWords";
 import PageBanner from "@/components/ui/PageBanner";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 import useCountUp from "@/hooks/useCountUp";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
-import { getCategories } from "@/services/cms/products";
+import { getCategories, getProducts } from "@/services/cms/products";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
@@ -131,21 +130,134 @@ function PillarCard({ index, tag, title, body, reducedMotion }) {
   );
 }
 
+function StoryBlock({ label, title, body }) {
+  if (!body) return null;
+  return (
+    <div className="mx-auto max-w-2xl text-center">
+      {label ? (
+        <p className="mb-3 text-xs font-medium tracking-wide text-brand-lime">
+          {label}
+        </p>
+      ) : null}
+      {title ? (
+        <h2 className="mb-5 font-display text-3xl font-bold text-white md:text-4xl">
+          {title}
+        </h2>
+      ) : null}
+      <p className="whitespace-pre-wrap text-base leading-relaxed text-white/75 md:text-lg">
+        {body}
+      </p>
+    </div>
+  );
+}
+
+function AboutStoryPinned({ steps, images, reducedMotion }) {
+  const pinRef = useRef(null);
+  const [active, setActive] = useState(0);
+  const { scrollYProgress } = useScroll({
+    target: pinRef,
+    offset: ["start start", "end end"],
+  });
+
+  useEffect(() => {
+    if (!steps.length) return undefined;
+    return scrollYProgress.on("change", (value) => {
+      const index = Math.min(
+        steps.length - 1,
+        Math.floor(value * steps.length),
+      );
+      setActive(index);
+    });
+  }, [scrollYProgress, steps.length]);
+
+  const cornerImages = useMemo(() => {
+    const pool = images.filter(Boolean);
+    if (!pool.length) return ["", "", "", ""];
+    const base = active % pool.length;
+    return [0, 1, 2, 3].map((offset) => pool[(base + offset) % pool.length]);
+  }, [images, active]);
+
+  const positions = [
+    "start-6 top-24",
+    "end-6 top-28",
+    "start-10 bottom-16",
+    "end-10 bottom-20",
+  ];
+
+  return (
+    <section
+      ref={pinRef}
+      className="relative"
+      style={{ height: `${Math.max(steps.length, 1) * 100}vh` }}
+    >
+      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+        <div className="pointer-events-none absolute inset-0">
+          {cornerImages.map((src, index) => (
+            <div
+              key={`slot-${index}`}
+              className={`absolute hidden h-36 w-28 overflow-hidden rounded-2xl border border-white/10 lg:block xl:h-44 xl:w-36 ${positions[index]}`}
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${active}-${src}-${index}`}
+                  className="absolute inset-0"
+                  initial={reducedMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.45, ease: easeOut }}
+                >
+                  {src ? (
+                    <SafeImage
+                      src={src}
+                      alt=""
+                      width={420}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-[#181060]" />
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          ))}
+        </div>
+
+        <div className="relative z-10 mx-auto w-full max-w-3xl px-4 sm:px-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={steps[active]?.id || active}
+              initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -14 }}
+              transition={{ duration: 0.45, ease: easeOut }}
+            >
+              <StoryBlock
+                label={steps[active]?.label}
+                title={steps[active]?.title}
+                body={steps[active]?.body}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function About() {
   const { locale } = useLocale();
   const { reducedMotion } = useMotionPrefs();
   const { contact, isPending, isError } = useSiteData();
   const isMobile = useIsMobile();
-  const aboutRef = useRef(null);
-
-  const { scrollYProgress } = useScroll({
-    target: aboutRef,
-    offset: ["start 0.85", "end 0.35"],
-  });
 
   const categoriesQuery = useQuery({
     queryKey: ["cms", "categories"],
     queryFn: getCategories,
+    staleTime: 1000 * 60 * 5,
+  });
+  const productsQuery = useQuery({
+    queryKey: ["cms", "products"],
+    queryFn: getProducts,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -159,7 +271,52 @@ export default function About() {
   const titleText =
     aboutHeading || t(UI.aboutPageTitle, locale) || t(UI.nav.about, locale);
 
+  const storySteps = useMemo(() => {
+    const steps = [];
+    if (about) {
+      steps.push({
+        id: "about",
+        label: t(UI.whoWeAre, locale),
+        title: titleText,
+        body: about,
+      });
+    }
+    if (vision) {
+      steps.push({
+        id: "vision",
+        label: t(UI.valuesTagVision, locale),
+        title: t(UI.ourVision, locale),
+        body: vision,
+      });
+    }
+    if (mission) {
+      steps.push({
+        id: "mission",
+        label: t(UI.valuesTagMission, locale),
+        title: t(UI.ourMission, locale),
+        body: mission,
+      });
+    }
+    return steps;
+  }, [about, vision, mission, locale, titleText]);
+
+  const storyImages = useMemo(() => {
+    const products = productsQuery.data || [];
+    const categoryCovers = categories
+      .map((category) => {
+        if (category.imageUrl) return category.imageUrl;
+        return (
+          products.find(
+            (product) => product.sectionId === category.id && product.imageUrl,
+          )?.imageUrl || ""
+        );
+      })
+      .filter(Boolean);
+    return [bannerUrl, ...categoryCovers].filter(Boolean).slice(0, 8);
+  }, [bannerUrl, categories, productsQuery.data]);
+
   const hasContent = Boolean(about || vision || mission || categories.length);
+  const usePinned = !isMobile && !reducedMotion && storySteps.length > 1;
 
   return (
     <>
@@ -171,7 +328,7 @@ export default function About() {
       {isPending ? <Loading /> : null}
       {!isPending && isError ? <ErrorState /> : null}
       {!isPending && !isError ? (
-        <main className="min-h-screen bg-[#0A0820] text-white">
+        <main className="min-h-screen bg-transparent text-white">
           <PageBanner
             title={titleText}
             subtitle={t(UI.aboutIntro, locale)}
@@ -200,66 +357,85 @@ export default function About() {
             <EmptyState />
           ) : (
             <>
-              {about ? (
-                <motion.section
-                  className="mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20"
-                  initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.12 }}
-                  transition={{ duration: 0.5, ease: easeOut }}
-                >
-                  <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-12">
-                    <div className="order-2 flex flex-col gap-5 lg:order-1 lg:col-span-7">
-                      <div className="flex items-center gap-2 text-white/55">
-                        <span className="text-[11px] font-semibold tracking-wide text-brand-lime">
-                          01
-                        </span>
-                        <span className="text-sm">
-                          {t(UI.whoWeAre, locale)}
-                        </span>
-                      </div>
-                      <div ref={aboutRef}>
-                        <ScrollWords
-                          text={about}
-                          progress={scrollYProgress}
-                          reducedMotion={reducedMotion}
-                          mobile={isMobile}
-                          accentPhrase
-                          className="text-base font-medium leading-relaxed text-white/60 md:text-lg"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="order-1 lg:order-2 lg:col-span-5">
+              {usePinned ? (
+                <>
+                  <AboutStoryPinned
+                    steps={storySteps}
+                    images={storyImages}
+                    reducedMotion={reducedMotion}
+                  />
+                  <motion.section
+                    className="mx-auto max-w-6xl px-4 py-10 sm:px-6"
+                    initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.12 }}
+                    transition={{ duration: 0.5, ease: easeOut }}
+                  >
+                    <div className="mx-auto max-w-md">
                       <ExperienceCard
                         locale={locale}
                         reducedMotion={reducedMotion}
                         isMobile={isMobile}
                       />
                     </div>
-                  </div>
-                </motion.section>
-              ) : null}
+                  </motion.section>
+                </>
+              ) : (
+                <>
+                  {about ? (
+                    <motion.section
+                      className="mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20"
+                      initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.12 }}
+                      transition={{ duration: 0.5, ease: easeOut }}
+                    >
+                      <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-12">
+                        <div className="order-2 flex flex-col gap-5 lg:order-1 lg:col-span-7">
+                          <div className="flex items-center gap-2 text-white/55">
+                            <span className="text-[11px] font-semibold tracking-wide text-brand-lime">
+                              01
+                            </span>
+                            <span className="text-sm">
+                              {t(UI.whoWeAre, locale)}
+                            </span>
+                          </div>
+                          <p className="whitespace-pre-wrap text-base font-medium leading-relaxed text-white/70 md:text-lg">
+                            {about}
+                          </p>
+                        </div>
+                        <div className="order-1 lg:order-2 lg:col-span-5">
+                          <ExperienceCard
+                            locale={locale}
+                            reducedMotion={reducedMotion}
+                            isMobile={isMobile}
+                          />
+                        </div>
+                      </div>
+                    </motion.section>
+                  ) : null}
 
-              {(vision || mission) && (
-                <section className="bg-[#1B1931] py-16 md:py-20">
-                  <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6">
-                    <PillarCard
-                      index={2}
-                      tag={t(UI.valuesTagVision, locale)}
-                      title={t(UI.ourVision, locale)}
-                      body={vision}
-                      reducedMotion={reducedMotion}
-                    />
-                    <PillarCard
-                      index={3}
-                      tag={t(UI.valuesTagMission, locale)}
-                      title={t(UI.ourMission, locale)}
-                      body={mission}
-                      reducedMotion={reducedMotion}
-                    />
-                  </div>
-                </section>
+                  {(vision || mission) && (
+                    <section className="bg-transparent py-16 md:py-20">
+                      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6">
+                        <PillarCard
+                          index={2}
+                          tag={t(UI.valuesTagVision, locale)}
+                          title={t(UI.ourVision, locale)}
+                          body={vision}
+                          reducedMotion={reducedMotion}
+                        />
+                        <PillarCard
+                          index={3}
+                          tag={t(UI.valuesTagMission, locale)}
+                          title={t(UI.ourMission, locale)}
+                          body={mission}
+                          reducedMotion={reducedMotion}
+                        />
+                      </div>
+                    </section>
+                  )}
+                </>
               )}
 
               {categories.length > 0 ? (

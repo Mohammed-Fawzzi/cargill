@@ -18,6 +18,7 @@ import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
+import SlidingTabs from "@/components/ui/SlidingTabs";
 
 function productMatchesNeedle(item, needle, categoryMap) {
   if (!needle) return true;
@@ -214,7 +215,7 @@ export default function Products() {
         />
       ) : null}
       {!pending && !error ? (
-        <main className="min-h-screen bg-[#0A0820] text-white">
+        <main className="min-h-screen bg-transparent text-white">
           <PageBanner
             title={hero.title}
             subtitle={hero.subtitle}
@@ -227,36 +228,18 @@ export default function Products() {
 
           <div className="sticky top-[calc(var(--navbar-height)+var(--ticker-height))] z-20 border-b border-white/8 bg-[#0A0820]/90 backdrop-blur-xl">
             <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex items-center gap-1 overflow-x-auto bg-[#1B1931] p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                <button
-                  type="button"
-                  onClick={() => setCategory("")}
-                  className={`whitespace-nowrap px-4 py-2 text-sm transition-colors ${
-                    !sectionId
-                      ? "bg-brand-lime font-semibold text-[#0A0820]"
-                      : "font-medium text-white/55 hover:bg-[#1F1D35] hover:text-white"
-                  }`}
-                >
-                  {t(UI.filterAll, locale)}
-                </button>
-                {categories.map((item) => {
-                  const active = sectionId === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setCategory(item.id)}
-                      className={`whitespace-nowrap px-4 py-2 text-sm transition-colors ${
-                        active
-                          ? "bg-brand-lime font-semibold text-[#0A0820]"
-                          : "font-medium text-white/55 hover:bg-[#1F1D35] hover:text-white"
-                      }`}
-                    >
-                      {t(item.name, locale)}
-                    </button>
-                  );
-                })}
-              </div>
+              <SlidingTabs
+                value={sectionId || ""}
+                onChange={setCategory}
+                trackClassName="bg-[#1B1931]"
+                items={[
+                  { id: "", label: t(UI.filterAll, locale) },
+                  ...categories.map((item) => ({
+                    id: item.id,
+                    label: t(item.name, locale),
+                  })),
+                ]}
+              />
 
               <div className="flex items-center gap-3">
                 <label className="relative min-w-0 flex-1 sm:w-80">
@@ -371,10 +354,11 @@ export default function Products() {
                 ) : null}
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {filtered.map((item, index) => (
                   <motion.div
                     key={item.id}
+                    className="self-start"
                     initial={reducedMotion ? false : { opacity: 0, y: 22 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.12 }}

@@ -44,10 +44,39 @@ function parseSection(item) {
   };
 }
 
-export async function getCategories() {
+export function isSeedsCategory(category) {
+  const ar = String(category?.name?.ar || "").toLowerCase();
+  const en = String(category?.name?.en || "").toLowerCase();
+  const id = String(category?.id || "").toLowerCase();
+  return (
+    ar.includes("بذور") ||
+    ar.includes("بذر") ||
+    en.includes("seed") ||
+    id.includes("seed") ||
+    id.includes("بذور")
+  );
+}
+
+async function readAllSections() {
   const snap = await getDoc(doc(db, "product_categories", "page"));
-  const sections = Array.isArray(snap.data()?.sections) ? snap.data().sections : [];
-  return sections.map(parseSection).filter(Boolean).sort((a, b) => a.order - b.order);
+  const sections = Array.isArray(snap.data()?.sections)
+    ? snap.data().sections
+    : [];
+  return sections.map(parseSection).filter(Boolean);
+}
+
+export async function getCategories() {
+  const sections = await readAllSections();
+  return sections
+    .filter((category) => !isSeedsCategory(category))
+    .sort((a, b) => a.order - b.order);
+}
+
+async function getSeedSectionIds() {
+  const sections = await readAllSections();
+  return new Set(
+    sections.filter((category) => isSeedsCategory(category)).map((item) => item.id),
+  );
 }
 
 function parseFeature(item, index) {
@@ -145,13 +174,21 @@ export function mapProduct(id, data = {}) {
 }
 
 export async function getProducts() {
-  const snap = await getDocs(collection(db, "products"));
+  const [snap, seedIds] = await Promise.all([
+    getDocs(collection(db, "products")),
+    getSeedSectionIds(),
+  ]);
   return snap.docs
     .map((item) => mapProduct(item.id, item.data()))
+    .filter((item) => !seedIds.has(item.sectionId))
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
 export async function getProductsBySection(sectionId) {
+  const seedIds = await getSeedSectionIds();
+  if (seedIds.has(sectionId) || isSeedsCategory({ id: sectionId })) {
+    return [];
+  }
   const snap = await getDocs(
     query(collection(db, "products"), where("sectionId", "==", sectionId)),
   );
@@ -159,14 +196,27 @@ export async function getProductsBySection(sectionId) {
 }
 
 export async function getProductsBySubcategory(subcategoryId) {
-  const snap = await getDocs(
-    query(collection(db, "products"), where("subcategoryId", "==", subcategoryId)),
-  );
-  return snap.docs.map((item) => mapProduct(item.id, item.data()));
+  const [snap, seedIds] = await Promise.all([
+    getDocs(
+      query(
+        collection(db, "products"),
+        where("subcategoryId", "==", subcategoryId),
+      ),
+    ),
+    getSeedSectionIds(),
+  ]);
+  return snap.docs
+    .map((item) => mapProduct(item.id, item.data()))
+    .filter((item) => !seedIds.has(item.sectionId));
 }
 
 export async function getProduct(productId) {
-  const snap = await getDoc(doc(db, "products", productId));
+  const [snap, seedIds] = await Promise.all([
+    getDoc(doc(db, "products", productId)),
+    getSeedSectionIds(),
+  ]);
   if (!snap.exists()) return null;
-  return mapProduct(snap.id, snap.data());
+  const product = mapProduct(snap.id, snap.data());
+  if (seedIds.has(product.sectionId)) return null;
+  return product;
 }

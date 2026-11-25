@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
+import SectionIntro from "@/components/ui/SectionIntro";
 import { useLocale } from "@/context/LocaleContext";
 import { getCategories, getProducts } from "@/services/cms/products";
 import { t } from "@/lib/i18n";
@@ -53,26 +54,21 @@ export default function CategoryCardsRail() {
 
   return (
     <motion.section
-      className="border-y border-white/8 bg-[#0C0A26] py-12 md:py-16"
+      className="border-y border-white/8 bg-transparent py-12 md:py-16"
       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.12 }}
       transition={{ duration: 0.5, ease: easeOut }}
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mb-8 flex items-end justify-between gap-6">
-          <div>
-            <p className="mb-1 text-xs font-medium tracking-wide text-brand-lime">
-              {t(UI.nav.products, locale)}
-            </p>
-            <h2 className="font-display text-2xl font-bold text-white md:text-3xl">
-              {t(UI.categoryRailTitle, locale)}
-            </h2>
-          </div>
-          <p className="hidden max-w-xs text-left text-xs text-white/55 sm:block">
-            {t(UI.productsIntro, locale)}
-          </p>
-        </div>
+        <SectionIntro
+          className="mb-8 md:mb-8"
+          label={t(UI.nav.products, locale)}
+          title={t(UI.categoryRailTitle, locale)}
+          titleClassName="font-display text-2xl font-bold text-white md:text-3xl"
+          body={t(UI.productsIntro, locale)}
+          bodyClassName="hidden max-w-xs text-left text-xs text-white/55 sm:block"
+        />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((category, index) => {

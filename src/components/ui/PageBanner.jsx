@@ -54,7 +54,7 @@ export default function PageBanner({
   const labels = meta.filter(Boolean);
 
   return (
-    <header className="bg-[#0A0820] pb-10 pt-[calc(var(--navbar-height)+var(--ticker-height)+2rem)] md:pb-14 md:pt-[calc(var(--navbar-height)+var(--ticker-height)+2.5rem)]">
+    <header className="bg-transparent pb-10 pt-[calc(var(--navbar-height)+var(--ticker-height)+2rem)] md:pb-14 md:pt-[calc(var(--navbar-height)+var(--ticker-height)+2.5rem)]">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         {crumbs.length > 0 ? (
           <nav

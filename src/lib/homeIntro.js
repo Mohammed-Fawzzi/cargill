@@ -13,10 +13,6 @@ const CATEGORY_MATCHERS = [
     id: "growth",
     needles: ["منظمات", "نمو", "growth", "regulator", "hormone"],
   },
-  {
-    id: "seeds",
-    needles: ["بذور", "بذر", "seed"],
-  },
 ];
 
 export function shouldPlayHomeIntro() {
@@ -125,7 +121,7 @@ export function buildHomeIntroTiles({
     matched[0],
     matched[1],
     matched[2],
-    matched[3],
+    { id: "side-d", src: "" },
   ]);
 
   return [

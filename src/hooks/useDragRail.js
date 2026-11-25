@@ -5,6 +5,22 @@ const LERP = 0.2;
 const FRICTION = 0.95;
 const MIN_VELOCITY = 0.08;
 
+function isMediaTarget(target) {
+  return Boolean(
+    target instanceof Element && target.closest(".ix-card__media"),
+  );
+}
+
+function isActionTarget(target) {
+  if (!(target instanceof Element)) return false;
+  if (target.closest(".ix-card__media")) return false;
+  return Boolean(
+    target.closest(
+      "a:not(.ix-card), button, .split-btn, .ix-icon-btn, input, textarea, select, [role='button']",
+    ),
+  );
+}
+
 export default function useDragRail() {
   const { reducedMotion, finePointer } = useMotionPrefs();
   const railRef = useRef(null);
@@ -22,6 +38,11 @@ export default function useDragRail() {
   const rafRef = useRef(0);
   const [cursorOn, setCursorOn] = useState(false);
   const enabled = finePointer && !reducedMotion;
+
+  const setCursorVisible = (visible) => {
+    cursor.current.visible = visible;
+    setCursorOn(visible);
+  };
 
   const tick = useCallback(() => {
     const node = railRef.current;
@@ -69,6 +90,10 @@ export default function useDragRail() {
       cursor.current.x = event.clientX;
       cursor.current.y = event.clientY;
 
+      const overMedia = isMediaTarget(event.target);
+      const overAction = isActionTarget(event.target);
+      setCursorVisible(overMedia && !overAction);
+
       if (!drag.current.active) return;
       const dx = event.clientX - drag.current.startX;
       if (Math.abs(dx) > 3) drag.current.moved = true;
@@ -99,14 +124,8 @@ export default function useDragRail() {
       }
     };
 
-    const onEnter = () => {
-      cursor.current.visible = true;
-      setCursorOn(true);
-    };
-
     const onLeave = () => {
-      cursor.current.visible = false;
-      setCursorOn(false);
+      setCursorVisible(false);
       drag.current.active = false;
     };
 
@@ -115,7 +134,6 @@ export default function useDragRail() {
     node.addEventListener("pointerup", onPointerUp);
     node.addEventListener("pointercancel", onPointerUp);
     node.addEventListener("click", onClickCapture, true);
-    node.addEventListener("pointerenter", onEnter);
     node.addEventListener("pointerleave", onLeave);
 
     return () => {
@@ -124,7 +142,6 @@ export default function useDragRail() {
       node.removeEventListener("pointerup", onPointerUp);
       node.removeEventListener("pointercancel", onPointerUp);
       node.removeEventListener("click", onClickCapture, true);
-      node.removeEventListener("pointerenter", onEnter);
       node.removeEventListener("pointerleave", onLeave);
     };
   }, [enabled]);

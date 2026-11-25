@@ -2,8 +2,8 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
-import AccentHeading from "@/components/ui/AccentHeading";
 import DragRail from "@/components/ui/DragRail";
+import SectionIntro from "@/components/ui/SectionIntro";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
@@ -49,10 +49,11 @@ function FieldNoteCard({ item, locale, index, reducedMotion }) {
     minutes > 0 ? `${minutes} ${t(UI.readingMinutes, locale)}` : "";
   const number = `${String(index + 1).padStart(2, "0")}.`;
   const mediaH = "12rem";
+  const mediaHover = "14.4rem";
 
   return (
     <motion.article
-      className="w-[min(78vw,20rem)] shrink-0 snap-start md:w-[22rem]"
+      className="w-[min(78vw,20rem)] shrink-0 snap-start self-start md:w-[22rem]"
       initial={reducedMotion ? false : { opacity: 0, y: 22 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -65,24 +66,23 @@ function FieldNoteCard({ item, locale, index, reducedMotion }) {
       <Link
         to={`/articles/${item.id}`}
         className="ix-card group text-white"
-        style={{ "--ix-media-h": mediaH }}
+        style={{ "--ix-media-h": mediaH, "--ix-media-h-hover": mediaHover }}
       >
-        <div
-          className="ix-card__media bg-[#110E33]"
-          style={{ height: mediaH }}
-        >
-          {item.imageUrl ? (
-            <SafeImage
-              src={item.imageUrl}
-              alt={title}
-              width={720}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="h-full w-full bg-[#0A0820]" />
-          )}
+        <div className="ix-card__media bg-[#110E33]">
+          <div className="ix-card__zoom">
+            {item.imageUrl ? (
+              <SafeImage
+                src={item.imageUrl}
+                alt={title}
+                width={720}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-[#0A0820]" />
+            )}
+          </div>
           {category ? (
-            <span className="absolute end-3 top-3 rounded-full border border-white/8 bg-[#0A0820]/85 px-2.5 py-0.5 text-[11px] text-brand-lime backdrop-blur-sm">
+            <span className="absolute end-3 top-3 z-20 rounded-full border border-white/8 bg-[#0A0820]/85 px-2.5 py-0.5 text-[11px] text-brand-lime backdrop-blur-sm">
               {category}
             </span>
           ) : null}
@@ -134,37 +134,26 @@ export default function ArticlesSection({ section }) {
 
   return (
     <motion.section
-      className="relative bg-[#0A0820] py-20 md:py-24"
+      className="relative bg-transparent py-20 md:py-24"
       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.12 }}
       transition={{ duration: 0.5, ease: easeOut }}
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mb-12 flex flex-col justify-between gap-4 md:mb-14 md:flex-row md:items-end">
-          <div>
-            <p className="mb-2 text-xs font-medium tracking-wide text-brand-lime">
-              {t(UI.nav.articles, locale)}
-            </p>
-            <AccentHeading
-              as="h2"
-              text={heading}
-              className="font-display text-3xl font-bold text-white md:text-4xl"
-            />
-          </div>
-          <div className="flex flex-col items-start gap-3 md:items-end">
-            {body ? (
-              <p className="max-w-md text-sm text-white/55 md:text-end">{body}</p>
-            ) : null}
+        <SectionIntro
+          className="md:mb-14"
+          label={t(UI.nav.articles, locale)}
+          title={heading}
+          body={body}
+          action={
             <Link to="/articles" className="ix-link text-sm text-white">
               {t(UI.allMedia, locale)}
             </Link>
-          </div>
-        </div>
-      </div>
+          }
+        />
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <DragRail>
+        <DragRail dots>
           {items.map((item, index) => (
             <FieldNoteCard
               key={item.id}
