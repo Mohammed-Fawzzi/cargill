@@ -1,11 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { IoSearchOutline, IoClose } from "react-icons/io5";
+import { IoSearchOutline } from "react-icons/io5";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
+import FilterTabs from "@/components/ui/FilterTabs";
+import ContentGrid, { cardLayoutForCount } from "@/components/ui/ContentGrid";
+import { PrimaryButton, SecondaryButton } from "@/components/ui/AppButton";
 import ProductCard from "@/components/products/ProductCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories, getProducts } from "@/services/cms/products";
@@ -151,6 +154,29 @@ export default function Products() {
     fallbackImage,
   });
 
+  const categoryTabs = useMemo(
+    () => [
+      { id: "", label: t(UI.allProducts, locale) },
+      ...categories.map((item) => ({
+        id: item.id,
+        label: t(item.name, locale),
+      })),
+    ],
+    [categories, locale],
+  );
+
+  const subcategoryTabs = useMemo(
+    () => [
+      { id: "", label: t(UI.allSubcategories, locale) },
+      ...subcategories.map((item) => ({
+        id: item.id,
+        label: t(item.name, locale),
+      })),
+    ],
+    [subcategories, locale],
+  );
+
+  const cardLayout = cardLayoutForCount(pageItems.length);
   const pending = productsQuery.isPending || categoriesQuery.isPending;
   const error = productsQuery.isError || categoriesQuery.isError;
 
@@ -173,11 +199,14 @@ export default function Products() {
             title={hero.title}
             subtitle={hero.subtitle}
             imageUrl={hero.imageUrl}
-            variant="immersive"
-            eyebrow={t(contact?.companyName, locale) || hero.title}
+            label={UI.pageLabel.products}
+            breadcrumbs={[
+              { label: t(UI.nav.home, locale), to: "/" },
+              { label: t(UI.nav.products, locale) },
+            ]}
           />
 
-          <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
+          <div className="container mx-auto px-4 pb-16 lg:px-8 lg:pb-20">
             <Reveal className="mb-8 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
               <div className="relative">
                 <IoSearchOutline
@@ -189,93 +218,35 @@ export default function Products() {
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                   placeholder={t(UI.searchProducts, locale)}
-                  className="w-full rounded-xl border border-black/10 bg-white py-3.5 pe-4 ps-12 text-sm text-brand-ink outline-none transition-shadow focus:border-brand-lime focus:shadow-[0_0_0_3px_rgba(182,212,58,0.2)]"
+                  className="w-full rounded-md border border-brand-ink/15 bg-white py-3.5 pe-4 ps-12 text-sm text-brand-ink outline-none transition-colors focus:border-brand-lime"
                 />
               </div>
               {hasFilters ? (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-black/10 px-4 py-3 text-sm font-bold text-brand-ink transition-colors hover:border-brand-lime hover:text-brand-lime"
-                >
-                  <IoClose className="text-lg" aria-hidden="true" />
+                <SecondaryButton onClick={clearFilters}>
                   {t(UI.clearFilters, locale)}
-                </button>
+                </SecondaryButton>
               ) : null}
             </Reveal>
 
-            <Reveal delay={0.05} className="mb-8">
-              <div className="flex flex-wrap gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setCategory("")}
-                  className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 ${
-                    !sectionId
-                      ? "bg-brand-forest-deep text-white shadow-[0_8px_20px_rgba(24,16,96,0.22)]"
-                      : "bg-surface-muted text-brand-ink hover:bg-brand-lime hover:text-brand-ink"
-                  }`}
-                >
-                  {t(UI.allProducts, locale)}
-                </button>
-                {categories.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setCategory(item.id)}
-                    className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 ${
-                      sectionId === item.id
-                        ? "bg-brand-forest-deep text-white shadow-[0_8px_20px_rgba(24,16,96,0.22)]"
-                        : "bg-surface-muted text-brand-ink hover:bg-brand-lime hover:text-brand-ink"
-                    }`}
-                  >
-                    {t(item.name, locale)}
-                  </button>
-                ))}
-              </div>
+            <Reveal delay={0.05} className="mb-6">
+              <FilterTabs
+                items={categoryTabs}
+                value={sectionId}
+                onChange={setCategory}
+                count={filtered.length}
+                countLabel={t(UI.resultsCount, locale)}
+              />
             </Reveal>
 
             {subcategories.length > 0 ? (
               <Reveal delay={0.08} className="mb-10">
-                <div className="flex flex-wrap gap-2 border-y border-black/5 py-4">
-                  <button
-                    type="button"
-                    onClick={() => setSubcategory("")}
-                    className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-                      !subcategoryId
-                        ? "border-brand-lime bg-brand-lime/20 text-brand-ink"
-                        : "border-black/10 text-text-muted hover:border-brand-lime hover:text-brand-ink"
-                    }`}
-                  >
-                    {t(UI.allSubcategories, locale)}
-                  </button>
-                  {subcategories.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setSubcategory(item.id)}
-                      className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-                        subcategoryId === item.id
-                          ? "border-brand-lime bg-brand-lime/20 text-brand-ink"
-                          : "border-black/10 text-text-muted hover:border-brand-lime hover:text-brand-ink"
-                      }`}
-                    >
-                      {t(item.name, locale)}
-                    </button>
-                  ))}
-                </div>
+                <FilterTabs
+                  items={subcategoryTabs}
+                  value={subcategoryId}
+                  onChange={setSubcategory}
+                />
               </Reveal>
             ) : null}
-
-            <div className="mb-6 flex items-center justify-between gap-3 text-sm text-text-muted">
-              <p>
-                {filtered.length} {t(UI.resultsCount, locale)}
-              </p>
-              {activeSection ? (
-                <p className="font-semibold text-brand-ink">
-                  {t(activeSection.name, locale)}
-                </p>
-              ) : null}
-            </div>
 
             {filtered.length === 0 ? (
               <EmptyState
@@ -287,7 +258,7 @@ export default function Products() {
               />
             ) : (
               <>
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
+                <ContentGrid count={pageItems.length}>
                   {pageItems.map((item, index) => {
                     const category = categoryMap.get(item.sectionId);
                     const subcategory = category?.subcategories?.find(
@@ -302,38 +273,35 @@ export default function Products() {
                           category={t(category?.name, locale)}
                           subcategory={t(subcategory?.name, locale)}
                           origin={t(item.originCountry, locale)}
+                          layout={cardLayout}
                         />
                       </Reveal>
                     );
                   })}
-                </div>
+                </ContentGrid>
 
                 {totalPages > 1 ? (
-                  <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
-                    <button
-                      type="button"
+                  <div className="mt-12 flex flex-wrap items-center justify-center gap-6">
+                    <SecondaryButton
                       disabled={currentPage <= 1}
                       onClick={() =>
                         updateParams({ page: String(currentPage - 1) })
                       }
-                      className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-bold text-brand-ink transition-colors hover:border-brand-lime disabled:opacity-35"
                     >
                       {t(UI.previous, locale)}
-                    </button>
-                    <p className="px-2 text-sm font-semibold text-brand-ink">
+                    </SecondaryButton>
+                    <p className="text-sm text-text-muted">
                       {t(UI.page, locale)} {currentPage} {t(UI.of, locale)}{" "}
                       {totalPages}
                     </p>
-                    <button
-                      type="button"
+                    <PrimaryButton
                       disabled={currentPage >= totalPages}
                       onClick={() =>
                         updateParams({ page: String(currentPage + 1) })
                       }
-                      className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-bold text-brand-ink transition-colors hover:border-brand-lime disabled:opacity-35"
                     >
                       {t(UI.next, locale)}
-                    </button>
+                    </PrimaryButton>
                   </div>
                 ) : null}
               </>

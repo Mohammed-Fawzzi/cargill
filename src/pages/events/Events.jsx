@@ -5,6 +5,9 @@ import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
+import FilterTabs from "@/components/ui/FilterTabs";
+import ContentGrid, { cardLayoutForCount } from "@/components/ui/ContentGrid";
+import { PrimaryButton, SecondaryButton } from "@/components/ui/AppButton";
 import EventCard from "@/components/events/EventCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getEvents } from "@/services/cms/events";
@@ -88,6 +91,16 @@ export default function Events() {
     fallbackImage,
   });
 
+  const filterTabs = useMemo(
+    () =>
+      FILTERS.map(([key, label]) => ({
+        id: key,
+        label: t(label, locale),
+      })),
+    [locale],
+  );
+
+  const cardLayout = cardLayoutForCount(pageItems.length);
   const pending = eventsQuery.isPending;
   const error = eventsQuery.isError;
 
@@ -109,33 +122,23 @@ export default function Events() {
             title={hero.title}
             subtitle={hero.subtitle}
             imageUrl={hero.imageUrl}
-            variant="immersive"
-            eyebrow={t(contact?.companyName, locale) || hero.title}
+            label={UI.pageLabel.events}
+            breadcrumbs={[
+              { label: t(UI.nav.home, locale), to: "/" },
+              { label: t(UI.nav.events, locale) },
+            ]}
           />
 
-          <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
-            <Reveal className="mb-8">
-              <div className="flex flex-wrap gap-2.5">
-                {FILTERS.map(([key, label]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setFilter(key)}
-                    className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 ${
-                      filter === key
-                        ? "bg-brand-forest-deep text-white shadow-[0_8px_20px_rgba(14,31,19,0.2)]"
-                        : "bg-surface-muted text-brand-ink hover:bg-brand-lime hover:text-brand-ink"
-                    }`}
-                  >
-                    {t(label, locale)}
-                  </button>
-                ))}
-              </div>
+          <div className="container mx-auto px-4 pb-16 lg:px-8 lg:pb-20">
+            <Reveal className="mb-10">
+              <FilterTabs
+                items={filterTabs}
+                value={filter}
+                onChange={setFilter}
+                count={filtered.length}
+                countLabel={t(UI.resultsCount, locale)}
+              />
             </Reveal>
-
-            <div className="mb-6 text-sm text-text-muted">
-              {filtered.length} {t(UI.resultsCount, locale)}
-            </div>
 
             {filtered.length === 0 ? (
               <EmptyState
@@ -147,7 +150,7 @@ export default function Events() {
               />
             ) : (
               <>
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
+                <ContentGrid count={pageItems.length}>
                   {pageItems.map((item, index) => (
                     <Reveal key={item.id} delay={Math.min(index * 0.04, 0.2)}>
                       <EventCard
@@ -157,37 +160,34 @@ export default function Events() {
                         body={t(item.details, locale)}
                         date={formatDay(item.date, locale)}
                         status={item.status}
+                        layout={cardLayout}
                       />
                     </Reveal>
                   ))}
-                </div>
+                </ContentGrid>
 
                 {totalPages > 1 ? (
-                  <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
-                    <button
-                      type="button"
+                  <div className="mt-12 flex flex-wrap items-center justify-center gap-6">
+                    <SecondaryButton
                       disabled={currentPage <= 1}
                       onClick={() =>
                         updateParams({ page: String(currentPage - 1) })
                       }
-                      className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-bold text-brand-ink transition-colors hover:border-brand-lime disabled:opacity-35"
                     >
                       {t(UI.previous, locale)}
-                    </button>
-                    <p className="px-2 text-sm font-semibold text-brand-ink">
+                    </SecondaryButton>
+                    <p className="text-sm text-text-muted">
                       {t(UI.page, locale)} {currentPage} {t(UI.of, locale)}{" "}
                       {totalPages}
                     </p>
-                    <button
-                      type="button"
+                    <PrimaryButton
                       disabled={currentPage >= totalPages}
                       onClick={() =>
                         updateParams({ page: String(currentPage + 1) })
                       }
-                      className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-bold text-brand-ink transition-colors hover:border-brand-lime disabled:opacity-35"
                     >
                       {t(UI.next, locale)}
-                    </button>
+                    </PrimaryButton>
                   </div>
                 ) : null}
               </>

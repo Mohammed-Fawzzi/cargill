@@ -1,5 +1,4 @@
 import React, { createElement, useMemo } from "react";
-import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { MdEmail, MdLocationOn } from "react-icons/md";
 import { FaMobile } from "react-icons/fa6";
@@ -8,7 +7,7 @@ import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import SiteLogo from "@/components/ui/SiteLogo";
-import MagneticButton from "@/components/ui/MagneticButton";
+import { PrimaryButton } from "@/components/ui/AppButton";
 import ImpactStrip from "@/components/home/ImpactStrip";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getProducts } from "@/services/cms/products";
@@ -70,8 +69,11 @@ export default function About() {
             title={bannerTitle}
             subtitle={bannerSubtitle}
             imageUrl={heroImage}
-            variant="editorial"
-            eyebrow={t(UI.nav.about, locale)}
+            label={UI.pageLabel.about}
+            breadcrumbs={[
+              { label: t(UI.nav.home, locale), to: "/" },
+              { label: t(UI.nav.about, locale) },
+            ]}
           />
 
           {!hasContent ? (
@@ -114,14 +116,9 @@ export default function About() {
                             {about}
                           </p>
                         ) : null}
-                        <MagneticButton className="mt-8 inline-flex">
-                          <Link
-                            to="/contact"
-                            className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-md bg-brand-forest-deep px-7 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-lime hover:text-brand-ink"
-                          >
-                            {t(UI.contactUsCta, locale)}
-                          </Link>
-                        </MagneticButton>
+                        <PrimaryButton to="/contact" className="mt-8">
+                          {t(UI.contactUsCta, locale)}
+                        </PrimaryButton>
                       </Reveal>
                     </div>
                   </div>

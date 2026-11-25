@@ -45,6 +45,13 @@ export const UI = {
     en: "Integrated solutions for crop protection and plant nutrition.",
   },
   resultsCount: { ar: "نتيجة", en: "results" },
+  pageLabel: {
+    products: "PRODUCTS",
+    articles: "ARTICLES",
+    events: "EVENTS",
+    about: "ABOUT",
+    contact: "CONTACT",
+  },
   previous: { ar: "السابق", en: "Previous" },
   next: { ar: "التالي", en: "Next" },
   page: { ar: "صفحة", en: "Page" },

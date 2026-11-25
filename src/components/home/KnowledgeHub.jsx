@@ -1,12 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import SafeImage from "@/components/ui/SafeImage";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
-import { easeOut } from "@/lib/motion";
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -201,14 +199,8 @@ export default function KnowledgeHub({ items = [], section }) {
   const useSimpleGrid = cards.length < 2;
 
   return (
-    <section className="bg-brand-forest-deep py-[4.5rem] text-white sm:py-24 lg:py-[7.5rem]">
-      <motion.div
-        className="container mx-auto px-4 lg:px-8"
-        initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.12 }}
-        transition={{ duration: 0.35, ease: easeOut }}
-      >
+    <section className="scroll-mt-[var(--navbar-height)] bg-brand-forest-deep pb-[4.5rem] pt-[calc(var(--navbar-height)+2.5rem)] text-white sm:pb-24 lg:pb-[7.5rem] lg:pt-[calc(var(--navbar-height)+3.5rem)]">
+      <div className="container mx-auto px-4 lg:px-8">
         <div className="mb-6 flex items-center gap-4">
           <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
             {t(UI.knowledgeTitle, locale)}
@@ -261,7 +253,7 @@ export default function KnowledgeHub({ items = [], section }) {
             </Link>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {useSimpleGrid ? (
         <div className="container mx-auto grid grid-cols-1 gap-6 px-4 sm:grid-cols-2 lg:px-8">
@@ -278,12 +270,13 @@ export default function KnowledgeHub({ items = [], section }) {
         <>
           <div
             ref={railRef}
-            className="flex cursor-grab gap-4 overflow-x-auto px-4 pb-2 active:cursor-grabbing lg:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
+            className="flex cursor-grab gap-4 overflow-x-auto pe-4 ps-6 pb-2 active:cursor-grabbing sm:ps-8 lg:pe-8 lg:ps-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
           >
+            <div className="w-2 shrink-0 sm:w-4 lg:w-6" aria-hidden="true" />
             {cards.map((item, index) => (
               <ArticleRailCard
                 key={item.id}

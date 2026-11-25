@@ -1,14 +1,13 @@
 import React, { useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
-import { IoArrowBack } from "react-icons/io5";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
+import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import ReadingProgress from "@/components/ui/ReadingProgress";
-import OrganicFloat from "@/components/ui/OrganicFloat";
-import SafeImage from "@/components/ui/SafeImage";
+import ContentGrid, { cardLayoutForCount } from "@/components/ui/ContentGrid";
+import { SecondaryButton } from "@/components/ui/AppButton";
 import ArticleCard from "@/components/articles/ArticleCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getArticle, getArticles } from "@/services/cms/articles";
@@ -17,7 +16,6 @@ import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { formatMillis } from "@/lib/time";
-import { easeOut } from "@/lib/motion";
 
 export default function ArticleDetails() {
   const { id } = useParams();
@@ -42,6 +40,7 @@ export default function ArticleDetails() {
   const content = t(article?.content, locale);
   const relatedTitle =
     t(sectionQuery.data?.title, locale) || t(UI.relatedArticles, locale);
+  const dateLabel = formatMillis(article?.createdAt, locale);
 
   const related = useMemo(() => {
     const list = articlesQuery.data || [];
@@ -55,6 +54,8 @@ export default function ArticleDetails() {
       : list.filter((item) => item.id !== id);
     return pool.slice(0, 3);
   }, [articlesQuery.data, sectionQuery.data?.selectedIds, id]);
+
+  const relatedLayout = cardLayoutForCount(related.length);
 
   return (
     <>
@@ -71,50 +72,25 @@ export default function ArticleDetails() {
       {!articleQuery.isPending && article ? (
         <main className="min-h-screen bg-white">
           <ReadingProgress />
-          <section className="relative isolate min-h-[56vh] overflow-hidden bg-brand-forest-deep text-white sm:min-h-[62vh]">
-            {article.imageUrl ? (
-              <SafeImage
-                src={article.imageUrl}
-                alt=""
-                className="absolute inset-0 h-full w-full scale-105 object-cover"
-                aria-hidden="true"
-              />
-            ) : null}
-            <div
-              className="absolute inset-0 bg-gradient-to-t from-brand-forest-deep via-brand-forest-deep/80 to-brand-black/40"
-              aria-hidden="true"
-            />
-            <OrganicFloat className="opacity-50 mix-blend-screen" />
-            <div className="relative container mx-auto flex min-h-[inherit] items-end px-4 pb-12 pt-[calc(var(--navbar-height)+3rem)] lg:px-8 lg:pb-16">
-              <motion.div
-                className="max-w-3xl"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, ease: easeOut }}
-              >
-                <p className="mb-3 text-sm font-bold text-brand-lime">
-                  {formatMillis(article.createdAt, locale)}
-                </p>
-                {title ? (
-                  <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl xl:text-6xl">
-                    {title}
-                  </h1>
-                ) : null}
-              </motion.div>
-            </div>
-          </section>
+          <PageBanner
+            title={title}
+            imageUrl={article.imageUrl}
+            label={UI.pageLabel.articles}
+            meta={[t(UI.nav.articles, locale), dateLabel].filter(Boolean)}
+            breadcrumbs={[
+              { label: t(UI.nav.home, locale), to: "/" },
+              { label: t(UI.nav.articles, locale), to: "/articles" },
+              { label: title },
+            ]}
+          />
 
-          <article className="container mx-auto max-w-3xl px-4 py-12 lg:px-8 lg:py-16">
+          <article className="container mx-auto max-w-3xl px-4 pb-16 lg:px-8 lg:pb-20">
             <Reveal>
-              <Link
-                to="/articles"
-                className="mb-8 inline-flex items-center gap-2 text-sm font-bold text-brand-moss transition-colors hover:text-brand-lime"
-              >
-                <IoArrowBack className="text-lg rtl:rotate-180" aria-hidden="true" />
+              <SecondaryButton to="/articles" className="mb-8">
                 {t(UI.backToArticles, locale)}
-              </Link>
+              </SecondaryButton>
               {excerpt ? (
-                <p className="mb-8 border-s-4 border-brand-lime ps-5 text-lg leading-9 text-brand-ink/85 sm:text-xl sm:leading-10">
+                <p className="mb-8 border-s-2 border-brand-lime ps-5 text-lg leading-9 text-brand-ink/85 sm:text-xl sm:leading-10">
                   {excerpt}
                 </p>
               ) : null}
@@ -130,14 +106,14 @@ export default function ArticleDetails() {
           </article>
 
           {related.length > 0 ? (
-            <section className="border-t border-black/5 bg-surface-muted py-14 lg:py-16">
+            <section className="border-t border-brand-ink/10 bg-white py-14 lg:py-16">
               <div className="container mx-auto px-4 lg:px-8">
                 <Reveal className="mb-8">
                   <h2 className="text-2xl font-extrabold text-brand-ink sm:text-3xl">
                     {relatedTitle}
                   </h2>
                 </Reveal>
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
+                <ContentGrid count={related.length}>
                   {related.map((item, index) => (
                     <Reveal key={item.id} delay={Math.min(index * 0.05, 0.15)}>
                       <ArticleCard
@@ -146,10 +122,11 @@ export default function ArticleDetails() {
                         title={t(item.title, locale)}
                         body={t(item.excerpt, locale)}
                         meta={formatMillis(item.createdAt, locale)}
+                        layout={relatedLayout}
                       />
                     </Reveal>
                   ))}
-                </div>
+                </ContentGrid>
               </div>
             </section>
           ) : null}

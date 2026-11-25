@@ -5,7 +5,7 @@ import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
-import MagneticButton from "@/components/ui/MagneticButton";
+import { PrimaryButton } from "@/components/ui/AppButton";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
@@ -70,7 +70,7 @@ export default function Contact() {
   };
 
   const inputClass =
-    "w-full rounded-2xl border border-brand-ink/10 bg-white px-4 py-3.5 text-sm shadow-sm outline-none transition-all focus:border-brand-lime focus:shadow-[0_0_0_3px_rgba(136,196,60,0.18)]";
+    "w-full rounded-md border border-brand-ink/15 bg-white px-4 py-3.5 text-sm outline-none transition-colors focus:border-brand-lime";
 
   const pending = isPending;
   const error = isError;
@@ -86,8 +86,11 @@ export default function Contact() {
             title={heading}
             subtitle={subtitle || description}
             imageUrl={bannerImage}
-            variant="center"
-            eyebrow={t(contact?.companyName, locale) || heading}
+            label={UI.pageLabel.contact}
+            breadcrumbs={[
+              { label: t(UI.nav.home, locale), to: "/" },
+              { label: t(UI.nav.contact, locale) },
+            ]}
           />
 
           {!phones.length && !emails.length && !address && !description ? (
@@ -142,14 +145,9 @@ export default function Contact() {
                       placeholder={t(UI.message, locale)}
                     />
                     {targetEmail ? (
-                      <MagneticButton className="sm:col-span-2">
-                        <button
-                          type="submit"
-                          className="w-full rounded-2xl bg-brand-forest-deep px-6 py-3.5 font-extrabold text-white transition-all hover:bg-brand-lime hover:text-brand-ink"
-                        >
-                          {ctaLabel}
-                        </button>
-                      </MagneticButton>
+                      <PrimaryButton type="submit" className="sm:col-span-2 w-full">
+                        {ctaLabel}
+                      </PrimaryButton>
                     ) : (
                       <p className="sm:col-span-2 text-sm text-text-muted">
                         {t(UI.noEmail, locale)}

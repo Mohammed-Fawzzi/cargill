@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { IoSearchOutline, IoClose } from "react-icons/io5";
-import { Link, useSearchParams } from "react-router-dom";
+import { IoSearchOutline } from "react-icons/io5";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
-import SafeImage from "@/components/ui/SafeImage";
+import ContentGrid, { cardLayoutForCount } from "@/components/ui/ContentGrid";
+import { PrimaryButton, SecondaryButton } from "@/components/ui/AppButton";
 import ArticleCard from "@/components/articles/ArticleCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getArticles } from "@/services/cms/articles";
@@ -110,10 +111,8 @@ export default function Articles() {
     fallbackSubtitle: t(UI.articlesIntro, locale),
     fallbackImage,
   });
-  const featured =
-    !queryText && currentPage === 1 && pageItems.length > 0 ? pageItems[0] : null;
-  const gridItems = featured ? pageItems.slice(1) : pageItems;
 
+  const cardLayout = cardLayoutForCount(pageItems.length);
   const pending = articlesQuery.isPending;
   const error = articlesQuery.isError;
 
@@ -135,11 +134,14 @@ export default function Articles() {
             title={hero.title}
             subtitle={hero.subtitle}
             imageUrl={hero.imageUrl}
-            variant="editorial"
-            eyebrow={t(contact?.companyName, locale) || hero.title}
+            label={UI.pageLabel.articles}
+            breadcrumbs={[
+              { label: t(UI.nav.home, locale), to: "/" },
+              { label: t(UI.nav.articles, locale) },
+            ]}
           />
 
-          <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
+          <div className="container mx-auto px-4 pb-16 lg:px-8 lg:pb-20">
             <Reveal className="mb-8 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
               <div className="relative">
                 <IoSearchOutline
@@ -151,22 +153,17 @@ export default function Articles() {
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                   placeholder={t(UI.searchArticles, locale)}
-                  className="w-full rounded-xl border border-black/10 bg-white py-3.5 pe-4 ps-12 text-sm text-brand-ink outline-none transition-shadow focus:border-brand-lime focus:shadow-[0_0_0_3px_rgba(182,212,58,0.2)]"
+                  className="w-full rounded-md border border-brand-ink/15 bg-white py-3.5 pe-4 ps-12 text-sm text-brand-ink outline-none transition-colors focus:border-brand-lime"
                 />
               </div>
               {queryText ? (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-black/10 px-4 py-3 text-sm font-bold text-brand-ink transition-colors hover:border-brand-lime hover:text-brand-lime"
-                >
-                  <IoClose className="text-lg" aria-hidden="true" />
+                <SecondaryButton onClick={clearFilters}>
                   {t(UI.clearFilters, locale)}
-                </button>
+                </SecondaryButton>
               ) : null}
             </Reveal>
 
-            <div className="mb-6 text-sm text-text-muted">
+            <div className="mb-8 border-b border-brand-ink/15 pb-3 text-xs text-text-muted">
               {filtered.length} {t(UI.resultsCount, locale)}
             </div>
 
@@ -180,41 +177,8 @@ export default function Articles() {
               />
             ) : (
               <>
-                {featured ? (
-                  <Reveal className="mb-8">
-                    <Link
-                      to={`/articles/${featured.id}`}
-                      className="group relative flex min-h-[360px] overflow-hidden rounded-[1.75rem] bg-brand-forest-deep shadow-[0_20px_50px_rgba(24,16,96,0.14)] sm:min-h-[420px]"
-                    >
-                      <SafeImage
-                        src={featured.imageUrl}
-                        alt={t(featured.title, locale)}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      <div
-                        className="absolute inset-0 bg-gradient-to-t from-brand-forest-deep via-brand-forest-deep/45 to-transparent"
-                        aria-hidden="true"
-                      />
-                      <div className="relative mt-auto p-6 text-white sm:p-8 lg:max-w-2xl">
-                        <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-brand-lime">
-                          {formatMillis(featured.createdAt, locale)}
-                        </p>
-                        <h2 className="mb-3 text-2xl font-extrabold leading-tight sm:text-3xl lg:text-4xl">
-                          {t(featured.title, locale)}
-                        </h2>
-                        <p className="mb-4 line-clamp-2 text-sm leading-7 text-white/80 sm:text-base">
-                          {t(featured.excerpt, locale)}
-                        </p>
-                        <span className="text-sm font-bold text-brand-lime">
-                          {t(UI.readMore, locale)} →
-                        </span>
-                      </div>
-                    </Link>
-                  </Reveal>
-                ) : null}
-
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
-                  {gridItems.map((item, index) => (
+                <ContentGrid count={pageItems.length}>
+                  {pageItems.map((item, index) => (
                     <Reveal key={item.id} delay={Math.min(index * 0.04, 0.2)}>
                       <ArticleCard
                         to={`/articles/${item.id}`}
@@ -222,37 +186,34 @@ export default function Articles() {
                         title={t(item.title, locale)}
                         body={t(item.excerpt, locale)}
                         meta={formatMillis(item.createdAt, locale)}
+                        layout={cardLayout}
                       />
                     </Reveal>
                   ))}
-                </div>
+                </ContentGrid>
 
                 {totalPages > 1 ? (
-                  <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
-                    <button
-                      type="button"
+                  <div className="mt-12 flex flex-wrap items-center justify-center gap-6">
+                    <SecondaryButton
                       disabled={currentPage <= 1}
                       onClick={() =>
                         updateParams({ page: String(currentPage - 1) })
                       }
-                      className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-bold text-brand-ink transition-colors hover:border-brand-lime disabled:opacity-35"
                     >
                       {t(UI.previous, locale)}
-                    </button>
-                    <p className="px-2 text-sm font-semibold text-brand-ink">
+                    </SecondaryButton>
+                    <p className="text-sm text-text-muted">
                       {t(UI.page, locale)} {currentPage} {t(UI.of, locale)}{" "}
                       {totalPages}
                     </p>
-                    <button
-                      type="button"
+                    <PrimaryButton
                       disabled={currentPage >= totalPages}
                       onClick={() =>
                         updateParams({ page: String(currentPage + 1) })
                       }
-                      className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-bold text-brand-ink transition-colors hover:border-brand-lime disabled:opacity-35"
                     >
                       {t(UI.next, locale)}
-                    </button>
+                    </PrimaryButton>
                   </div>
                 ) : null}
               </>
