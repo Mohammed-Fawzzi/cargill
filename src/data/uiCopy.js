@@ -23,9 +23,13 @@ export const UI = {
   details: { ar: "التفاصيل", en: "Details" },
   usefulLinks: { ar: "روابط مفيدة", en: "Useful links" },
   contactInfo: { ar: "بيانات التواصل", en: "Contact details" },
+  contactLabel: { ar: "تواصل", en: "Contact" },
   phone: { ar: "هاتف", en: "Phone" },
   email: { ar: "بريد إلكتروني", en: "Email" },
   address: { ar: "عنوان", en: "Address" },
+  openInMaps: { ar: "افتح في خرائط جوجل", en: "Open in Google Maps" },
+  sendMessage: { ar: "إرسال الرسالة", en: "Send message" },
+
   origin: { ar: "بلد المنشأ", en: "Country of origin" },
   ingredients: { ar: "المواد الفعالة", en: "Active ingredients" },
   overview: { ar: "نظرة عامة", en: "Overview" },

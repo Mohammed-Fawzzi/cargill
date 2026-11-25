@@ -1,81 +1,135 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Reveal from "@/components/ui/Reveal";
-import MagneticButton from "@/components/ui/MagneticButton";
+import { motion } from "framer-motion";
+import { TriangleAccent } from "@/components/ui/TriangleMask";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
-import { toTelHref } from "@/lib/phone";
+import { toTelHref, toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
+import { easeOut } from "@/lib/motion";
 
 const COMMITMENTS = [UI.commitQuality, UI.commitSupport, UI.commitField];
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  return reduced;
+}
+
+function accentLastWord(text) {
+  const parts = String(text || "")
+    .trim()
+    .split(/(\s+)/);
+  let lastIndex = -1;
+  for (let i = parts.length - 1; i >= 0; i -= 1) {
+    if (parts[i].trim()) {
+      lastIndex = i;
+      break;
+    }
+  }
+  return parts.map((part, index) =>
+    index === lastIndex ? (
+      <span key={index} className="text-brand-lime">
+        {part}
+      </span>
+    ) : (
+      <span key={index}>{part}</span>
+    ),
+  );
+}
 
 export default function GrowTogetherBanner() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
+  const reducedMotion = usePrefersReducedMotion();
   const phone = contact?.phones?.[0] || "";
   const phoneHref = toTelHref(phone);
+  const waHref = toWhatsAppHref(phone, t(UI.askAgronomistMessage, locale));
+  const title = t(UI.growTogetherTitle, locale);
 
   return (
-    <section className="relative overflow-hidden bg-surface-muted py-16 lg:py-20">
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(136,196,60,0.14),transparent_35%),radial-gradient(circle_at_10%_80%,rgba(24,16,96,0.06),transparent_40%)]"
-        aria-hidden="true"
-      />
-      <div className="relative container mx-auto px-4 text-center lg:px-8">
-        <Reveal className="mx-auto max-w-3xl">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-brand-moss">
-            {t(UI.growTogetherEyebrow, locale)}
-          </p>
-          <h2 className="mb-5 text-2xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-5xl">
-            {t(UI.growTogetherTitle, locale)}
-          </h2>
-          <p className="mx-auto mb-8 max-w-xl text-sm leading-8 text-text-muted sm:text-base">
-            {t(UI.growTogetherBody, locale)}
-          </p>
+    <section className="relative overflow-hidden bg-brand-forest-deep py-[4.5rem] text-white sm:py-24 lg:py-[7.5rem]">
+      <TriangleAccent className="pointer-events-none absolute -bottom-10 -start-6 h-40 w-48 opacity-90 sm:h-52 sm:w-60 lg:h-64 lg:w-72" />
 
-          <ul className="mx-auto mb-9 flex max-w-2xl flex-col gap-2 text-start sm:text-center">
-            {COMMITMENTS.map((item) => (
-              <li
-                key={item.en}
-                className="text-sm font-semibold leading-7 text-brand-ink/80 sm:text-base"
-              >
-                • {t(item, locale)}
-              </li>
-            ))}
-          </ul>
+      <motion.div
+        className="relative container mx-auto px-4 lg:px-8"
+        initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.35, ease: easeOut }}
+      >
+        <div className="mb-6 flex items-center gap-4">
+          <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+            {t(UI.contactLabel, locale)}
+          </p>
+          <span className="h-px flex-1 bg-white/20" aria-hidden="true" />
+          <p className="shrink-0 text-[11px] font-bold tracking-[0.2em] text-white/45">
+            08
+          </p>
+        </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <MagneticButton>
-              <Link
-                to="/contact"
-                className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-md bg-brand-ink px-7 text-sm font-bold text-white transition-colors hover:bg-brand-lime hover:text-brand-ink"
-              >
-                {t(UI.nav.contact, locale)}
-              </Link>
-            </MagneticButton>
-            <MagneticButton>
-              <Link
-                to="/products"
-                className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-md border border-brand-ink/15 bg-white px-7 text-sm font-bold text-brand-ink transition-colors hover:border-brand-lime hover:bg-brand-lime"
-              >
-                {t(UI.exploreProducts, locale)}
-              </Link>
-            </MagneticButton>
-            {phoneHref ? (
-              <MagneticButton>
-                <a
-                  href={phoneHref}
-                  className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-md border border-brand-ink/15 bg-white px-7 text-sm font-bold text-brand-ink transition-colors hover:border-brand-lime hover:bg-brand-lime"
-                  dir="ltr"
-                >
-                  {phone}
-                </a>
-              </MagneticButton>
-            ) : null}
-          </div>
-        </Reveal>
-      </div>
+        <h2 className="mb-10 max-w-5xl text-[clamp(2.75rem,9vw,7.5rem)] font-extrabold leading-[0.95] tracking-tight">
+          {accentLastWord(title)}
+        </h2>
+
+        <div className="mb-12 grid grid-cols-1 border-y border-white/15 md:grid-cols-3">
+          {COMMITMENTS.map((item, index) => (
+            <div
+              key={item.en}
+              className={`px-0 py-6 md:px-6 md:py-8 ${
+                index > 0 ? "border-t border-white/15 md:border-t-0 md:border-s" : ""
+              }`}
+            >
+              <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+                {String(index + 1).padStart(2, "0")}
+              </p>
+              <p className="text-base font-semibold leading-8 text-white/85 sm:text-lg">
+                {t(item, locale)}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-8">
+          {waHref ? (
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-12 w-full items-center justify-center bg-brand-lime px-6 text-sm font-extrabold text-brand-ink transition-colors hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:w-auto"
+            >
+              {t(UI.askAgronomist, locale)}
+            </a>
+          ) : null}
+
+          {phoneHref ? (
+            <a
+              href={phoneHref}
+              dir="ltr"
+              className="text-2xl font-extrabold tracking-tight text-white transition-colors hover:text-brand-lime focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:text-3xl"
+            >
+              {phone}
+            </a>
+          ) : null}
+
+          <Link
+            to="/products"
+            className="inline-flex w-fit items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-white transition-[border-width] hover:border-b-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
+          >
+            <span>{t(UI.exploreProducts, locale)}</span>
+            <span aria-hidden="true">←</span>
+          </Link>
+        </div>
+      </motion.div>
     </section>
   );
 }

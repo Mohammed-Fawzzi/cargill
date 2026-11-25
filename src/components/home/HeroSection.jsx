@@ -99,7 +99,11 @@ function Panel({
           width={open || eager ? 1200 : 640}
           loading={eager ? "eager" : "lazy"}
           fetchPriority={eager ? "high" : "auto"}
-          className="absolute inset-0 h-full w-full object-cover"
+          className={`absolute inset-0 h-full w-full object-cover transition-transform ease-out motion-reduce:transition-none motion-reduce:transform-none ${
+            open
+              ? "scale-110 duration-[6000ms]"
+              : "scale-100 duration-700 group-hover:scale-105"
+          }`}
           aria-hidden="true"
         />
       ) : null}

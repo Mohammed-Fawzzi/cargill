@@ -1,42 +1,15 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { MdEmail, MdLocationOn } from "react-icons/md";
-import { FaMobile } from "react-icons/fa6";
+import { useQuery } from "@tanstack/react-query";
 import SiteLogo from "@/components/ui/SiteLogo";
 import { NAV_LINKS } from "@constants/navLinks";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
+import { getCategories } from "@/services/cms/products";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { resolveCompanySocial } from "@/utils/social";
 import { toMapLink } from "@/lib/map";
-import { normalizeImageUrl } from "@/lib/image";
-
-function ContactItem({ icon, children, href, dir }) {
-  if (!children) return null;
-  const content = (
-    <>
-      <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-lime/15 text-brand-lime">
-        {React.createElement(icon, { className: "text-base", "aria-hidden": true })}
-      </span>
-      <span className="min-w-0 leading-7" dir={dir}>
-        {children}
-      </span>
-    </>
-  );
-  const className =
-    "flex items-start gap-2.5 text-sm text-white/80 transition-colors duration-300 hover:text-brand-lime";
-  if (href) {
-    return (
-      <li>
-        <a href={href} className={className}>
-          {content}
-        </a>
-      </li>
-    );
-  }
-  return <li className={className}>{content}</li>;
-}
 
 export default function Footer() {
   const { locale } = useLocale();
@@ -48,104 +21,42 @@ export default function Footer() {
   const phones = contact?.phones || [];
   const emails = contact?.emails || [];
   const socials = resolveCompanySocial(contact?.social);
-  const mapLink = toMapLink(contact?.mapUrl);
+  const mapLink = toMapLink(address || contact?.mapUrl);
   const year = new Date().getFullYear();
-  const background = normalizeImageUrl(footer?.imageUrl);
+
+  const categoriesQuery = useQuery({
+    queryKey: ["cms", "categories"],
+    queryFn: getCategories,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const categories = useMemo(
+    () => (categoriesQuery.data || []).slice(0, 4),
+    [categoriesQuery.data],
+  );
+
+  const brandWord =
+    (companyName || title || "كارجيل").split(/\s+/)[0] || "كارجيل";
 
   return (
-    <footer
-      className="relative overflow-hidden bg-brand-forest-deep text-white"
-      aria-label="footer"
-    >
-      {background ? (
-        <div
-          className="pointer-events-none absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${background})` }}
-          aria-hidden="true"
-        />
-      ) : null}
-      <div
-        className={`pointer-events-none absolute inset-0 ${
-          background
-            ? "bg-brand-forest-deep/90"
-            : "bg-gradient-to-t from-brand-black via-brand-forest-deep/95 to-brand-forest-deep"
-        }`}
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-lime/40 to-transparent"
-        aria-hidden="true"
-      />
+    <footer className="relative overflow-hidden bg-brand-forest-deep text-white" aria-label="footer">
+      <div className="relative container mx-auto px-4 pt-14 lg:px-8 lg:pt-16">
+        <div className="mb-12 flex flex-col gap-6 border-b border-white/15 pb-10 lg:flex-row lg:items-end lg:justify-between">
+          <p className="order-2 max-w-xl text-sm leading-7 text-white/70 lg:order-1 lg:text-base">
+            {description || title || ""}
+          </p>
+          <Link to="/" className="order-1 shrink-0 lg:order-2">
+            <SiteLogo
+              variant="white"
+              alt={companyName || title}
+              className="h-11 w-auto max-w-[190px] object-contain"
+            />
+          </Link>
+        </div>
 
-      <div className="relative container mx-auto px-4 py-14 lg:px-8 lg:py-16">
-        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
-          <div>
-            <div className="mb-5">
-              <SiteLogo
-                variant="white"
-                alt={companyName || title}
-                className="h-11 w-auto max-w-[190px] object-contain"
-              />
-            </div>
-            {title ? (
-              <p className="mb-3 text-lg font-bold leading-7">{title}</p>
-            ) : companyName ? (
-              <p className="mb-3 text-lg font-bold leading-7">{companyName}</p>
-            ) : null}
-            {description ? (
-              <p className="mb-7 max-w-sm text-sm leading-7 text-white/70">
-                {description}
-              </p>
-            ) : null}
-            {socials.length > 0 ? (
-              <div className="flex flex-wrap gap-2.5">
-                {socials.map((link) => (
-                  <a
-                    key={link.id}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={link.label}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-lime/15 text-white transition-all duration-300 hover:bg-brand-lime hover:text-brand-ink"
-                  >
-                    {React.createElement(link.Icon, {
-                      className: "text-base",
-                      "aria-hidden": true,
-                    })}
-                  </a>
-                ))}
-              </div>
-            ) : null}
-          </div>
-
-          <div>
-            <h3 className="mb-5 text-base font-bold text-brand-lime">
-              {t(UI.contactInfo, locale)}
-            </h3>
-            <ul className="space-y-3.5">
-              <ContactItem icon={MdLocationOn} href={mapLink || undefined}>
-                {address}
-              </ContactItem>
-              {phones.map((phone) => (
-                <ContactItem
-                  key={phone}
-                  icon={FaMobile}
-                  href={`tel:${phone.replace(/\s+/g, "")}`}
-                  dir="ltr"
-                >
-                  {phone}
-                </ContactItem>
-              ))}
-              {emails.map((email) => (
-                <ContactItem key={email} icon={MdEmail} href={`mailto:${email}`}>
-                  {email}
-                </ContactItem>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="mb-5 text-base font-bold text-brand-lime">
+        <div className="grid grid-cols-1 gap-10 pb-12 md:grid-cols-3 md:gap-0">
+          <div className="md:border-e md:border-white/15 md:pe-8">
+            <h3 className="mb-5 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
               {t(UI.usefulLinks, locale)}
             </h3>
             <ul className="space-y-2.5">
@@ -153,7 +64,7 @@ export default function Footer() {
                 <li key={link.path}>
                   <Link
                     to={link.path}
-                    className="text-sm leading-7 text-white/80 transition-colors duration-300 hover:text-brand-lime"
+                    className="text-sm leading-7 text-white/80 transition-colors hover:text-brand-lime"
                   >
                     {t(UI.nav[link.key], locale)}
                   </Link>
@@ -161,17 +72,96 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
+          <div className="md:border-e md:border-white/15 md:px-8">
+            <h3 className="mb-5 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+              {t(UI.nav.products, locale)}
+            </h3>
+            <ul className="space-y-2.5">
+              {categories.map((category) => (
+                <li key={category.id}>
+                  <Link
+                    to={`/products?section=${encodeURIComponent(category.id)}`}
+                    className="text-sm leading-7 text-white/80 transition-colors hover:text-brand-lime"
+                  >
+                    {t(category.name, locale)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="md:ps-8">
+            <h3 className="mb-5 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+              {t(UI.contactLabel, locale)}
+            </h3>
+            <ul className="space-y-3 text-sm leading-7 text-white/80">
+              {phones.map((phone) => (
+                <li key={phone}>
+                  <a
+                    href={`tel:${phone.replace(/\s+/g, "")}`}
+                    dir="ltr"
+                    className="transition-colors hover:text-brand-lime"
+                  >
+                    {phone}
+                  </a>
+                </li>
+              ))}
+              {emails.map((email) => (
+                <li key={email}>
+                  <a
+                    href={`mailto:${email}`}
+                    className="transition-colors hover:text-brand-lime"
+                  >
+                    {email}
+                  </a>
+                </li>
+              ))}
+              {address ? (
+                <li>
+                  <a
+                    href={mapLink || undefined}
+                    className="transition-colors hover:text-brand-lime"
+                  >
+                    {address}
+                  </a>
+                </li>
+              ) : null}
+            </ul>
+          </div>
         </div>
+
+        {socials.length > 0 ? (
+          <div className="mb-10 flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold">
+            {socials.map((link, index) => (
+              <React.Fragment key={link.id}>
+                {index > 0 ? (
+                  <span className="text-white/25" aria-hidden="true">
+                    ·
+                  </span>
+                ) : null}
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/80 transition-colors hover:text-brand-lime"
+                >
+                  {link.label}
+                </a>
+              </React.Fragment>
+            ))}
+          </div>
+        ) : null}
       </div>
 
-      <div className="relative border-t border-white/10 bg-brand-black/40">
-        <div className="container mx-auto flex flex-col items-center justify-between gap-3 px-4 py-4 text-xs leading-7 text-white/55 sm:flex-row sm:text-sm lg:px-8">
+      <div className="relative border-t border-white/15">
+        <div className="container mx-auto flex flex-col items-start justify-between gap-3 px-4 py-4 text-xs leading-7 text-white/55 sm:flex-row sm:items-center sm:text-sm lg:px-8">
           <p>
             {companyName || title
               ? `© ${year} ${companyName || title} — ${t(UI.copyright, locale)}`
               : `© ${year} ${t(UI.copyright, locale)}`}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
             <Link to="/articles" className="transition-colors hover:text-brand-lime">
               {t(UI.nav.articles, locale)}
             </Link>
@@ -180,6 +170,13 @@ export default function Footer() {
             </Link>
           </div>
         </div>
+      </div>
+
+      <div
+        className="pointer-events-none relative -mb-8 overflow-hidden px-4 text-center text-[18vw] font-extrabold leading-none tracking-tight text-white/[0.04] lg:px-8"
+        aria-hidden="true"
+      >
+        {brandWord}
       </div>
     </footer>
   );

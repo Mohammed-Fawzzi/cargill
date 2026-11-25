@@ -1,118 +1,246 @@
-import React from "react";
-import { MdEmail, MdLocationOn } from "react-icons/md";
-import { FaMobile } from "react-icons/fa6";
-import CtaLink from "@/components/ui/CtaLink";
-import Reveal from "@/components/ui/Reveal";
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
-import { toMapEmbedSrc } from "@/lib/map";
+import { toMapEmbedSrc, toMapLink } from "@/lib/map";
+import { easeOut } from "@/lib/motion";
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  return reduced;
+}
+
+const inputClass =
+  "w-full border-0 border-b border-brand-ink/20 bg-transparent px-0 py-3 text-sm text-brand-ink outline-none transition-colors placeholder:text-brand-ink/35 focus:border-brand-lime";
 
 export default function ContactSection({ section }) {
   const { locale } = useLocale();
+  const reducedMotion = usePrefersReducedMotion();
   const contact = section?.contact;
   const title = t(section?.data?.title, locale) || t(UI.getInTouch, locale);
   const body = t(section?.data?.body, locale);
-  const ctaLabel = t(section?.data?.cta?.label, locale);
-  const href = section?.data?.cta?.href || "/contact";
-  const mapSrc = toMapEmbedSrc(section?.data?.mapEmbedUrl);
+  const hoursLine = t(contact?.subtitle, locale) || body;
   const phones = contact?.phones || [];
   const emails = contact?.emails || [];
   const address = t(contact?.address, locale);
+  const mapQuery = address || contact?.mapUrl || section?.data?.mapEmbedUrl || "";
+  const mapSrc = toMapEmbedSrc(mapQuery);
+  const mapLink = toMapLink(mapQuery);
+  const targetEmail = emails[0] || "";
+
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    message: "",
+  });
+
+  const onChange = (event) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onSubmit = (event) => {
+    event.preventDefault();
+    if (!targetEmail) return;
+    const subject = encodeURIComponent(
+      `${title} - ${form.firstName} ${form.lastName}`.trim(),
+    );
+    const mailBody = encodeURIComponent(
+      `${form.firstName} ${form.lastName}\n${form.phone}\n${form.email}\n\n${form.message}`,
+    );
+    window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${mailBody}`;
+  };
 
   return (
-    <section className="bg-white">
-      <div className="grid grid-cols-1 lg:grid-cols-2">
-        <Reveal className="relative min-h-[380px] bg-surface-muted lg:min-h-[540px]">
-          {mapSrc ? (
-            <iframe
-              title={title || t(UI.address, locale)}
-              src={mapSrc}
-              className="absolute inset-0 h-full w-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          ) : (
-            <div className="flex h-full min-h-[380px] items-center justify-center px-6 text-center text-text-muted lg:min-h-[540px]">
-              {t(UI.address, locale)}
-            </div>
-          )}
-        </Reveal>
-
-        <Reveal
-          delay={0.08}
-          className="relative flex items-center overflow-hidden bg-brand-forest-deep px-6 py-14 text-white sm:px-10 lg:px-14 lg:py-16"
-        >
-          <div
-            className="pointer-events-none absolute -end-10 -top-10 h-40 w-40 rounded-full bg-brand-lime/15 blur-2xl"
-            aria-hidden="true"
-          />
-          <div
-            className="pointer-events-none absolute -start-8 bottom-0 h-32 w-32 rounded-full bg-brand-moss/20 blur-2xl"
-            aria-hidden="true"
-          />
-          <div className="relative w-full max-w-lg">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-brand-lime">
+    <section className="bg-surface-muted py-[4.5rem] sm:py-24 lg:py-[7.5rem]">
+      <motion.div
+        className="container mx-auto px-4 lg:px-8"
+        initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.1 }}
+        transition={{ duration: 0.35, ease: easeOut }}
+      >
+        <div className="mb-12 grid grid-cols-1 gap-10 lg:mb-16 lg:grid-cols-12 lg:gap-8">
+          <div className="lg:col-span-5">
+            <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-ink/55">
               {t(UI.contactInfo, locale)}
             </p>
-            <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
               {title}
             </h2>
-            {body ? (
-              <p className="mb-8 text-sm leading-8 text-white/75 sm:text-base">
-                {body}
+            {hoursLine ? (
+              <p className="mb-8 text-sm leading-7 text-text-muted sm:text-base">
+                {hoursLine}
               </p>
             ) : null}
 
-            <ul className="space-y-5 text-sm leading-7 text-white/85 sm:text-base">
+            <ul>
               {address ? (
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-lime/15 text-brand-lime">
-                    <MdLocationOn aria-hidden="true" />
-                  </span>
-                  <span>{address}</span>
+                <li className="border-b border-brand-ink/10 py-4">
+                  <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
+                    {t(UI.address, locale)}
+                  </p>
+                  <p className="text-base font-semibold leading-7 text-brand-ink">
+                    {address}
+                  </p>
                 </li>
               ) : null}
               {phones.map((phone) => (
-                <li key={phone} className="flex items-start gap-3">
-                  <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-lime/15 text-brand-lime">
-                    <FaMobile aria-hidden="true" />
-                  </span>
+                <li key={phone} className="border-b border-brand-ink/10 py-4">
+                  <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
+                    {t(UI.phone, locale)}
+                  </p>
                   <a
                     href={`tel:${phone.replace(/\s+/g, "")}`}
                     dir="ltr"
-                    className="transition-colors hover:text-brand-lime"
+                    className="text-base font-semibold text-brand-ink transition-colors hover:text-brand-lime"
                   >
                     {phone}
                   </a>
                 </li>
               ))}
               {emails.map((email) => (
-                <li key={email} className="flex items-start gap-3">
-                  <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-lime/15 text-brand-lime">
-                    <MdEmail aria-hidden="true" />
-                  </span>
+                <li key={email} className="border-b border-brand-ink/10 py-4">
+                  <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
+                    {t(UI.email, locale)}
+                  </p>
                   <a
                     href={`mailto:${email}`}
-                    className="transition-colors hover:text-brand-lime"
+                    className="text-base font-semibold text-brand-ink transition-colors hover:text-brand-lime"
                   >
                     {email}
                   </a>
                 </li>
               ))}
             </ul>
+          </div>
 
-            {ctaLabel ? (
-              <CtaLink
-                href={href}
-                className="mt-10 inline-flex min-h-12 items-center justify-center rounded-md bg-brand-lime px-7 py-3 text-sm font-extrabold text-brand-ink transition-all duration-300 hover:bg-brand-lime-hover hover:shadow-[0_12px_28px_rgba(136,196,60,0.35)]"
+          <div className="lg:col-span-6 lg:col-start-7">
+            <div className="rounded-lg border border-brand-ink/10 bg-white p-5 sm:p-8">
+              <form onSubmit={onSubmit} className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
+                    {t(UI.firstName, locale)}
+                  </span>
+                  <input
+                    name="firstName"
+                    value={form.firstName}
+                    onChange={onChange}
+                    className={inputClass}
+                    required
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
+                    {t(UI.lastName, locale)}
+                  </span>
+                  <input
+                    name="lastName"
+                    value={form.lastName}
+                    onChange={onChange}
+                    className={inputClass}
+                    required
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
+                    {t(UI.phoneField, locale)}
+                  </span>
+                  <input
+                    name="phone"
+                    value={form.phone}
+                    onChange={onChange}
+                    className={inputClass}
+                    dir="ltr"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
+                    {t(UI.emailField, locale)}
+                  </span>
+                  <input
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={onChange}
+                    className={inputClass}
+                    dir="ltr"
+                    required
+                  />
+                </label>
+                <label className="block sm:col-span-2">
+                  <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
+                    {t(UI.message, locale)}
+                  </span>
+                  <textarea
+                    name="message"
+                    value={form.message}
+                    onChange={onChange}
+                    rows={4}
+                    className={`${inputClass} resize-none`}
+                    required
+                  />
+                </label>
+
+                {targetEmail ? (
+                  <button
+                    type="submit"
+                    className="min-h-12 w-full bg-brand-ink text-sm font-extrabold text-white transition-colors hover:bg-brand-lime hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:col-span-2"
+                  >
+                    {t(UI.sendMessage, locale)}
+                  </button>
+                ) : (
+                  <p className="text-sm text-text-muted sm:col-span-2">
+                    {t(UI.noEmail, locale)}
+                  </p>
+                )}
+                {targetEmail ? (
+                  <p className="text-xs text-text-muted sm:col-span-2">
+                    {t(UI.contactFormHint, locale)}
+                  </p>
+                ) : null}
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {mapSrc ? (
+          <div>
+            <div className="overflow-hidden rounded-lg">
+              <iframe
+                title={title || t(UI.address, locale)}
+                src={mapSrc}
+                className="h-[260px] w-full border-0 grayscale contrast-[1.1] md:h-[360px]"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            {mapLink ? (
+              <a
+                href={mapLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-brand-ink transition-[border-width] hover:border-b-[3px]"
               >
-                {ctaLabel}
-              </CtaLink>
+                <span>{t(UI.openInMaps, locale)}</span>
+                <span aria-hidden="true">←</span>
+              </a>
             ) : null}
           </div>
-        </Reveal>
-      </div>
+        ) : null}
+      </motion.div>
     </section>
   );
 }
