@@ -204,9 +204,8 @@ export default function EventDetails() {
       ) : null}
       {!eventQuery.isPending && event ? (
         <main
-          className={`min-h-screen bg-transparent text-white ${
-            !isEnded ? "pb-28 md:pb-0" : ""
-          }`}
+          className={`min-h-screen bg-transparent text-white ${!isEnded ? "pb-28 md:pb-0" : ""
+            }`}
         >
           <div className="mx-auto max-w-6xl px-4 pb-6 pt-[calc(var(--navbar-height)+var(--ticker-height)+2rem)] sm:px-6">
             <nav className="mb-6 text-sm text-white/45">
@@ -268,11 +267,10 @@ export default function EventDetails() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <span
-                        className={`mb-3 inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide ${
-                          isEnded
+                        className={`mb-3 inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide ${isEnded
                             ? "border border-white/20 text-white/60"
                             : "bg-brand-lime/15 text-brand-lime"
-                        }`}
+                          }`}
                       >
                         {statusLabel}
                       </span>
@@ -412,16 +410,14 @@ export default function EventDetails() {
                       key={`${src}-${index}`}
                       type="button"
                       onClick={() => setLightboxIndex(index)}
-                      className={`overflow-hidden bg-[#110E33] ${
-                        index === 0 ? "col-span-2 row-span-2 md:col-span-2" : ""
-                      }`}
+                      className={`overflow-hidden bg-[#110E33] ${index === 0 ? "col-span-2 row-span-2 md:col-span-2" : ""
+                        }`}
                     >
                       <SafeImage
                         src={src}
                         alt=""
-                        className={`w-full object-cover ${
-                          index === 0 ? "aspect-[4/3] h-full" : "aspect-square"
-                        }`}
+                        className={`w-full object-cover ${index === 0 ? "aspect-[4/3] h-full" : "aspect-square"
+                          }`}
                       />
                     </button>
                   ))}

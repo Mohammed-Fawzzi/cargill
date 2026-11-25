@@ -88,7 +88,7 @@ export default function HomepageIntro({ tiles, onComplete }) {
     document.body.style.overflow = "";
     try {
       lenis?.instance?.start?.();
-    } catch {}
+    } catch { }
     onCompleteRef.current?.();
   };
 
@@ -103,7 +103,7 @@ export default function HomepageIntro({ tiles, onComplete }) {
     window.scrollTo(0, 0);
     try {
       lenis?.instance?.stop?.();
-    } catch {}
+    } catch { }
 
     return () => {
       document.body.style.overflow = previousOverflow;
@@ -112,7 +112,7 @@ export default function HomepageIntro({ tiles, onComplete }) {
       }
       try {
         lenis?.instance?.start?.();
-      } catch {}
+      } catch { }
     };
   }, [lenis]);
 
@@ -188,7 +188,7 @@ export default function HomepageIntro({ tiles, onComplete }) {
               animate(radius, 0, end),
             ]),
           )
-          .catch(() => {});
+          .catch(() => { });
       }, EXPAND_AT_MS),
     );
 
@@ -282,9 +282,9 @@ export default function HomepageIntro({ tiles, onComplete }) {
                 animate={
                   sideOut && !isCenter
                     ? {
-                        opacity: 0,
-                        x: fromCenter < 0 ? -40 : 40,
-                      }
+                      opacity: 0,
+                      x: fromCenter < 0 ? -40 : 40,
+                    }
                     : { opacity: 1, x: 0 }
                 }
                 transition={{ duration: 0.3, ease: EASE }}

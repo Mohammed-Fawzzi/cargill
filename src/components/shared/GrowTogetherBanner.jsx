@@ -80,14 +80,22 @@ export default function GrowTogetherBanner() {
               ) : null}
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row lg:col-span-4 lg:flex-col lg:justify-end">
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap lg:col-span-4 lg:flex-col lg:justify-end">
               {phoneHref ? (
-                <SplitArrowButton href={phoneHref} variant="primary">
+                <SplitArrowButton
+                  href={phoneHref}
+                  variant="primary"
+                  className="w-full sm:w-auto"
+                >
                   <span dir="ltr">{phone}</span>
                 </SplitArrowButton>
               ) : null}
               {waHref ? (
-                <SplitArrowButton href={waHref} variant="secondary">
+                <SplitArrowButton
+                  href={waHref}
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                >
                   {t(UI.requestFarmVisit, locale)}
                 </SplitArrowButton>
               ) : null}

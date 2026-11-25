@@ -17,14 +17,11 @@
     />
     <script>
       (function () {
+        document.documentElement.dataset.theme = "dark";
+        document.documentElement.style.colorScheme = "dark";
         try {
-          var stored = localStorage.getItem("cargill-theme");
-          var theme = stored === "light" || stored === "dark" ? stored : "dark";
-          document.documentElement.dataset.theme = theme;
-          document.documentElement.style.colorScheme = theme;
-        } catch (e) {
-          document.documentElement.dataset.theme = "dark";
-        }
+          localStorage.setItem("cargill-theme", "dark");
+        } catch (e) {}
       })();
     </script>
   </head>

@@ -51,7 +51,7 @@ export default function CategoryStrip({ ready = true }) {
 
   return (
     <motion.section
-      className="relative z-20 mx-auto mt-[-50px] max-w-[1320px] px-6 md:mt-[-80px]"
+      className="relative z-20 mx-auto mt-[-50px] max-w-[1320px] px-4 sm:px-6 md:mt-[-80px]"
       initial={reducedMotion ? false : { opacity: 0, y: 40 }}
       animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
       transition={{ duration: 0.55, ease: easeOut, delay: reducedMotion ? 0 : 0.15 }}
@@ -100,8 +100,8 @@ export default function CategoryStrip({ ready = true }) {
               </span>
               <div className="relative">
                 <p
-                  className={`font-display font-extrabold leading-tight transition-colors group-hover:text-brand-lime ${
-                    isActive ? "text-[28px] sm:text-[40px]" : "text-[22px] sm:text-[26px]"
+                  className={`break-words font-display font-extrabold leading-tight transition-colors group-hover:text-brand-lime ${
+                    isActive ? "text-[26px] sm:text-[40px]" : "text-xl sm:text-[26px]"
                   }`}
                 >
                   {tile.name}

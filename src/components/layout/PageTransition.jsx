@@ -49,11 +49,11 @@ export default function PageTransition() {
             animate={
               wipe === "in"
                 ? {
-                    clipPath: "polygon(0% 0%, 100% 0%, 120% 100%, 0% 100%)",
-                  }
+                  clipPath: "polygon(0% 0%, 100% 0%, 120% 100%, 0% 100%)",
+                }
                 : {
-                    clipPath: "polygon(100% 0%, 100% 0%, 120% 100%, 120% 100%)",
-                  }
+                  clipPath: "polygon(100% 0%, 100% 0%, 120% 100%, 120% 100%)",
+                }
             }
             exit={{
               clipPath: "polygon(100% 0%, 100% 0%, 120% 100%, 120% 100%)",

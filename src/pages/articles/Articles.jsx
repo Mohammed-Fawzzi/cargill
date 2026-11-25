@@ -123,11 +123,10 @@ export default function Articles() {
                 <button
                   type="button"
                   onClick={() => setCategory("")}
-                  className={`whitespace-nowrap px-4 py-2 text-sm transition-colors ${
-                    !category
+                  className={`whitespace-nowrap px-4 py-2 text-sm transition-colors ${!category
                       ? "bg-brand-lime font-semibold text-[#0A0820]"
                       : "font-medium text-white/55 hover:bg-[#1F1D35] hover:text-white"
-                  }`}
+                    }`}
                 >
                   {t(UI.filterAll, locale)}
                 </button>
@@ -138,11 +137,10 @@ export default function Articles() {
                       key={label}
                       type="button"
                       onClick={() => setCategory(label)}
-                      className={`whitespace-nowrap px-4 py-2 text-sm transition-colors ${
-                        active
+                      className={`whitespace-nowrap px-4 py-2 text-sm transition-colors ${active
                           ? "bg-brand-lime font-semibold text-[#0A0820]"
                           : "font-medium text-white/55 hover:bg-[#1F1D35] hover:text-white"
-                      }`}
+                        }`}
                     >
                       {label}
                     </button>

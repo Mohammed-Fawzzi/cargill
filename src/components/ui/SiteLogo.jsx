@@ -2,7 +2,6 @@ import React from "react";
 import { t } from "@/lib/i18n";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
-import { useTheme } from "@/context/ThemeContext";
 import logoCargill from "@/assets/logo-cargill.png";
 import logoCargillWhite from "@/assets/logo-cargill-white.png";
 
@@ -13,20 +12,12 @@ export default function SiteLogo({
   variant = "auto",
 }) {
   const { locale } = useLocale();
-  const { theme } = useTheme();
   const { contact } = useSiteData();
   const name = t(contact?.companyName, locale);
-  const resolved =
-    variant === "auto"
-      ? theme === "dark"
-        ? "white"
-        : "default"
-      : variant;
+  const resolved = variant === "auto" ? "white" : variant;
   const fallback = resolved === "white" ? logoCargillWhite : logoCargill;
   const src =
-    resolved === "white"
-      ? fallback
-      : contact?.logoUrl || fallback;
+    resolved === "white" ? fallback : contact?.logoUrl || fallback;
 
   return (
     <img

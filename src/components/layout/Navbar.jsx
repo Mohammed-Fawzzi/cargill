@@ -13,7 +13,6 @@ import SiteLogo from "@/components/ui/SiteLogo";
 import SafeImage from "@/components/ui/SafeImage";
 import SplitArrowButton from "@/components/ui/SplitArrowButton";
 import LanguageSwitch from "@/components/layout/LanguageSwitch";
-import ThemeToggle from "@/components/layout/ThemeToggle";
 import FullscreenMenu from "@/components/layout/FullscreenMenu";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
@@ -488,7 +487,7 @@ export default function Navbar() {
             >
               <SiteLogo
                 alt={companyName}
-                className="h-9 w-auto max-w-[7.5rem] object-contain object-right sm:h-11 sm:max-w-[8.5rem] xl:max-w-[9.5rem]"
+                className="h-8 w-auto max-w-[5.75rem] object-contain object-right sm:h-11 sm:max-w-[8.5rem] xl:max-w-[9.5rem]"
               />
             </Link>
 
@@ -536,12 +535,13 @@ export default function Navbar() {
           </div>
 
           <div className="nav-bar-actions">
-            <AskAgronomistButton
-              href={waHref}
-              label={askLabel}
-              className="hidden px-3 text-[13px] xl:inline-flex"
-            />
-            <ThemeToggle />
+            <span className="nav-ask">
+              <AskAgronomistButton
+                href={waHref}
+                label={askLabel}
+                className="px-3 text-[13px]"
+              />
+            </span>
             <LanguageSwitch variant="toggle" tone="light" />
             <Link
               to="/products"
@@ -558,7 +558,7 @@ export default function Navbar() {
                   ? closeMenu()
                   : openMenuFrom(menuBtnRef.current)
               }
-              className="ix-icon-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink"
+              className="ix-icon-btn inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink sm:h-10 sm:w-10"
               aria-label={isMenuOpen ? t(UI.closeMenu, locale) : t(UI.openMenu, locale)}
               aria-expanded={isMenuOpen}
             >

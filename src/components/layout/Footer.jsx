@@ -283,7 +283,7 @@ export default function Footer() {
                   </span>
                   <RollLink
                     href={`mailto:${email}`}
-                    className="font-mono"
+                    className="max-w-full break-all font-mono"
                     dir="ltr"
                   >
                     {email}

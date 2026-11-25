@@ -47,7 +47,7 @@ export default function AccentHeading({
     <Tag className={className}>
       {parts.map((part, index) =>
         part.accent ? (
-          <span key={index} className={accentClassName}>
+          <span key={index} className={`inline-block px-[0.04em] pt-[0.08em] leading-[1.35] ${accentClassName}`}>
             {part.text}
           </span>
         ) : (

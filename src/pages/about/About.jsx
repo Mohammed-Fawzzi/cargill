@@ -282,11 +282,10 @@ function AboutStoryPinned({ steps, images, reducedMotion }) {
             {steps.map((step, index) => (
               <span
                 key={step.id}
-                className={`h-1.5 rounded-full transition-[width,background-color] duration-300 ${
-                  index === active
+                className={`h-1.5 rounded-full transition-[width,background-color] duration-300 ${index === active
                     ? "w-7 bg-brand-lime"
                     : "w-1.5 bg-white/25"
-                }`}
+                  }`}
                 style={{
                   transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
                 }}

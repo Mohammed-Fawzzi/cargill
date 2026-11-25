@@ -156,9 +156,8 @@ export default function Events() {
                 <>
                   {item.label}
                   <span
-                    className={`ms-1 text-[11px] ${
-                      active ? "opacity-80" : "text-brand-lime/80"
-                    }`}
+                    className={`ms-1 text-[11px] ${active ? "opacity-80" : "text-brand-lime/80"
+                      }`}
                   >
                     ({item.count})
                   </span>

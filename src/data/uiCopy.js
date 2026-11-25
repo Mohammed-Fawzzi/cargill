@@ -400,8 +400,6 @@ export const UI = {
     en: "Deep understanding of local soil, crops, and field conditions",
   },
 
-  themeLight: { ar: "الوضع الفاتح", en: "Light mode" },
-  themeDark: { ar: "الوضع الداكن", en: "Dark mode" },
   fieldStoriesTitle: {
     ar: "من الحقل: قصص نجاح",
     en: "From the field: success stories",

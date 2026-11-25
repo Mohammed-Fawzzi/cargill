@@ -26,7 +26,7 @@ function HeadlineReveal({ text, reducedMotion, active }) {
   if (!lines.length) return null;
 
   return (
-    <h1 className="mt-4 max-w-[18ch] break-words font-display text-[clamp(2.5rem,6.5vw,4.75rem)] font-black leading-[1.12] text-white sm:mt-[18px] md:max-w-[980px]">
+    <h1 className="mt-4 max-w-[18ch] break-words font-display text-[clamp(2.15rem,8vw,4.75rem)] font-black leading-[1.35] text-white sm:mt-[18px] md:max-w-[980px] md:text-[clamp(2.5rem,6.5vw,4.75rem)] md:leading-[1.15]">
       {lines.map((line, index) => (
         <span key={index} className="block overflow-hidden px-[0.04em] py-[0.1em]">
           <motion.span
@@ -165,9 +165,9 @@ export default function HeroSection({ section, entranceReady = true }) {
           />
         </div>
 
-        <div className="relative z-30 mx-auto flex min-h-[min(860px,100svh)] max-w-[1320px] flex-col px-6 pb-[170px] pt-[calc(var(--navbar-height)+var(--ticker-height)+2.75rem)] md:pb-[200px] md:pt-[calc(var(--navbar-height)+var(--ticker-height)+3.25rem)]">
+        <div className="relative z-30 mx-auto flex min-h-[min(860px,100svh)] max-w-[1320px] flex-col px-4 pb-[170px] pt-[calc(var(--navbar-height)+var(--ticker-height)+2.75rem)] sm:px-6 md:pb-[200px] md:pt-[calc(var(--navbar-height)+var(--ticker-height)+3.25rem)]">
           <motion.p
-            className="shrink-0 font-mono text-[13px] tracking-[3px] text-brand-lime"
+            className="max-w-full break-words font-mono text-[12px] tracking-[0.16em] text-brand-lime sm:text-[13px] sm:tracking-[3px]"
             dir="ltr"
             initial={false}
             animate={
@@ -223,7 +223,7 @@ export default function HeroSection({ section, entranceReady = true }) {
           >
             <Link
               to="/products"
-              className="inline-flex items-center rounded-lg bg-brand-lime px-[30px] py-[17px] text-[17px] font-semibold text-[#0A0820] transition-colors hover:bg-brand-lime-hover"
+              className="inline-flex max-w-full items-center justify-center rounded-lg bg-brand-lime px-5 py-3.5 text-center text-base font-semibold text-[#0A0820] transition-colors hover:bg-brand-lime-hover sm:px-[30px] sm:py-[17px] sm:text-[17px]"
             >
               {t(UI.browseProducts, locale)} ←
             </Link>
@@ -232,7 +232,7 @@ export default function HeroSection({ section, entranceReady = true }) {
                 href={waHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center rounded-lg border border-white/28 px-[30px] py-[17px] text-[17px] text-white transition-colors hover:border-brand-lime hover:text-brand-lime"
+                className="inline-flex max-w-full items-center justify-center rounded-lg border border-white/28 px-5 py-3.5 text-center text-base text-white transition-colors hover:border-brand-lime hover:text-brand-lime sm:px-[30px] sm:py-[17px] sm:text-[17px]"
               >
                 {t(UI.askAgronomist, locale)}
               </a>

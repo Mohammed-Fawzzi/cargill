@@ -288,11 +288,10 @@ export default function Products() {
                 <button
                   type="button"
                   onClick={() => setSubcategory("")}
-                  className={`whitespace-nowrap border px-3 py-1.5 text-xs transition-colors ${
-                    !subcategoryId
+                  className={`whitespace-nowrap border px-3 py-1.5 text-xs transition-colors ${!subcategoryId
                       ? "border-brand-lime/50 bg-brand-lime/15 text-brand-lime"
                       : "border-white/10 text-white/55 hover:border-white/25 hover:text-white"
-                  }`}
+                    }`}
                 >
                   {t(UI.allSubcategories, locale)}
                 </button>
@@ -303,17 +302,16 @@ export default function Products() {
                       key={sub.id}
                       type="button"
                       onClick={() => setSubcategory(sub.id)}
-                      className={`whitespace-nowrap border px-3 py-1.5 text-xs transition-colors ${
-                        active
+                      className={`whitespace-nowrap border px-3 py-1.5 text-xs transition-colors ${active
                           ? "border-brand-lime/50 bg-brand-lime/15 text-brand-lime"
                           : "border-white/10 text-white/55 hover:border-white/25 hover:text-white"
-                      }`}
+                        }`}
                     >
                       {t(sub.name, locale)}
                     </button>
                   );
                 })}
-             
+
               </div>
             ) : null}
           </div>

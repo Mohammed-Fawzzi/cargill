@@ -42,15 +42,13 @@ function FactRow({ label, value, accent = false, last = false }) {
   if (!value) return null;
   return (
     <div
-      className={`flex items-center justify-between gap-6 py-3 ${
-        last ? "" : "border-b border-white/8"
-      }`}
+      className={`flex items-center justify-between gap-6 py-3 ${last ? "" : "border-b border-white/8"
+        }`}
     >
       <span className="text-[15px] text-white/55">{label}</span>
       <span
-        className={`max-w-[65%] text-end text-[15px] font-semibold ${
-          accent ? "text-brand-lime" : "text-white"
-        }`}
+        className={`max-w-[65%] text-end text-[15px] font-semibold ${accent ? "text-brand-lime" : "text-white"
+          }`}
       >
         <ValueText value={value} />
       </span>
@@ -101,13 +99,12 @@ function UsageTable({ columns, rows, locale, reducedMotion }) {
                   return (
                     <td
                       key={col.id}
-                      className={`px-4 py-4 align-middle ${
-                        isDose
+                      className={`px-4 py-4 align-middle ${isDose
                           ? "font-bold text-brand-lime"
                           : isFirst
                             ? "font-medium text-white"
                             : "text-white/70"
-                      }`}
+                        }`}
                     >
                       {isFirst && value ? (
                         <span className="inline-flex items-center gap-2">
@@ -165,11 +162,10 @@ function UsageTable({ columns, rows, locale, reducedMotion }) {
                         {columnLabel(col, locale)}
                       </dt>
                       <dd
-                        className={`text-sm ${
-                          col.id === "dose"
+                        className={`text-sm ${col.id === "dose"
                             ? "font-bold text-brand-lime"
                             : "text-white"
-                        }`}
+                          }`}
                       >
                         <ValueText value={value} />
                       </dd>
@@ -315,11 +311,11 @@ export default function ProductDetails() {
     { label: t(UI.nav.products, locale), to: "/products" },
     categoryName
       ? {
-          label: categoryName,
-          to: product?.sectionId
-            ? `/products?section=${encodeURIComponent(product.sectionId)}`
-            : "/products",
-        }
+        label: categoryName,
+        to: product?.sectionId
+          ? `/products?section=${encodeURIComponent(product.sectionId)}`
+          : "/products",
+      }
       : null,
     subcategoryName ? { label: subcategoryName, current: true } : null,
   ].filter(Boolean);
@@ -397,9 +393,8 @@ export default function ProductDetails() {
 
             <div className="grid grid-cols-1 items-stretch gap-7 lg:grid-cols-12">
               <motion.div
-                className={`product-stage group relative order-2 flex flex-col items-center justify-center overflow-hidden rounded-xl bg-[#1B1931] p-7 lg:order-1 lg:col-span-6 ${
-                  stageHot ? "is-hot" : ""
-                }`}
+                className={`product-stage group relative order-2 flex flex-col items-center justify-center overflow-hidden rounded-xl bg-[#1B1931] p-7 lg:order-1 lg:col-span-6 ${stageHot ? "is-hot" : ""
+                  }`}
                 initial={reducedMotion ? false : { opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: easeOut }}
@@ -456,11 +451,10 @@ export default function ProductDetails() {
                         key={src}
                         type="button"
                         onClick={() => setActiveImage(index)}
-                        className={`h-14 w-14 overflow-hidden rounded-lg border ${
-                          index === activeImage
+                        className={`h-14 w-14 overflow-hidden rounded-lg border ${index === activeImage
                             ? "border-brand-lime"
                             : "border-white/12"
-                        }`}
+                          }`}
                         aria-label={`${index + 1}`}
                       >
                         <SafeImage
