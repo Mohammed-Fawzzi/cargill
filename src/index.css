@@ -51,7 +51,7 @@
   --color-text: rgba(255, 255, 255, 0.92);
   --color-bg: #0a0820;
   --navbar-height: 5.75rem;
-  --ticker-height: 1.75rem;
+  --ticker-height: 0rem;
   --triangle-clip: polygon(50% 0%, 0% 100%, 100% 100%);
 }
 
@@ -199,6 +199,61 @@ footer {
   box-shadow: 0 8px 28px rgba(10, 8, 32, 0.35);
   isolation: isolate;
 }
+
+.nav-bar-pill {
+  display: inline-flex;
+  width: max-content;
+  max-width: calc(100% - 1.5rem);
+  margin-inline: auto;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1.25rem;
+}
+
+.nav-bar-cluster {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.nav-bar-links {
+  display: none;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.nav-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1023px) {
+  .nav-bar-pill {
+    display: flex;
+    width: 100%;
+    max-width: 1180px;
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .nav-bar-cluster {
+    gap: 0;
+  }
+
+  .nav-bar-actions {
+    gap: 0.375rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nav-bar-links {
+    display: flex;
+  }
+}
+
 
 [data-theme="light"] .nav-glass {
   box-shadow: 0 8px 28px rgba(24, 16, 96, 0.1);

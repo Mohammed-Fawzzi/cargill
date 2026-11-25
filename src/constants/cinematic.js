@@ -1,10 +1,3 @@
-export const TICKER_ITEMS = [
-  { ar: "دعم فني مجاني", en: "Free technical support" },
-  { ar: "توصيل لكل المحافظات", en: "Delivery nationwide" },
-  { ar: "اسأل مهندس زراعي على واتساب", en: "Ask an agronomist on WhatsApp" },
-  { ar: "منتجات معتمدة", en: "Certified products" },
-];
-
 export const TRUST_ITEMS = [
   { ar: "دعم فني في الحقل", en: "Field technical support" },
   { ar: "منتجات معتمدة", en: "Certified products" },

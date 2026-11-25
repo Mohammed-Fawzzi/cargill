@@ -195,7 +195,7 @@ function MoreNavItem({ label, solid, children }) {
   return (
     <li
       ref={rootRef}
-      className="relative xl:hidden"
+      className="relative"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
@@ -330,6 +330,11 @@ export default function Navbar() {
   const { contact } = useSiteData();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isWide, setIsWide] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(min-width: 1280px)").matches
+      : true,
+  );
   const companyName = t(contact?.companyName, locale);
   const phone = contact?.phones?.[0] || "";
   const askLabel = t(UI.askAgronomist, locale);
@@ -351,15 +356,24 @@ export default function Navbar() {
   const categories = useMemo(() => {
     const list = categoriesQuery.data || [];
     const products = productsQuery.data || [];
-    return list.map((category) => {
-      const cover = products.find(
-        (product) => product.sectionId === category.id && product.imageUrl,
-      );
-      return {
-        ...category,
-        imageUrl: cover?.imageUrl || "",
-      };
-    });
+    return list
+      .filter((category) => {
+        const ar = String(category?.name?.ar || "").toLowerCase();
+        const en = String(category?.name?.en || "").toLowerCase();
+        const id = String(category?.id || "").toLowerCase();
+        return (
+          !ar.includes("بذور") && !en.includes("seed") && !id.includes("seed")
+        );
+      })
+      .map((category) => {
+        const cover = products.find(
+          (product) => product.sectionId === category.id && product.imageUrl,
+        );
+        return {
+          ...category,
+          imageUrl: cover?.imageUrl || "",
+        };
+      });
   }, [categoriesQuery.data, productsQuery.data]);
 
   useEffect(() => {
@@ -367,12 +381,19 @@ export default function Navbar() {
   }, [location.pathname, location.search]);
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 1024px)");
-    const onChange = (event) => {
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const wide = window.matchMedia("(min-width: 1280px)");
+    const onDesktop = (event) => {
       if (event.matches) closeMenu();
     };
-    media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
+    const onWide = (event) => setIsWide(event.matches);
+    setIsWide(wide.matches);
+    desktop.addEventListener("change", onDesktop);
+    wide.addEventListener("change", onWide);
+    return () => {
+      desktop.removeEventListener("change", onDesktop);
+      wide.removeEventListener("change", onWide);
+    };
   }, []);
 
   useEffect(() => {
@@ -398,6 +419,10 @@ export default function Navbar() {
     { to: "/contact", label: t(UI.nav.contact, locale) },
   ];
 
+  const desktopLinks = navLinks.filter(
+    (item) => isWide || !item.compactHide,
+  );
+
   const mobileLinks = [
     ...navLinks,
     { to: "/finder", label: t(UI.findSolution, locale) },
@@ -405,23 +430,69 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="pointer-events-none relative z-40 px-3 pt-3 sm:px-5 sm:pt-4 lg:px-6">
-        <div className="pointer-events-auto relative mx-auto flex h-16 w-full min-w-0 max-w-[1180px] items-center justify-between gap-2 overflow-visible rounded-full nav-glass px-2.5 sm:h-[4.25rem] sm:gap-3 sm:px-4 xl:max-w-[1320px] xl:px-5">
-          <div className="order-3 flex shrink-0 items-center gap-1 sm:gap-1.5 xl:gap-2">
+      <nav className="pointer-events-none relative z-40 flex justify-center px-3 pt-3 sm:px-5 sm:pt-4 lg:px-6">
+        <div className="nav-bar-pill pointer-events-auto relative h-16 overflow-visible rounded-full nav-glass px-2.5 sm:h-[4.25rem] sm:px-4 xl:px-5">
+          <div className="nav-bar-cluster">
             <Link
-              to="/finder"
+              to="/"
               onClick={closeMenu}
-              className="hidden min-h-10 items-center whitespace-nowrap px-2 text-xs font-bold text-ink/75 underline-offset-4 transition-colors hover:text-brand-lime hover:underline xl:inline-flex"
+              className="flex shrink-0 items-center justify-center px-1"
             >
-              {t(UI.findSolution, locale)}
-            </Link>
-            <div className="hidden lg:block">
-              <AskAgronomistButton
-                href={waHref}
-                label={askLabel}
-                className="px-3 text-[13px] xl:px-4 xl:text-sm"
+              <SiteLogo
+                alt={companyName}
+                className="h-10 w-auto max-w-[8.5rem] object-contain object-right sm:h-12 sm:max-w-[9.5rem] xl:max-w-[11rem]"
               />
-            </div>
+            </Link>
+
+            <ul className="nav-bar-links">
+              {desktopLinks.map((item) =>
+                item.mega ? (
+                  <NavItem
+                    key={item.to}
+                    to={item.to}
+                    label={item.label}
+                    mega
+                    solid
+                    onNavigate={closeMenu}
+                  >
+                    <ProductsMegaMenu
+                      categories={categories}
+                      locale={locale}
+                      onNavigate={closeMenu}
+                    />
+                  </NavItem>
+                ) : (
+                  <NavItem
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    label={item.label}
+                    solid
+                    onNavigate={closeMenu}
+                  />
+                ),
+              )}
+              {isWide ? (
+                <NavItem
+                  to="/finder"
+                  label={t(UI.findSolution, locale)}
+                  solid
+                  onNavigate={closeMenu}
+                />
+              ) : (
+                <MoreNavItem label={t(UI.nav.more, locale)} solid>
+                  <MoreMenu locale={locale} onNavigate={closeMenu} />
+                </MoreNavItem>
+              )}
+            </ul>
+          </div>
+
+          <div className="nav-bar-actions">
+            <AskAgronomistButton
+              href={waHref}
+              label={askLabel}
+              className="hidden px-3 text-[13px] lg:inline-flex xl:px-4 xl:text-sm"
+            />
             <ThemeToggle />
             <LanguageSwitch variant="toggle" tone="light" />
             <Link
@@ -445,51 +516,6 @@ export default function Navbar() {
               )}
             </button>
           </div>
-
-          <ul className="order-2 hidden min-w-0 items-center justify-center gap-x-5 lg:flex xl:gap-x-[22px]">
-            {navLinks.map((item) =>
-              item.mega ? (
-                <NavItem
-                  key={item.to}
-                  to={item.to}
-                  label={item.label}
-                  mega
-                  solid
-                  onNavigate={closeMenu}
-                >
-                  <ProductsMegaMenu
-                    categories={categories}
-                    locale={locale}
-                    onNavigate={closeMenu}
-                  />
-                </NavItem>
-              ) : (
-                <NavItem
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  label={item.label}
-                  solid
-                  onNavigate={closeMenu}
-                  className={item.compactHide ? "hidden xl:block" : undefined}
-                />
-              ),
-            )}
-            <MoreNavItem label={t(UI.nav.more, locale)} solid>
-              <MoreMenu locale={locale} onNavigate={closeMenu} />
-            </MoreNavItem>
-          </ul>
-
-          <Link
-            to="/"
-            onClick={closeMenu}
-            className="order-1 flex max-w-[40%] shrink-0 items-center justify-center px-1 sm:max-w-none"
-          >
-            <SiteLogo
-              alt={companyName}
-              className="h-10 w-auto max-w-full object-contain object-right sm:h-12 sm:max-w-[9.5rem] xl:max-w-[11rem]"
-            />
-          </Link>
         </div>
       </nav>
 

@@ -51,7 +51,7 @@ export default function CategoryStrip({ ready = true }) {
 
   return (
     <motion.section
-      className="relative z-20 mx-auto mt-[-100px] max-w-[1320px] px-6 md:mt-[-140px]"
+      className="relative z-20 mx-auto mt-[-50px] max-w-[1320px] px-6 md:mt-[-80px]"
       initial={reducedMotion ? false : { opacity: 0, y: 40 }}
       animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
       transition={{ duration: 0.55, ease: easeOut, delay: reducedMotion ? 0 : 0.15 }}
