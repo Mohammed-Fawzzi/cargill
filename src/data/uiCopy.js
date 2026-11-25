@@ -167,10 +167,26 @@ export const UI = {
   imInterested: { ar: "أنا مهتم", en: "I'm interested" },
   needHelp: { ar: "محتاج مساعدة؟", en: "Need help?" },
   featuredBadge: { ar: "مميز", en: "Featured" },
+  featuredLabel: { ar: "منتجات مميزة", en: "Featured products" },
+  featuredHeading: {
+    ar: "مختارة للحقل المصري",
+    en: "Chosen for Egyptian fields",
+  },
+  viewAllProducts: { ar: "عرض كل المنتجات", en: "View all products" },
+  productDetails: { ar: "تفاصيل المنتج", en: "Product details" },
+  askAboutWhatsApp: {
+    ar: "اسأل عنه على واتساب",
+    en: "Ask about it on WhatsApp",
+  },
+  askAboutProductMessage: {
+    ar: "مرحباً، محتاج تفاصيل عن المنتج: {name}",
+    en: "Hi, I'd like details about this product: {name}",
+  },
   newlyLaunched: { ar: "حل مميز", en: "Featured solution" },
   productHighlights: { ar: "أبرز المزايا", en: "Product highlights" },
   cropsCovered: { ar: "محاصيل", en: "Crops" },
   learnMoreProduct: { ar: "اعرف المزيد", en: "Learn more" },
+
   valuesEyebrow: { ar: "قيمنا في الحقل", en: "Our field values" },
   valuesTitle: {
     ar: "زراعة مسؤولة، وشراكة تدوم.",

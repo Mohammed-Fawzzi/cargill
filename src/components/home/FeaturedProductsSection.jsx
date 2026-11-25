@@ -1,308 +1,291 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { IoChevronBack, IoChevronForward } from "react-icons/io5";
-import Reveal from "@/components/ui/Reveal";
+import { useQuery } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
-import MagneticButton from "@/components/ui/MagneticButton";
-import { EmptyState } from "@/components/ui/StatusMessage";
+import { TriangleAccent } from "@/components/ui/TriangleMask";
 import { useLocale } from "@/context/LocaleContext";
-import { dirFor, t } from "@/lib/i18n";
+import { useSiteData } from "@/context/SiteDataContext";
+import { getCategories } from "@/services/cms/products";
+import { toWhatsAppHref } from "@/lib/phone";
+import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
+import { easeOut } from "@/lib/motion";
 
-const AUTOPLAY_MS = 5500;
+const MAX_LIST = 6;
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  return reduced;
+}
+
+function useIsMobile(breakpoint = 768) {
+  const [mobile, setMobile] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
+    const sync = () => setMobile(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, [breakpoint]);
+
+  return mobile;
+}
 
 export default function FeaturedProductsSection({ section }) {
   const { locale } = useLocale();
+  const { contact } = useSiteData();
+  const reducedMotion = usePrefersReducedMotion();
+  const isMobile = useIsMobile();
+  const featuredRef = useRef(null);
+  const [activeId, setActiveId] = useState("");
+
   const items = useMemo(
-    () => (section?.items || []).filter(Boolean),
+    () => (section?.items || []).filter(Boolean).slice(0, MAX_LIST),
     [section?.items],
   );
-  const title = t(section?.data?.title, locale);
-  const body = t(section?.data?.body, locale);
-  const rtl = dirFor(locale) === "rtl";
-  const [index, setIndex] = useState(0);
-  const [perView, setPerView] = useState(2);
-  const [paused, setPaused] = useState(false);
+  const dashboardTitle = t(section?.data?.title, locale);
+  const dashboardBody = t(section?.data?.body, locale);
+  const heading = dashboardTitle || t(UI.featuredHeading, locale);
 
-  const spotlight = items[0] || null;
-  const mosaic = items.slice(1, 3);
-  const carouselItems = items.slice(3);
+  const categoriesQuery = useQuery({
+    queryKey: ["cms", "categories"],
+    queryFn: getCategories,
+    staleTime: 1000 * 60 * 5,
+  });
 
-  useEffect(() => {
-    const update = () => {
-      setPerView(window.innerWidth < 768 ? 1 : 2);
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
+  const categoryNameById = useMemo(() => {
+    const map = new Map();
+    for (const category of categoriesQuery.data || []) {
+      map.set(category.id, t(category.name, locale));
+    }
+    return map;
+  }, [categoriesQuery.data, locale]);
 
   useEffect(() => {
-    setIndex(0);
-  }, [carouselItems.length, perView]);
+    if (!items.length) {
+      setActiveId("");
+      return;
+    }
+    setActiveId((current) =>
+      items.some((item) => item.id === current) ? current : items[0].id,
+    );
+  }, [items]);
 
-  const maxIndex = Math.max(0, carouselItems.length - perView);
+  const active = items.find((item) => item.id === activeId) || items[0] || null;
+  const phone = contact?.phones?.[0] || "";
+  const activeName = active ? t(active.name, locale) : "";
+  const activeCategory = active
+    ? categoryNameById.get(active.sectionId) || ""
+    : "";
+  const activeOverview =
+    (active && t(active.overview, locale)) ||
+    (active && t(active.details, locale)) ||
+    "";
+  const waMessage = t(UI.askAboutProductMessage, locale).replace(
+    "{name}",
+    activeName || "",
+  );
+  const waHref = toWhatsAppHref(phone, waMessage);
 
-  useEffect(() => {
-    if (carouselItems.length <= perView || paused) return undefined;
-    const timer = window.setInterval(() => {
-      setIndex((current) => (current >= maxIndex ? 0 : current + 1));
-    }, AUTOPLAY_MS);
-    return () => window.clearInterval(timer);
-  }, [carouselItems.length, perView, paused, maxIndex]);
+  const selectProduct = (id) => {
+    setActiveId(id);
+    if (isMobile && featuredRef.current) {
+      featuredRef.current.scrollIntoView({
+        behavior: reducedMotion ? "auto" : "smooth",
+        block: "start",
+      });
+    }
+  };
 
-  if (!items.length && !title && !body) return null;
-
-  const safeIndex = Math.min(index, maxIndex);
-  const pageCount = maxIndex + 1;
-  const step = 100 / perView;
-  const offset = (rtl ? 1 : -1) * safeIndex * step;
-
-  const goPrev = () => setIndex((current) => Math.max(0, current - 1));
-  const goNext = () => setIndex((current) => Math.min(maxIndex, current + 1));
-
-  const spotlightName = spotlight ? t(spotlight.name, locale) : "";
+  if (!items.length) return null;
 
   return (
-    <section className="relative overflow-hidden bg-surface-muted py-16 lg:py-24">
-      <div
-        className="pointer-events-none absolute -start-24 top-24 h-64 w-64 rounded-full bg-brand-lime/15 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute -end-20 bottom-10 h-72 w-72 rounded-full bg-brand-moss/10 blur-3xl"
-        aria-hidden="true"
-      />
+    <section className="bg-white py-[4.5rem] sm:py-24 lg:py-[7.5rem]">
+      <motion.div
+        className="container mx-auto px-4 lg:px-8"
+        initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.12 }}
+        transition={{ duration: 0.35, ease: easeOut }}
+      >
+        <div className="mb-6 flex items-center gap-4">
+          <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
+            {t(UI.featuredLabel, locale)}
+          </p>
+          <span className="h-px flex-1 bg-brand-ink" aria-hidden="true" />
+          <p className="shrink-0 text-[11px] font-bold tracking-[0.2em] text-brand-ink/55">
+            04
+          </p>
+        </div>
 
-      <div className="relative container mx-auto px-4 lg:px-8">
-        <Reveal className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end lg:mb-14">
-          <div className="max-w-2xl">
-            {title ? (
-              <h2 className="mb-3 text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
-                {title}
-              </h2>
-            ) : null}
-            {body ? (
-              <p className="text-sm leading-8 text-text-muted sm:text-base">{body}</p>
+        <div className="mb-10 flex flex-col gap-4 sm:mb-14 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <h2 className="text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
+              {heading}
+            </h2>
+            {dashboardBody ? (
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-text-muted sm:text-base sm:leading-8">
+                {dashboardBody}
+              </p>
             ) : null}
           </div>
-          <MagneticButton>
-            <Link
-              to="/products"
-              className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-md border border-brand-ink/15 bg-white px-6 text-sm font-bold text-brand-ink transition-all duration-300 hover:border-brand-lime hover:bg-brand-lime"
-            >
-              {t(UI.viewAll, locale)}
-            </Link>
-          </MagneticButton>
-        </Reveal>
+          <Link
+            to="/products"
+            className="inline-flex w-fit items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-brand-ink transition-[border-width] hover:border-b-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
+          >
+            <span>{t(UI.viewAllProducts, locale)}</span>
+            <span aria-hidden="true">←</span>
+          </Link>
+        </div>
 
-        {items.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <>
-            {spotlight ? (
-              <Reveal className="mb-12 lg:mb-16">
-                <div className="grid items-center gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                    <Link
-                      to={`/products/${spotlight.id}`}
-                      className="group col-span-2 cursor-pointer overflow-hidden rounded-[1.5rem] sm:rounded-[1.75rem]"
-                    >
-                      {spotlight.imageUrl ? (
-                        <SafeImage
-                          src={spotlight.imageUrl}
-                          alt={spotlightName}
-                          className="aspect-[16/10] h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="flex aspect-[16/10] items-center justify-center bg-brand-forest-deep text-brand-lime">
-                          {spotlightName}
-                        </div>
-                      )}
-                    </Link>
-                    {mosaic.map((item) => {
-                      const itemName = t(item.name, locale);
-                      return (
-                        <Link
-                          key={item.id}
-                          to={`/products/${item.id}`}
-                          className="group cursor-pointer overflow-hidden rounded-[1.25rem] sm:rounded-[1.5rem]"
-                        >
-                          {item.imageUrl ? (
-                            <SafeImage
-                              src={item.imageUrl}
-                              alt={itemName}
-                              className="aspect-[4/3] h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="flex aspect-[4/3] items-center justify-center bg-brand-moss/20 text-sm font-bold text-brand-ink">
-                              {itemName}
-                            </div>
-                          )}
-                        </Link>
-                      );
-                    })}
-                  </div>
-
-                  <div>
-                    <p className="mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-brand-moss">
-                      <span className="h-2 w-2 rounded-full bg-brand-lime" aria-hidden="true" />
-                      {t(UI.newlyLaunched, locale)}
-                    </p>
-                    <h3 className="mb-4 text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl">
-                      {spotlightName}
-                    </h3>
-                    {t(spotlight.overview, locale) ? (
-                      <p className="mb-6 line-clamp-4 text-sm leading-8 text-text-muted sm:text-base">
-                        {t(spotlight.overview, locale)}
-                      </p>
-                    ) : t(spotlight.originCountry, locale) ? (
-                      <p className="mb-6 text-sm leading-8 text-text-muted sm:text-base">
-                        {t(UI.origin, locale)}: {t(spotlight.originCountry, locale)}
-                      </p>
-                    ) : null}
-                    <MagneticButton>
-                      <Link
-                        to={`/products/${spotlight.id}`}
-                        className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-md bg-brand-ink px-7 text-sm font-bold text-white transition-colors hover:bg-brand-lime hover:text-brand-ink"
-                      >
-                        {t(UI.learnMoreProduct, locale)}
-                        <span aria-hidden="true">→</span>
-                      </Link>
-                    </MagneticButton>
-                  </div>
-                </div>
-              </Reveal>
-            ) : null}
-
-            {carouselItems.length > 0 ? (
-              <Reveal delay={0.08}>
-                <div
-                  className="relative"
-                  onMouseEnter={() => setPaused(true)}
-                  onMouseLeave={() => setPaused(false)}
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
+          <div ref={featuredRef} className="scroll-mt-28 lg:col-span-7">
+            <AnimatePresence mode="wait" initial={false}>
+              {active ? (
+                <motion.div
+                  key={active.id}
+                  initial={reducedMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={reducedMotion ? undefined : { opacity: 0 }}
+                  transition={{ duration: 0.25, ease: easeOut }}
                 >
-                  {pageCount > 1 ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={goPrev}
-                        disabled={safeIndex === 0}
-                        aria-label={t(UI.prevSlide, locale)}
-                        className="absolute start-0 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink/50 shadow-sm transition-all hover:border-brand-lime hover:text-brand-ink disabled:opacity-25 md:inline-flex"
-                      >
-                        <IoChevronBack className="text-xl rtl:rotate-180" aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={goNext}
-                        disabled={safeIndex >= maxIndex}
-                        aria-label={t(UI.nextSlide, locale)}
-                        className="absolute end-0 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-brand-ink/10 bg-white text-brand-ink/50 shadow-sm transition-all hover:border-brand-lime hover:text-brand-ink disabled:opacity-25 md:inline-flex"
-                      >
-                        <IoChevronForward className="text-xl rtl:rotate-180" aria-hidden="true" />
-                      </button>
-                    </>
-                  ) : null}
-
-                  <div className="overflow-hidden px-2 md:px-16 lg:px-20">
-                    <div
-                      className="flex items-stretch transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                      style={{ transform: `translate3d(${offset}%, 0, 0)` }}
-                    >
-                      {carouselItems.map((item) => {
-                        const itemName = t(item.name, locale);
-                        const href = `/products/${item.id}`;
-                        const imageUrl = item.imageUrl || "";
-
-                        return (
-                          <article
-                            key={item.id}
-                            className="shrink-0 px-3 sm:px-4"
-                            style={{ width: `${step}%` }}
-                          >
-                            <Link
-                              to={href}
-                              className="group relative flex min-h-[340px] cursor-pointer overflow-hidden rounded-[1.75rem] bg-brand-forest-deep shadow-[0_16px_44px_rgba(24,16,96,0.14)] sm:min-h-[380px]"
-                            >
-                              {imageUrl ? (
-                                <SafeImage
-                                  src={imageUrl}
-                                  alt={itemName}
-                                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
-                              ) : (
-                                <div className="absolute inset-0 bg-gradient-to-br from-brand-moss to-brand-forest-deep" />
-                              )}
-                              <div
-                                className="absolute inset-0 bg-gradient-to-t from-brand-forest-deep via-brand-forest-deep/35 to-transparent"
-                                aria-hidden="true"
-                              />
-                              <div className="relative mt-auto p-6 text-white sm:p-8">
-                                {itemName ? (
-                                  <h3 className="mb-3 text-xl font-extrabold leading-8 sm:text-2xl">
-                                    {itemName}
-                                  </h3>
-                                ) : null}
-                                <span className="inline-flex items-center gap-2 text-sm font-bold text-brand-lime transition-all group-hover:gap-3">
-                                  {t(UI.viewDetails, locale)}
-                                  <span aria-hidden="true">→</span>
-                                </span>
-                              </div>
-                            </Link>
-                          </article>
-                        );
-                      })}
-                    </div>
+                  <div className="relative mb-6 flex aspect-[4/3] items-center justify-center overflow-hidden bg-surface-muted">
+                    <TriangleAccent className="absolute end-4 top-4 z-10 h-3 w-3.5" />
+                    {active.imageUrl ? (
+                      <SafeImage
+                        src={active.imageUrl}
+                        alt={activeName}
+                        width={1000}
+                        loading="lazy"
+                        className="h-full w-full object-contain p-6 sm:p-10"
+                      />
+                    ) : (
+                      <p className="px-6 text-center text-lg font-bold text-brand-ink/50">
+                        {activeName}
+                      </p>
+                    )}
                   </div>
 
-                  {pageCount > 1 ? (
-                    <div className="mt-9 flex items-center justify-center gap-2">
-                      {Array.from({ length: pageCount }).map((_, pageIndex) => (
-                        <button
-                          key={pageIndex}
-                          type="button"
-                          aria-label={`${pageIndex + 1}`}
-                          aria-current={pageIndex === safeIndex ? "true" : undefined}
-                          onClick={() => setIndex(pageIndex)}
-                          className={`cursor-pointer rounded-full transition-all ${
-                            pageIndex === safeIndex
-                              ? "h-2.5 w-7 bg-brand-lime"
-                              : "h-2.5 w-2.5 bg-brand-ink/20 hover:bg-brand-ink/40"
-                          }`}
-                        />
-                      ))}
-                    </div>
+                  {activeCategory ? (
+                    <p className="mb-2 text-[11px] font-bold tracking-[0.16em] text-brand-lime">
+                      {activeCategory}
+                    </p>
+                  ) : null}
+                  <h3 className="mb-3 text-2xl font-extrabold tracking-tight text-brand-ink sm:text-3xl lg:text-[2.25rem]">
+                    {activeName}
+                  </h3>
+                  {activeOverview ? (
+                    <p className="mb-6 line-clamp-3 text-sm leading-7 text-text-muted sm:text-base sm:leading-8">
+                      {activeOverview}
+                    </p>
                   ) : null}
 
-                  {pageCount > 1 ? (
-                    <div className="mt-6 flex justify-center gap-3 md:hidden">
-                      <button
-                        type="button"
-                        onClick={goPrev}
-                        disabled={safeIndex === 0}
-                        aria-label={t(UI.prevSlide, locale)}
-                        className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-brand-ink/15 text-brand-ink disabled:opacity-25"
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <Link
+                      to={`/products/${active.id}`}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 bg-brand-lime px-5 text-sm font-extrabold text-brand-ink transition-colors hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
+                    >
+                      <span>{t(UI.productDetails, locale)}</span>
+                      <span aria-hidden="true">←</span>
+                    </Link>
+                    {waHref ? (
+                      <a
+                        href={waHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex text-sm font-bold text-brand-ink underline-offset-4 transition-colors hover:text-brand-lime hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
                       >
-                        <IoChevronBack className="rtl:rotate-180" aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={goNext}
-                        disabled={safeIndex >= maxIndex}
-                        aria-label={t(UI.nextSlide, locale)}
-                        className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-brand-ink/15 text-brand-ink disabled:opacity-25"
-                      >
-                        <IoChevronForward className="rtl:rotate-180" aria-hidden="true" />
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-              </Reveal>
-            ) : null}
-          </>
-        )}
-      </div>
+                        {t(UI.askAboutWhatsApp, locale)}
+                      </a>
+                    ) : null}
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </div>
+
+          <div className="lg:col-span-4 lg:col-start-9">
+            <div className="hidden lg:block">
+              {items.map((item, index) => {
+                const name = t(item.name, locale);
+                const category = categoryNameById.get(item.sectionId) || "";
+                const isActive = item.id === active?.id;
+                const number = String(index + 1).padStart(2, "0");
+
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onMouseEnter={() => setActiveId(item.id)}
+                    onFocus={() => setActiveId(item.id)}
+                    onClick={() => setActiveId(item.id)}
+                    className={`flex w-full items-baseline gap-3 border-b border-brand-ink/10 py-4 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime ${
+                      isActive ? "border-brand-lime" : ""
+                    }`}
+                    aria-current={isActive ? "true" : undefined}
+                  >
+                    <span className="w-7 shrink-0 text-[11px] font-bold tracking-[0.16em] text-brand-ink/40">
+                      {number}
+                    </span>
+                    <span
+                      className={`min-w-0 flex-1 text-base font-bold ${
+                        isActive
+                          ? "text-brand-lime underline decoration-brand-lime underline-offset-4"
+                          : "text-brand-ink"
+                      }`}
+                    >
+                      {name}
+                      {isActive ? (
+                        <span aria-hidden="true" className="ms-2 inline-block">
+                          ←
+                        </span>
+                      ) : null}
+                    </span>
+                    {category ? (
+                      <span className="shrink-0 text-[11px] font-medium text-text-muted">
+                        {category}
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden">
+              {items.map((item) => {
+                const name = t(item.name, locale);
+                const isActive = item.id === active?.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => selectProduct(item.id)}
+                    className={`shrink-0 border px-3.5 py-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime ${
+                      isActive
+                        ? "border-brand-lime bg-brand-lime text-brand-ink"
+                        : "border-brand-ink/15 bg-white text-brand-ink"
+                    }`}
+                    aria-current={isActive ? "true" : undefined}
+                  >
+                    {name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </section>
   );
 }
