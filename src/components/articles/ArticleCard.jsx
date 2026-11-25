@@ -10,6 +10,7 @@ export default function ArticleCard({
   title,
   body,
   meta,
+  category,
   layout = "default",
 }) {
   const { locale } = useLocale();
@@ -20,7 +21,7 @@ export default function ArticleCard({
       imageUrl={imageUrl}
       title={title}
       body={body}
-      category={t(UI.nav.articles, locale)}
+      category={category || t(UI.nav.articles, locale)}
       secondary={meta}
       layout={layout}
     />

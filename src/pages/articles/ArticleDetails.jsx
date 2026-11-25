@@ -1,26 +1,94 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { motion, useReducedMotion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
-import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import ReadingProgress from "@/components/ui/ReadingProgress";
+import SafeImage from "@/components/ui/SafeImage";
 import ContentGrid, { cardLayoutForCount } from "@/components/ui/ContentGrid";
-import { SecondaryButton } from "@/components/ui/AppButton";
+import { PrimaryButton, SecondaryButton } from "@/components/ui/AppButton";
 import ArticleCard from "@/components/articles/ArticleCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getArticle, getArticles } from "@/services/cms/articles";
-import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
+import { useSiteData } from "@/context/SiteDataContext";
+import { toWhatsAppHref } from "@/lib/phone";
+import { easeOut } from "@/lib/motion";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { formatMillis } from "@/lib/time";
 
+function stripHtml(value) {
+  return String(value || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function looksLikeHtml(value) {
+  return /<\/?[a-z][\s\S]*>/i.test(String(value || ""));
+}
+
+function readingMinutes(text) {
+  const words = stripHtml(text)
+    .split(/\s+/)
+    .filter(Boolean).length;
+  if (words < 40) return 0;
+  return Math.max(1, Math.round(words / 200));
+}
+
+function ShareLinks({ url, title, locale, copied, onCopy, className = "" }) {
+  const waHref = `https://wa.me/?text=${encodeURIComponent(`${title} ${url}`.trim())}`;
+  const fbHref = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+
+  return (
+    <div className={className}>
+      <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-brand-ink">
+        {t(UI.shareArticle, locale)}
+      </p>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-brand-ink">
+        <a
+          href={waHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline decoration-brand-lime decoration-1 underline-offset-4 transition-colors hover:text-brand-moss"
+        >
+          {t(UI.shareWhatsApp, locale)}
+        </a>
+        <span className="text-brand-ink/25" aria-hidden="true">
+          ·
+        </span>
+        <a
+          href={fbHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline decoration-brand-lime decoration-1 underline-offset-4 transition-colors hover:text-brand-moss"
+        >
+          {t(UI.shareFacebook, locale)}
+        </a>
+        <span className="text-brand-ink/25" aria-hidden="true">
+          ·
+        </span>
+        <button
+          type="button"
+          onClick={onCopy}
+          className="underline decoration-brand-lime decoration-1 underline-offset-4 transition-colors hover:text-brand-moss"
+        >
+          {copied ? t(UI.linkCopied, locale) : t(UI.copyLink, locale)}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function ArticleDetails() {
   const { id } = useParams();
   const { locale } = useLocale();
-  const sectionQuery = useHomepageSection("articles");
+  const { contact } = useSiteData();
+  const reduceMotion = useReducedMotion();
+  const [copied, setCopied] = useState(false);
 
   const articleQuery = useQuery({
     queryKey: ["cms", "article", id],
@@ -38,24 +106,46 @@ export default function ArticleDetails() {
   const title = t(article?.title, locale);
   const excerpt = t(article?.excerpt, locale);
   const content = t(article?.content, locale);
-  const relatedTitle =
-    t(sectionQuery.data?.title, locale) || t(UI.relatedArticles, locale);
+  const categoryLabel = t(article?.category, locale);
+  const caption = t(article?.caption, locale);
   const dateLabel = formatMillis(article?.createdAt, locale);
+  const minutes = readingMinutes(`${excerpt} ${content}`);
+  const htmlBody = looksLikeHtml(content);
 
   const related = useMemo(() => {
-    const list = articlesQuery.data || [];
-    const selected = sectionQuery.data?.selectedIds || [];
-    const byId = new Map(list.map((item) => [item.id, item]));
-    const preferred = selected
-      .map((itemId) => byId.get(itemId))
-      .filter((item) => item && item.id !== id);
-    const pool = preferred.length
-      ? preferred
-      : list.filter((item) => item.id !== id);
+    const list = (articlesQuery.data || []).filter((item) => item.id !== id);
+    const sameCategory = categoryLabel
+      ? list.filter((item) => t(item.category, locale) === categoryLabel)
+      : [];
+    const pool = [...sameCategory];
+    for (const item of list) {
+      if (pool.length >= 3) break;
+      if (!pool.some((entry) => entry.id === item.id)) pool.push(item);
+    }
     return pool.slice(0, 3);
-  }, [articlesQuery.data, sectionQuery.data?.selectedIds, id]);
+  }, [articlesQuery.data, id, categoryLabel, locale]);
 
   const relatedLayout = cardLayoutForCount(related.length);
+  const shareUrl =
+    typeof window !== "undefined"
+      ? window.location.href
+      : `/articles/${id}`;
+
+  const phone = contact?.phones?.[0] || "";
+  const askHref = toWhatsAppHref(
+    phone,
+    t(UI.askAboutArticleMessage, locale).replace("{title}", title || ""),
+  );
+
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   return (
     <>
@@ -72,45 +162,135 @@ export default function ArticleDetails() {
       {!articleQuery.isPending && article ? (
         <main className="min-h-screen bg-white">
           <ReadingProgress />
-          <PageBanner
-            title={title}
-            imageUrl={article.imageUrl}
-            label={UI.pageLabel.articles}
-            meta={[t(UI.nav.articles, locale), dateLabel].filter(Boolean)}
-            breadcrumbs={[
-              { label: t(UI.nav.home, locale), to: "/" },
-              { label: t(UI.nav.articles, locale), to: "/articles" },
-              { label: title },
-            ]}
-          />
 
-          <article className="container mx-auto max-w-3xl px-4 pb-16 lg:px-8 lg:pb-20">
-            <Reveal>
+          <header className="pt-[140px]">
+            <motion.div
+              className="container mx-auto px-4 lg:px-8"
+              initial={reduceMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.45, ease: easeOut }}
+            >
               <SecondaryButton to="/articles" className="mb-8">
                 {t(UI.backToArticles, locale)}
               </SecondaryButton>
+
+              <p className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                <span className="font-semibold text-brand-lime">
+                  {categoryLabel || t(UI.nav.articles, locale)}
+                </span>
+                {dateLabel ? (
+                  <>
+                    <span className="text-brand-ink/25" aria-hidden="true">
+                      ·
+                    </span>
+                    <span className="text-text-muted">{dateLabel}</span>
+                  </>
+                ) : null}
+                {minutes > 0 ? (
+                  <>
+                    <span className="text-brand-ink/25" aria-hidden="true">
+                      ·
+                    </span>
+                    <span className="text-text-muted">
+                      {minutes} {t(UI.readingMinutes, locale)}
+                    </span>
+                  </>
+                ) : null}
+              </p>
+
+              {title ? (
+                <h1 className="max-w-[900px] text-[clamp(2.25rem,5vw,4.25rem)] font-extrabold leading-[1.05] tracking-[-0.03em] text-brand-ink">
+                  {title}
+                </h1>
+              ) : null}
+
               {excerpt ? (
-                <p className="mb-8 border-s-2 border-brand-lime ps-5 text-lg leading-9 text-brand-ink/85 sm:text-xl sm:leading-10">
+                <p className="mt-6 max-w-[720px] text-lg leading-9 text-text-muted sm:text-xl sm:leading-10">
                   {excerpt}
                 </p>
               ) : null}
-              {content ? (
-                <div className="whitespace-pre-wrap text-base leading-9 text-text-muted sm:text-lg sm:leading-10">
-                  {content}
+
+              {article.imageUrl ? (
+                <figure className="mt-10">
+                  <div className="overflow-hidden rounded-lg bg-surface-muted">
+                    <SafeImage
+                      src={article.imageUrl}
+                      alt={title}
+                      className="aspect-[16/9] w-full object-cover"
+                    />
+                  </div>
+                  {caption ? (
+                    <figcaption className="mt-3 text-sm text-text-muted">
+                      {caption}
+                    </figcaption>
+                  ) : null}
+                </figure>
+              ) : null}
+            </motion.div>
+          </header>
+
+          <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
+            <div className="relative mx-auto max-w-[720px]">
+              <aside className="pointer-events-none absolute top-0 hidden w-40 lg:block xl:-start-52 xl:w-44">
+                <div className="pointer-events-auto sticky top-[calc(var(--navbar-height)+1.5rem)]">
+                  <ShareLinks
+                    url={shareUrl}
+                    title={title}
+                    locale={locale}
+                    copied={copied}
+                    onCopy={onCopy}
+                  />
                 </div>
-              ) : null}
-              {!excerpt && !content ? (
-                <EmptyState message={t(UI.empty, locale)} />
-              ) : null}
-            </Reveal>
-          </article>
+              </aside>
+
+              <Reveal>
+                {content ? (
+                  htmlBody ? (
+                    <div
+                      className="article-body"
+                      dangerouslySetInnerHTML={{ __html: content }}
+                    />
+                  ) : (
+                    <div className="article-body whitespace-pre-wrap">
+                      {content}
+                    </div>
+                  )
+                ) : !excerpt ? (
+                  <EmptyState message={t(UI.empty, locale)} />
+                ) : null}
+              </Reveal>
+
+              <div className="mt-12 lg:hidden">
+                <ShareLinks
+                  url={shareUrl}
+                  title={title}
+                  locale={locale}
+                  copied={copied}
+                  onCopy={onCopy}
+                />
+              </div>
+            </div>
+
+            <div className="mx-auto mt-16 max-w-[720px] border-y border-brand-ink/15 py-8">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xl font-extrabold text-brand-ink sm:text-2xl">
+                  {t(UI.cropQuestion, locale)}
+                </p>
+                {askHref ? (
+                  <PrimaryButton href={askHref}>
+                    {t(UI.askAgronomist, locale)}
+                  </PrimaryButton>
+                ) : null}
+              </div>
+            </div>
+          </div>
 
           {related.length > 0 ? (
-            <section className="border-t border-brand-ink/10 bg-white py-14 lg:py-16">
+            <section className="border-t border-brand-ink/10 py-14 lg:py-16">
               <div className="container mx-auto px-4 lg:px-8">
                 <Reveal className="mb-8">
                   <h2 className="text-2xl font-extrabold text-brand-ink sm:text-3xl">
-                    {relatedTitle}
+                    {t(UI.moreFieldArticles, locale)}
                   </h2>
                 </Reveal>
                 <ContentGrid count={related.length}>
@@ -122,6 +302,7 @@ export default function ArticleDetails() {
                         title={t(item.title, locale)}
                         body={t(item.excerpt, locale)}
                         meta={formatMillis(item.createdAt, locale)}
+                        category={t(item.category, locale)}
                         layout={relatedLayout}
                       />
                     </Reveal>

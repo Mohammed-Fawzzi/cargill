@@ -7,6 +7,9 @@ export function mapArticle(id, data = {}) {
   const createdAt = toMillis(data.createdAt);
   const excerpt = readLocalized(data, "excerpt");
   const description = readLocalized(data, "description");
+  const category = readLocalized(data, "category");
+  const caption = readLocalized(data, "caption");
+  const imageCaption = readLocalized(data, "imageCaption");
   return {
     id,
     title: readLocalized(data, "title"),
@@ -16,6 +19,12 @@ export function mapArticle(id, data = {}) {
     },
     content: readLocalized(data, "content"),
     imageUrl: asString(data.imageUrl),
+    category,
+    caption: {
+      ar: caption.ar || imageCaption.ar,
+      en: caption.en || imageCaption.en,
+    },
+    author: readLocalized(data, "author"),
     createdAt,
     updatedAt: toMillis(data.updatedAt),
     _sort: createdAt,

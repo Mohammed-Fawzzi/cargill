@@ -1,13 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { IoSearchOutline } from "react-icons/io5";
-import { useSearchParams } from "react-router-dom";
+import React, { useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
+import FilterTabs from "@/components/ui/FilterTabs";
 import ContentGrid, { cardLayoutForCount } from "@/components/ui/ContentGrid";
-import { PrimaryButton, SecondaryButton } from "@/components/ui/AppButton";
+import { SecondaryButton } from "@/components/ui/AppButton";
+import SafeImage from "@/components/ui/SafeImage";
 import ArticleCard from "@/components/articles/ArticleCard";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getArticles } from "@/services/cms/articles";
@@ -21,14 +22,17 @@ import { formatMillis } from "@/lib/time";
 
 const PAGE_SIZE = 9;
 
+function categoryKey(item, locale) {
+  return t(item?.category, locale).trim();
+}
+
 export default function Articles() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
   const sectionQuery = useHomepageSection("articles");
   const [params, setParams] = useSearchParams();
-  const queryText = params.get("q") || "";
-  const pageParam = Number(params.get("page") || "1");
-  const [searchInput, setSearchInput] = useState(queryText);
+  const category = params.get("category") || "";
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const articlesQuery = useQuery({
     queryKey: ["cms", "articles"],
@@ -41,78 +45,52 @@ export default function Articles() {
     [articlesQuery.data],
   );
 
-  const updateParams = useCallback(
-    (patch) => {
-      const next = new URLSearchParams(params);
-      Object.entries(patch).forEach(([key, value]) => {
-        if (!value) next.delete(key);
-        else next.set(key, value);
-      });
-      setParams(next, { replace: true });
-    },
-    [params, setParams],
-  );
-
-  useEffect(() => {
-    setSearchInput(queryText);
-  }, [queryText]);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const next = searchInput.trim();
-      if (next === queryText) return;
-      updateParams({ q: next, page: "1" });
-    }, 300);
-    return () => window.clearTimeout(timer);
-  }, [searchInput, queryText, updateParams]);
+  const categoryOptions = useMemo(() => {
+    const seen = new Map();
+    for (const item of articles) {
+      const label = categoryKey(item, locale);
+      if (!label) continue;
+      if (!seen.has(label)) seen.set(label, label);
+    }
+    return [...seen.values()];
+  }, [articles, locale]);
 
   const filtered = useMemo(() => {
-    const needle = queryText.trim().toLowerCase();
-    if (!needle) return articles;
-    return articles.filter((item) => {
-      const titleAr = String(item.title?.ar || "").toLowerCase();
-      const titleEn = String(item.title?.en || "").toLowerCase();
-      const excerptAr = String(item.excerpt?.ar || "").toLowerCase();
-      const excerptEn = String(item.excerpt?.en || "").toLowerCase();
-      return (
-        titleAr.includes(needle) ||
-        titleEn.includes(needle) ||
-        excerptAr.includes(needle) ||
-        excerptEn.includes(needle)
-      );
-    });
-  }, [articles, queryText]);
+    if (!category) return articles;
+    return articles.filter((item) => categoryKey(item, locale) === category);
+  }, [articles, category, locale]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const currentPage = Math.min(Math.max(1, pageParam || 1), totalPages);
-  const pageItems = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, currentPage]);
+  const featured = filtered[0] || null;
+  const rest = featured ? filtered.slice(1) : [];
+  const visibleRest = rest.slice(0, Math.max(0, visibleCount - 1));
+  const hasMore = rest.length > visibleRest.length;
+  const cardLayout = cardLayoutForCount(visibleRest.length);
 
-  useEffect(() => {
-    if (pageParam !== currentPage) {
-      updateParams({ page: String(currentPage) });
-    }
-  }, [pageParam, currentPage, updateParams]);
-
-  const clearFilters = () => {
-    setSearchInput("");
-    setParams(new URLSearchParams(), { replace: true });
+  const setCategory = (next) => {
+    const nextParams = new URLSearchParams(params);
+    if (!next) nextParams.delete("category");
+    else nextParams.set("category", next);
+    setParams(nextParams, { replace: true });
+    setVisibleCount(PAGE_SIZE);
   };
 
-  const fallbackImage =
-    articles.find((item) => item.imageUrl)?.imageUrl || "";
   const hero = resolvePageHero({
     section: sectionQuery.data,
     contact,
     locale,
-    fallbackTitle: t(UI.nav.articles, locale),
+    fallbackTitle: t(UI.knowledgeTitle, locale),
     fallbackSubtitle: t(UI.articlesIntro, locale),
-    fallbackImage,
+    fallbackImage: articles.find((item) => item.imageUrl)?.imageUrl || "",
   });
 
-  const cardLayout = cardLayoutForCount(pageItems.length);
+  const tabs = useMemo(
+    () => [
+      { id: "", label: t(UI.filterAll, locale) },
+      ...categoryOptions.map((label) => ({ id: label, label })),
+    ],
+    [categoryOptions, locale],
+  );
+
   const pending = articlesQuery.isPending;
   const error = articlesQuery.isError;
 
@@ -142,78 +120,110 @@ export default function Articles() {
           />
 
           <div className="container mx-auto px-4 pb-16 lg:px-8 lg:pb-20">
-            <Reveal className="mb-8 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
-              <div className="relative">
-                <IoSearchOutline
-                  className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-xl text-brand-ink/40"
-                  aria-hidden="true"
-                />
-                <input
-                  type="search"
-                  value={searchInput}
-                  onChange={(event) => setSearchInput(event.target.value)}
-                  placeholder={t(UI.searchArticles, locale)}
-                  className="w-full rounded-md border border-brand-ink/15 bg-white py-3.5 pe-4 ps-12 text-sm text-brand-ink outline-none transition-colors focus:border-brand-lime"
+            {categoryOptions.length > 0 ? (
+              <div className="mb-10">
+                <FilterTabs
+                  items={tabs}
+                  value={category}
+                  onChange={setCategory}
+                  count={filtered.length}
+                  countLabel={t(UI.resultsCount, locale)}
                 />
               </div>
-              {queryText ? (
-                <SecondaryButton onClick={clearFilters}>
-                  {t(UI.clearFilters, locale)}
-                </SecondaryButton>
-              ) : null}
-            </Reveal>
-
-            <div className="mb-8 border-b border-brand-ink/15 pb-3 text-xs text-text-muted">
-              {filtered.length} {t(UI.resultsCount, locale)}
-            </div>
+            ) : (
+              <div className="mb-8 border-b border-brand-ink/15 pb-3 text-xs text-text-muted">
+                {filtered.length} {t(UI.resultsCount, locale)}
+              </div>
+            )}
 
             {filtered.length === 0 ? (
-              <EmptyState
-                message={
-                  queryText
-                    ? t(UI.noSearchArticles, locale)
-                    : t(UI.noArticles, locale)
-                }
-              />
+              <EmptyState message={t(UI.noArticles, locale)} />
             ) : (
               <>
-                <ContentGrid count={pageItems.length}>
-                  {pageItems.map((item, index) => (
-                    <Reveal key={item.id} delay={Math.min(index * 0.04, 0.2)}>
-                      <ArticleCard
-                        to={`/articles/${item.id}`}
-                        imageUrl={item.imageUrl}
-                        title={t(item.title, locale)}
-                        body={t(item.excerpt, locale)}
-                        meta={formatMillis(item.createdAt, locale)}
-                        layout={cardLayout}
-                      />
-                    </Reveal>
-                  ))}
-                </ContentGrid>
+                {featured ? (
+                  <Reveal className="mb-14 lg:mb-16">
+                    <article className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-10">
+                      <div className="order-2 lg:order-1 lg:col-span-5">
+                        <p className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                          <span className="font-semibold text-brand-lime">
+                            {categoryKey(featured, locale) ||
+                              t(UI.nav.articles, locale)}
+                          </span>
+                          {formatMillis(featured.createdAt, locale) ? (
+                            <>
+                              <span
+                                className="text-brand-ink/25"
+                                aria-hidden="true"
+                              >
+                                ·
+                              </span>
+                              <span className="text-text-muted">
+                                {formatMillis(featured.createdAt, locale)}
+                              </span>
+                            </>
+                          ) : null}
+                        </p>
+                        <h2 className="mb-4 text-[clamp(1.75rem,3.5vw,2.5rem)] font-extrabold leading-tight tracking-tight text-brand-ink">
+                          {t(featured.title, locale)}
+                        </h2>
+                        {t(featured.excerpt, locale) ? (
+                          <p className="mb-6 line-clamp-3 text-base leading-8 text-text-muted">
+                            {t(featured.excerpt, locale)}
+                          </p>
+                        ) : null}
+                        <SecondaryButton to={`/articles/${featured.id}`}>
+                          {t(UI.readArticle, locale)}
+                        </SecondaryButton>
+                      </div>
+                      <div className="order-1 lg:order-2 lg:col-span-7">
+                        <Link
+                          to={`/articles/${featured.id}`}
+                          className="block overflow-hidden rounded-lg bg-surface-muted"
+                        >
+                          {featured.imageUrl ? (
+                            <SafeImage
+                              src={featured.imageUrl}
+                              alt={t(featured.title, locale)}
+                              className="aspect-[16/10] w-full object-cover transition-transform duration-500 hover:scale-[1.02] motion-reduce:transition-none motion-reduce:hover:scale-100"
+                            />
+                          ) : (
+                            <div className="flex aspect-[16/10] items-center justify-center px-6 text-center text-brand-ink/40">
+                              {t(featured.title, locale)}
+                            </div>
+                          )}
+                        </Link>
+                      </div>
+                    </article>
+                  </Reveal>
+                ) : null}
 
-                {totalPages > 1 ? (
-                  <div className="mt-12 flex flex-wrap items-center justify-center gap-6">
+                {visibleRest.length > 0 ? (
+                  <ContentGrid count={visibleRest.length}>
+                    {visibleRest.map((item, index) => (
+                      <Reveal key={item.id} delay={Math.min(index * 0.04, 0.2)}>
+                        <ArticleCard
+                          to={`/articles/${item.id}`}
+                          imageUrl={item.imageUrl}
+                          title={t(item.title, locale)}
+                          body={t(item.excerpt, locale)}
+                          meta={formatMillis(item.createdAt, locale)}
+                          category={categoryKey(item, locale)}
+                          layout={cardLayout}
+                        />
+                      </Reveal>
+                    ))}
+                  </ContentGrid>
+                ) : null}
+
+                {hasMore ? (
+                  <div className="mt-12 flex justify-center">
                     <SecondaryButton
-                      disabled={currentPage <= 1}
                       onClick={() =>
-                        updateParams({ page: String(currentPage - 1) })
+                        setVisibleCount((count) => count + PAGE_SIZE)
                       }
                     >
-                      {t(UI.previous, locale)}
+                      {t(UI.showMore, locale)}
                     </SecondaryButton>
-                    <p className="text-sm text-text-muted">
-                      {t(UI.page, locale)} {currentPage} {t(UI.of, locale)}{" "}
-                      {totalPages}
-                    </p>
-                    <PrimaryButton
-                      disabled={currentPage >= totalPages}
-                      onClick={() =>
-                        updateParams({ page: String(currentPage + 1) })
-                      }
-                    >
-                      {t(UI.next, locale)}
-                    </PrimaryButton>
                   </div>
                 ) : null}
               </>
