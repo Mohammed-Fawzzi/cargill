@@ -5,18 +5,18 @@ const LERP = 0.2;
 const FRICTION = 0.95;
 const MIN_VELOCITY = 0.08;
 
-function isMediaTarget(target) {
+function isCardTarget(target) {
   return Boolean(
-    target instanceof Element && target.closest(".ix-card__media"),
+    target instanceof Element &&
+      target.closest(".ix-card, .curtain-card, .drag-rail__track > *"),
   );
 }
 
 function isActionTarget(target) {
   if (!(target instanceof Element)) return false;
-  if (target.closest(".ix-card__media")) return false;
   return Boolean(
     target.closest(
-      "a:not(.ix-card), button, .split-btn, .ix-icon-btn, input, textarea, select, [role='button']",
+      ".split-btn, .ix-icon-btn, button, input, textarea, select, [role='button'], a[href^='http'], a[target='_blank']",
     ),
   );
 }
@@ -90,9 +90,9 @@ export default function useDragRail() {
       cursor.current.x = event.clientX;
       cursor.current.y = event.clientY;
 
-      const overMedia = isMediaTarget(event.target);
+      const overCard = isCardTarget(event.target);
       const overAction = isActionTarget(event.target);
-      setCursorVisible(overMedia && !overAction);
+      setCursorVisible(overCard && !overAction);
 
       if (!drag.current.active) return;
       const dx = event.clientX - drag.current.startX;

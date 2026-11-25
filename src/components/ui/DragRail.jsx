@@ -77,14 +77,14 @@ export default function DragRail({
       {enabled ? (
         <div
           ref={cursorRef}
-          className={`drag-rail__cursor pointer-events-none fixed top-0 left-0 z-50 grid h-[72px] w-[72px] place-items-center rounded-full bg-white text-[#0A0820] shadow-[0_8px_24px_rgba(10,8,32,0.18)] transition-opacity duration-300 ${
+          className={`drag-rail__cursor pointer-events-none fixed top-0 left-0 z-50 grid h-11 w-11 place-items-center rounded-full bg-white text-[#0A0820] shadow-[0_6px_18px_rgba(10,8,32,0.16)] transition-opacity duration-300 ${
             cursorOn ? "opacity-100" : "opacity-0"
           }`}
           aria-hidden="true"
         >
           <svg
             viewBox="0 0 64 24"
-            className="block h-5 w-11"
+            className="block h-3 w-7"
             fill="none"
             aria-hidden="true"
           >

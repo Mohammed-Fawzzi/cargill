@@ -102,12 +102,6 @@ function FieldCard({ item, locale, large, index, reducedMotion }) {
               <div className="curtain-card__shade" />
             </div>
           ) : null}
-          <span className="card-arrow" aria-hidden="true">
-            <span className="card-arrow__ring">
-              <span className="card-arrow__glyph">←</span>
-              <span className="card-arrow__glyph">←</span>
-            </span>
-          </span>
         </div>
         <div className={large ? "p-6 md:p-8" : "flex min-w-0 flex-1 flex-col justify-end p-4"}>
           {meta ? (

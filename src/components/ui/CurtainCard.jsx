@@ -2,17 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import SafeImage from "@/components/ui/SafeImage";
 
-function CardArrow() {
-  return (
-    <span className="card-arrow" aria-hidden="true">
-      <span className="card-arrow__ring">
-        <span className="card-arrow__glyph">←</span>
-        <span className="card-arrow__glyph">←</span>
-      </span>
-    </span>
-  );
-}
-
 function Cover({ imageUrl }) {
   return (
     <div className="curtain-card__cover" aria-hidden="true">
@@ -75,7 +64,6 @@ export default function CurtainCard({
       ) : imageUrl ? (
         thumb
       ) : null}
-      {imageUrl ? <CardArrow /> : null}
       <div className="curtain-card__copy">
         {label ? <p className="curtain-card__label">{label}</p> : null}
         {title ? (

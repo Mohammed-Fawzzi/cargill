@@ -1643,150 +1643,23 @@ html[dir="ltr"] .ix-link::before,
   }
 }
 
-.card-arrow {
-  position: absolute;
-  z-index: 4;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-  opacity: 0;
-  transform: translateY(1em);
-  transition:
-    opacity 300ms ease,
-    transform 300ms ease;
-}
-
-.curtain-card > .card-arrow {
-  top: 1.15rem;
-  inset-inline-start: 1.15rem;
-  width: calc(45% - 1.035rem);
-  aspect-ratio: 3 / 2;
-}
-
-.curtain-frame > .card-arrow {
-  inset: 0;
-}
-
-.card-arrow__ring {
-  display: grid;
-  width: 2.75rem;
-  height: 2.75rem;
-  place-items: center;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #fff;
-  color: #0a0820;
-}
-
-.card-arrow__glyph {
-  grid-area: 1 / 1;
-  font-size: 1rem;
-  line-height: 1;
-  transition:
-    transform 500ms cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 500ms cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
-.card-arrow__glyph:last-child {
-  transform: translateX(1.4em);
-  opacity: 0;
-}
-
-html[dir="ltr"] .card-arrow__glyph,
-[dir="ltr"] .card-arrow__glyph {
-  transform: scaleX(-1);
-}
-
-html[dir="ltr"] .card-arrow__glyph:last-child,
-[dir="ltr"] .card-arrow__glyph:last-child {
-  transform: scaleX(-1) translateX(-1.4em);
-  opacity: 0;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .curtain-card:hover > .card-arrow,
-  .curtain-card:focus-visible > .card-arrow,
-  .curtain-card:focus-within > .card-arrow,
-  .group:hover .curtain-frame > .card-arrow,
-  .group:focus-visible .curtain-frame > .card-arrow {
-    opacity: 1;
-    transform: none;
-  }
-
-  .curtain-card:hover > .card-arrow .card-arrow__glyph:first-child,
-  .curtain-card:focus-visible > .card-arrow .card-arrow__glyph:first-child,
-  .curtain-card:focus-within > .card-arrow .card-arrow__glyph:first-child,
-  .group:hover .curtain-frame > .card-arrow .card-arrow__glyph:first-child,
-  .group:focus-visible .curtain-frame > .card-arrow .card-arrow__glyph:first-child {
-    transform: translateX(-1.4em);
-    opacity: 0;
-  }
-
-  .curtain-card:hover > .card-arrow .card-arrow__glyph:last-child,
-  .curtain-card:focus-visible > .card-arrow .card-arrow__glyph:last-child,
-  .curtain-card:focus-within > .card-arrow .card-arrow__glyph:last-child,
-  .group:hover .curtain-frame > .card-arrow .card-arrow__glyph:last-child,
-  .group:focus-visible .curtain-frame > .card-arrow .card-arrow__glyph:last-child {
-    transform: translateX(0);
-    opacity: 1;
-  }
-
-  html[dir="ltr"] .curtain-card:hover > .card-arrow .card-arrow__glyph:first-child,
-  html[dir="ltr"] .curtain-card:focus-visible > .card-arrow .card-arrow__glyph:first-child,
-  html[dir="ltr"] .curtain-card:focus-within > .card-arrow .card-arrow__glyph:first-child,
-  html[dir="ltr"] .group:hover .curtain-frame > .card-arrow .card-arrow__glyph:first-child,
-  html[dir="ltr"] .group:focus-visible .curtain-frame > .card-arrow .card-arrow__glyph:first-child,
-  [dir="ltr"] .curtain-card:hover > .card-arrow .card-arrow__glyph:first-child,
-  [dir="ltr"] .curtain-card:focus-visible > .card-arrow .card-arrow__glyph:first-child,
-  [dir="ltr"] .curtain-card:focus-within > .card-arrow .card-arrow__glyph:first-child,
-  [dir="ltr"] .group:hover .curtain-frame > .card-arrow .card-arrow__glyph:first-child,
-  [dir="ltr"] .group:focus-visible .curtain-frame > .card-arrow .card-arrow__glyph:first-child {
-    transform: scaleX(-1) translateX(1.4em);
-  }
-
-  html[dir="ltr"] .curtain-card:hover > .card-arrow .card-arrow__glyph:last-child,
-  html[dir="ltr"] .curtain-card:focus-visible > .card-arrow .card-arrow__glyph:last-child,
-  html[dir="ltr"] .curtain-card:focus-within > .card-arrow .card-arrow__glyph:last-child,
-  html[dir="ltr"] .group:hover .curtain-frame > .card-arrow .card-arrow__glyph:last-child,
-  html[dir="ltr"] .group:focus-visible .curtain-frame > .card-arrow .card-arrow__glyph:last-child,
-  [dir="ltr"] .curtain-card:hover > .card-arrow .card-arrow__glyph:last-child,
-  [dir="ltr"] .curtain-card:focus-visible > .card-arrow .card-arrow__glyph:last-child,
-  [dir="ltr"] .curtain-card:focus-within > .card-arrow .card-arrow__glyph:last-child,
-  [dir="ltr"] .group:hover .curtain-frame > .card-arrow .card-arrow__glyph:last-child,
-  [dir="ltr"] .group:focus-visible .curtain-frame > .card-arrow .card-arrow__glyph:last-child {
-    transform: scaleX(-1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card-arrow,
-  .card-arrow__glyph {
-    transition: none;
-  }
-}
-
 .drag-rail__track--active {
   user-select: none;
   -webkit-user-select: none;
 }
 
-.drag-rail__track--active .ix-card__media {
+.drag-rail__track--active .ix-card,
+.drag-rail__track--active .curtain-card,
+.drag-rail__track--active > * {
   cursor: none;
 }
 
-.drag-rail__track--active a,
+.drag-rail__track--active a[href^="http"],
+.drag-rail__track--active a[target="_blank"],
 .drag-rail__track--active button,
 .drag-rail__track--active .split-btn,
 .drag-rail__track--active .ix-icon-btn {
   cursor: pointer;
-}
-
-.drag-rail__track--active a.ix-card {
-  cursor: default;
-}
-
-.drag-rail__track--active a.ix-card .ix-card__media {
-  cursor: none;
 }
 
 .nav-mobile-capsule {
