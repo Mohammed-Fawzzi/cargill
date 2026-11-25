@@ -10,7 +10,7 @@ export default function RegistrationBadge({ number, className = "" }) {
 
   return (
     <p
-      className={`inline-flex items-center gap-2 border border-line/15 px-2.5 py-1 font-mono text-[10px] tracking-[0.14em] text-ink/70 ${className}`}
+      className={`inline-flex items-center gap-2 border border-white/10 bg-[#1B1931] px-2.5 py-1.5 text-[11px] text-white/60 ${className}`}
     >
       <span className="h-1.5 w-1.5 bg-brand-lime" aria-hidden="true" />
       <span>

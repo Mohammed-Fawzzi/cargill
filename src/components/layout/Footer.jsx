@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, useInView } from "framer-motion";
 import SiteLogo from "@/components/ui/SiteLogo";
+import LtrText from "@/components/ui/LtrText";
 import { NAV_LINKS } from "@constants/navLinks";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
@@ -12,7 +13,6 @@ import { UI } from "@/data/uiCopy";
 import { resolveCompanySocial } from "@/utils/social";
 import { toMapLink } from "@/lib/map";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
-import LtrText from "@/components/ui/LtrText";
 import { easeOut } from "@/lib/motion";
 
 function BrandWordReveal({ word, active, reducedMotion }) {
@@ -82,7 +82,7 @@ export default function Footer() {
   });
 
   const categories = useMemo(
-    () => (categoriesQuery.data || []).slice(0, 4),
+    () => (categoriesQuery.data || []).slice(0, 5),
     [categoriesQuery.data],
   );
 
@@ -90,33 +90,48 @@ export default function Footer() {
     (companyName || title || "كارجيل").split(/\s+/)[0] || "كارجيل";
 
   return (
-    <footer className="relative bg-white text-brand-navy" aria-label="footer">
-      <div className="relative container mx-auto px-4 pt-14 lg:px-8 lg:pt-16">
-        <div className="mb-12 flex flex-col gap-6 border-b border-brand-navy/10 pb-10 lg:flex-row lg:items-end lg:justify-between">
-          <p className="order-2 max-w-xl text-sm leading-7 text-brand-navy/70 lg:order-1 lg:text-base">
-            {description || title || ""}
-          </p>
-          <Link to="/" className="order-1 shrink-0 lg:order-2">
-            <SiteLogo
-              variant="default"
-              alt={companyName || title}
-              className="h-11 w-auto max-w-[190px] object-contain"
-            />
-          </Link>
-        </div>
+    <footer
+      className="relative border-t border-white/8 bg-[#070517] pt-16 pb-10 text-sm text-white"
+      aria-label="footer"
+    >
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="grid grid-cols-1 gap-10 border-b border-white/8 pb-12 md:grid-cols-2 lg:grid-cols-12">
+          <div className="space-y-4 lg:col-span-4">
+            <Link to="/" className="inline-flex" dir="ltr">
+              <SiteLogo
+                variant="white"
+                alt={companyName || title}
+                className="h-10 w-auto max-w-[180px] object-contain"
+              />
+            </Link>
+            {description ? (
+              <p className="max-w-sm text-xs leading-relaxed text-white/45">
+                {description}
+              </p>
+            ) : null}
+            {address ? (
+              <p className="text-[11px] leading-relaxed text-white/55">
+                <span className="text-brand-lime">
+                  {t(UI.address, locale)}:
+                </span>{" "}
+                <a
+                  href={mapLink || undefined}
+                  className="transition-colors hover:text-white"
+                >
+                  {address}
+                </a>
+              </p>
+            ) : null}
+          </div>
 
-        <div className="grid grid-cols-1 gap-10 pb-12 md:grid-cols-3 md:gap-0">
-          <div className="md:border-e md:border-brand-navy/10 md:pe-8">
-            <h3 className="mb-5 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+          <div className="space-y-3 lg:col-span-2">
+            <h4 className="text-xs font-medium tracking-wide text-brand-lime">
               {t(UI.usefulLinks, locale)}
-            </h3>
-            <ul className="space-y-2.5">
+            </h4>
+            <ul className="space-y-2 text-xs">
               {NAV_LINKS.map((link) => (
                 <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="text-sm leading-7 text-brand-navy/80 transition-colors hover:text-brand-lime"
-                  >
+                  <Link to={link.path} className="ix-link ix-footer-link">
                     {t(UI.nav[link.key], locale)}
                   </Link>
                 </li>
@@ -124,114 +139,104 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div className="md:border-e md:border-brand-navy/10 md:px-8">
-            <h3 className="mb-5 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
-              {t(UI.nav.products, locale)}
-            </h3>
-            <ul className="space-y-2.5">
-              {categories.map((category) => (
-                <li key={category.id}>
-                  <Link
-                    to={`/products?section=${encodeURIComponent(category.id)}`}
-                    className="text-sm leading-7 text-brand-navy/80 transition-colors hover:text-brand-lime"
-                  >
-                    {t(category.name, locale)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {categories.length > 0 ? (
+            <div className="space-y-3 lg:col-span-2">
+              <h4 className="text-xs font-medium tracking-wide text-brand-lime">
+                {t(UI.nav.products, locale)}
+              </h4>
+              <ul className="space-y-2 text-xs">
+                {categories.map((category) => (
+                  <li key={category.id}>
+                    <Link
+                      to={`/products?section=${encodeURIComponent(category.id)}`}
+                      className="ix-link ix-footer-link"
+                    >
+                      {t(category.name, locale)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
 
-          <div className="md:ps-8">
-            <h3 className="mb-5 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+          <div className="space-y-3 lg:col-span-4">
+            <h4 className="text-xs font-medium tracking-wide text-brand-lime">
               {t(UI.contactLabel, locale)}
-            </h3>
-            <ul className="space-y-3 text-sm leading-7 text-brand-navy/80">
+            </h4>
+            <div className="space-y-2 text-xs text-white/55">
               {phones.map((phone) => (
-                <li key={phone}>
+                <div key={phone} className="flex flex-wrap items-center gap-2">
+                  <span className="text-brand-lime">
+                    {t(UI.phone, locale)}:
+                  </span>
                   <a
                     href={`tel:${phone.replace(/\s+/g, "")}`}
-                    className="transition-colors hover:text-brand-lime"
+                    className="ix-link ix-footer-link"
                   >
                     <LtrText>{phone}</LtrText>
                   </a>
-                </li>
+                </div>
               ))}
               {emails.map((email) => (
-                <li key={email}>
+                <div key={email} className="flex flex-wrap items-center gap-2">
+                  <span className="text-brand-lime">
+                    {t(UI.email, locale)}:
+                  </span>
                   <a
                     href={`mailto:${email}`}
-                    className="transition-colors hover:text-brand-lime"
+                    className="ix-link ix-footer-link font-mono"
+                    dir="ltr"
                   >
                     {email}
                   </a>
-                </li>
+                </div>
               ))}
-              {address ? (
-                <li>
+            </div>
+            {socials.length > 0 ? (
+              <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2 text-xs font-medium">
+                {socials.map((link) => (
                   <a
-                    href={mapLink || undefined}
-                    className="transition-colors hover:text-brand-lime"
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ix-link ix-footer-link"
                   >
-                    {address}
+                    {link.label}
                   </a>
-                </li>
-              ) : null}
-            </ul>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
 
-        {socials.length > 0 ? (
-          <div className="mb-10 flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold">
-            {socials.map((link, index) => (
-              <React.Fragment key={link.id}>
-                {index > 0 ? (
-                  <span className="text-brand-navy/25" aria-hidden="true">
-                    ·
-                  </span>
-                ) : null}
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-brand-navy/80 transition-colors hover:text-brand-lime"
-                >
-                  {link.label}
-                </a>
-              </React.Fragment>
-            ))}
-          </div>
-        ) : null}
-      </div>
-
-      <div className="relative border-t border-brand-navy/10">
-        <div className="container mx-auto flex flex-col items-start justify-between gap-3 px-4 py-4 text-xs leading-7 text-brand-navy/60 sm:flex-row sm:items-center sm:text-sm lg:px-8">
+        <div className="flex flex-col items-start justify-between gap-4 pt-6 text-xs text-white/40 sm:flex-row sm:items-center">
           <p>
             {companyName || title
               ? `© ${year} ${companyName || title} — ${t(UI.copyright, locale)}`
               : `© ${year} ${t(UI.copyright, locale)}`}
           </p>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 font-semibold">
-            <Link to="/articles" className="transition-colors hover:text-brand-lime">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <Link to="/articles" className="ix-link ix-footer-link">
               {t(UI.nav.articles, locale)}
             </Link>
-            <Link to="/contact" className="transition-colors hover:text-brand-lime">
+            <Link to="/contact" className="ix-link ix-footer-link">
               {t(UI.nav.contact, locale)}
             </Link>
           </div>
         </div>
-      </div>
 
-      <div
-        ref={brandRef}
-        className="text-clip-safe pointer-events-none relative px-4 pb-16 pt-2 text-center text-[clamp(3rem,10vw,7rem)] font-extrabold leading-[1.15] tracking-tight text-brand-navy/[0.06] md:pb-8 lg:px-8"
-        aria-hidden="true"
-      >
-        <BrandWordReveal
-          word={brandWord}
-          active={brandInView}
-          reducedMotion={reducedMotion}
-        />
+        <div
+          ref={brandRef}
+          className="text-clip-safe pointer-events-none relative px-2 pb-4 pt-10 text-center text-[clamp(3rem,10vw,7rem)] font-extrabold leading-[1.15] tracking-tight text-white/[0.04]"
+          aria-hidden="true"
+        >
+          <BrandWordReveal
+            word={brandWord}
+            active={brandInView}
+            reducedMotion={reducedMotion}
+          />
+        </div>
       </div>
     </footer>
   );

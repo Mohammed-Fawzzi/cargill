@@ -1,13 +1,29 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
 import AccentHeading from "@/components/ui/AccentHeading";
+import DragRail from "@/components/ui/DragRail";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
+
+const MAX_CARDS = 6;
+
+function stripHtml(value) {
+  return String(value || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function readingMinutes(text) {
+  const words = stripHtml(text).split(/\s+/).filter(Boolean).length;
+  if (words < 40) return 0;
+  return Math.max(1, Math.round(words / 200));
+}
 
 function formatArticleDate(value, locale) {
   if (!value) return "";
@@ -22,127 +38,143 @@ function formatArticleDate(value, locale) {
   }
 }
 
-function ArticleCard({ item, locale, featured }) {
+function FieldNoteCard({ item, locale, index, reducedMotion }) {
   const title = t(item.title, locale);
+  const excerpt = t(item.excerpt, locale);
+  const content = t(item.content, locale);
+  const category = t(item.category, locale);
   const dateLabel = formatArticleDate(item.createdAt, locale);
-  const meta = [t(UI.nav.articles, locale), dateLabel].filter(Boolean).join(" · ");
+  const minutes = readingMinutes(`${excerpt} ${content}`);
+  const minutesLabel =
+    minutes > 0 ? `${minutes} ${t(UI.readingMinutes, locale)}` : "";
+  const number = `${String(index + 1).padStart(2, "0")}.`;
+  const mediaH = "12rem";
 
   return (
-    <Link
-      to={`/articles/${item.id}`}
-      className={`group shrink-0 text-white ${
-        featured ? "w-[min(78vw,520px)]" : "w-[min(72vw,380px)]"
-      }`}
+    <motion.article
+      className="w-[min(78vw,20rem)] shrink-0 snap-start md:w-[22rem]"
+      initial={reducedMotion ? false : { opacity: 0, y: 22 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{
+        duration: 0.45,
+        delay: reducedMotion ? 0 : index * 0.08,
+        ease: easeOut,
+      }}
     >
-      <div className="h-[280px] overflow-hidden rounded-[14px] border border-white/8 bg-[#110E33] sm:h-[420px]">
-        {item.imageUrl ? (
-          <SafeImage
-            src={item.imageUrl}
-            alt={title}
-            width={featured ? 900 : 640}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          />
-        ) : null}
-      </div>
-      {meta ? (
-        <p className="mt-[18px] text-[13px] text-brand-lime">{meta}</p>
-      ) : null}
-      <h3
-        className={`mt-2 font-display font-extrabold leading-tight transition-colors group-hover:text-brand-lime ${
-          featured ? "text-[28px]" : "text-[24px]"
-        }`}
+      <Link
+        to={`/articles/${item.id}`}
+        className="ix-card group text-white"
+        style={{ "--ix-media-h": mediaH }}
       >
-        {title}
-      </h3>
-    </Link>
+        <div
+          className="ix-card__media bg-[#110E33]"
+          style={{ height: mediaH }}
+        >
+          {item.imageUrl ? (
+            <SafeImage
+              src={item.imageUrl}
+              alt={title}
+              width={720}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="h-full w-full bg-[#0A0820]" />
+          )}
+          {category ? (
+            <span className="absolute end-3 top-3 rounded-full border border-white/8 bg-[#0A0820]/85 px-2.5 py-0.5 text-[11px] text-brand-lime backdrop-blur-sm">
+              {category}
+            </span>
+          ) : null}
+        </div>
+
+        {dateLabel || minutesLabel ? (
+          <p className="mt-3 font-mono text-xs text-white/45">
+            {[dateLabel, minutesLabel].filter(Boolean).join(" · ")}
+          </p>
+        ) : null}
+
+        <div className="ix-card__title-row">
+          <span className="ix-card__num" dir="ltr">
+            {number}
+          </span>
+          <h3 className="ix-card__title font-display text-lg font-bold text-white transition-colors group-hover:text-brand-lime">
+            {title}
+          </h3>
+        </div>
+
+        {excerpt ? (
+          <p className="ix-card__desc line-clamp-3 text-xs leading-relaxed text-white/60">
+            {excerpt}
+          </p>
+        ) : null}
+
+        <span className="ix-link mt-3 text-xs font-semibold text-brand-lime">
+          {t(UI.readFieldGuide, locale)}
+        </span>
+      </Link>
+    </motion.article>
   );
 }
 
 export default function ArticlesSection({ section }) {
   const { locale } = useLocale();
   const { reducedMotion } = useMotionPrefs();
-  const [paused, setPaused] = useState(false);
+
   const items = useMemo(
-    () => (section?.items || []).filter(Boolean).slice(0, 8),
+    () => (section?.items || []).filter(Boolean).slice(0, MAX_CARDS),
     [section?.items],
   );
-  const heading = t(section?.data?.title, locale) || t(UI.knowledgeTitle, locale);
-  const loop = useMemo(() => {
-    if (items.length < 2) return items;
-    return [...items, ...items];
-  }, [items]);
+
+  const heading =
+    t(section?.data?.title, locale) || t(UI.knowledgeTitle, locale);
+  const body = t(section?.data?.body, locale) || t(UI.knowledgeBody, locale);
 
   if (!items.length) return null;
 
   return (
     <motion.section
-      className="overflow-hidden bg-[#0A0820] py-[110px]"
+      className="relative bg-[#0A0820] py-20 md:py-24"
       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.12 }}
       transition={{ duration: 0.5, ease: easeOut }}
     >
-      <div className="mx-auto max-w-[1320px] px-6">
-        <div className="flex items-center gap-4 text-[14px] text-white/70">
-          <span>{t(UI.knowledgeTitle, locale)}</span>
-          <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
-          <span className="font-mono text-brand-lime" dir="ltr">
-            § 04 — FIELD NOTES
-          </span>
-        </div>
-
-        <div className="mt-[30px] flex flex-wrap items-end justify-between gap-6">
-          <AccentHeading
-            as="h2"
-            text={heading}
-            className="font-display text-[clamp(2.75rem,8vw,5.25rem)] font-black tracking-[-0.02em] text-white md:text-[84px]"
-          />
-          <Link
-            to="/articles"
-            className="border-b border-brand-lime pb-[3px] text-white transition-colors hover:text-brand-lime"
-          >
-            {t(UI.allMedia, locale)} ←
-          </Link>
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="mb-12 flex flex-col justify-between gap-4 md:mb-14 md:flex-row md:items-end">
+          <div>
+            <p className="mb-2 text-xs font-medium tracking-wide text-brand-lime">
+              {t(UI.nav.articles, locale)}
+            </p>
+            <AccentHeading
+              as="h2"
+              text={heading}
+              className="font-display text-3xl font-bold text-white md:text-4xl"
+            />
+          </div>
+          <div className="flex flex-col items-start gap-3 md:items-end">
+            {body ? (
+              <p className="max-w-md text-sm text-white/55 md:text-end">{body}</p>
+            ) : null}
+            <Link to="/articles" className="ix-link text-sm text-white">
+              {t(UI.allMedia, locale)}
+            </Link>
+          </div>
         </div>
       </div>
 
-      <div
-        className="mt-12"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-      >
-        {items.length < 2 || reducedMotion ? (
-          <div className="mx-auto flex max-w-[1320px] gap-4 overflow-x-auto px-6 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {items.map((item, index) => (
-              <ArticleCard
-                key={item.id}
-                item={item}
-                locale={locale}
-                featured={index === 0}
-              />
-            ))}
-          </div>
-        ) : (
-          <div
-            className={`flex w-max gap-4 pe-4 ps-6 ${
-              paused
-                ? ""
-                : locale === "ar"
-                  ? "animate-ticker-slow-rtl"
-                  : "animate-ticker-slow"
-            }`}
-            style={{ willChange: "transform" }}
-          >
-            {loop.map((item, index) => (
-              <ArticleCard
-                key={`${item.id}-${index}`}
-                item={item}
-                locale={locale}
-                featured={index % items.length === 0}
-              />
-            ))}
-          </div>
-        )}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <DragRail>
+          {items.map((item, index) => (
+            <FieldNoteCard
+              key={item.id}
+              item={item}
+              locale={locale}
+              index={index}
+              reducedMotion={reducedMotion}
+            />
+          ))}
+        </DragRail>
       </div>
     </motion.section>
   );

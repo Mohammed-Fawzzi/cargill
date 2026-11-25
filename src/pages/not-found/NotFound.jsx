@@ -1,8 +1,8 @@
 import React, { lazy, Suspense } from "react";
-import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import { TriangleAccent } from "@/components/ui/TriangleMask";
+import SplitArrowButton from "@/components/ui/SplitArrowButton";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
@@ -38,20 +38,13 @@ export default function NotFound() {
           <h1 className="mb-8 text-[clamp(2rem,6vw,3.5rem)] font-extrabold leading-tight">
             {t(UI.notFoundTitle, locale)}
           </h1>
-          <div className="flex flex-wrap items-center justify-center gap-6">
-            <Link
-              to="/"
-              className="inline-flex min-h-11 items-center justify-center bg-brand-lime px-6 text-sm font-extrabold text-brand-navy transition-colors hover:bg-brand-lime-hover"
-            >
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <SplitArrowButton to="/" variant="primary">
               {t(UI.nav.home, locale)}
-            </Link>
-            <Link
-              to="/products"
-              className="inline-flex items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-white"
-            >
+            </SplitArrowButton>
+            <SplitArrowButton to="/products" variant="secondary">
               {t(UI.nav.products, locale)}
-              <span aria-hidden="true">←</span>
-            </Link>
+            </SplitArrowButton>
           </div>
         </motion.div>
       </main>

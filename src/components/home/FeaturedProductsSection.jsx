@@ -1,8 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { IoLogoWhatsapp } from "react-icons/io5";
 import SafeImage from "@/components/ui/SafeImage";
+import DragRail from "@/components/ui/DragRail";
+import SplitArrowButton from "@/components/ui/SplitArrowButton";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { getCategories } from "@/services/cms/products";
@@ -12,16 +15,183 @@ import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
-const MAX_LIST = 6;
+const MAX_CARDS = 6;
+
+function formatIngredients(product, locale) {
+  const list = Array.isArray(product?.activeIngredients)
+    ? product.activeIngredients
+    : [];
+  return list
+    .map((item) => {
+      const name = t(item.name, locale);
+      if (!name) return "";
+      if (!item.percentage) return name;
+      return `${name} ${item.percentage}`;
+    })
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function ProductStageCard({
+  item,
+  categoryName,
+  locale,
+  phone,
+  reducedMotion,
+  canTilt,
+  index = 0,
+}) {
+  const cardRef = useRef(null);
+  const [hot, setHot] = useState(false);
+  const name = t(item.name, locale);
+  const overview =
+    t(item.overview, locale) || t(item.details, locale) || "";
+  const ingredients = formatIngredients(item, locale);
+  const waMessage = t(UI.askAboutProductMessage, locale).replace(
+    "{name}",
+    name || "",
+  );
+  const waHref = toWhatsAppHref(phone, waMessage);
+  const number = `${String(index + 1).padStart(2, "0")}.`;
+  const mediaH = "14rem";
+
+  const rotateX = useMotionValue(0);
+  const rotateY = useMotionValue(0);
+  const springX = useSpring(rotateX, { stiffness: 220, damping: 22, mass: 0.4 });
+  const springY = useSpring(rotateY, { stiffness: 220, damping: 22, mass: 0.4 });
+  const lift = useMotionValue(0);
+  const springLift = useSpring(lift, { stiffness: 260, damping: 24 });
+  const liftY = useTransform(springLift, (value) => -value);
+
+  const onMove = (event) => {
+    if (!canTilt || !cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const px = (event.clientX - rect.left) / rect.width - 0.5;
+    const py = (event.clientY - rect.top) / rect.height - 0.5;
+    rotateX.set(Math.max(-4, Math.min(4, py * -8)));
+    rotateY.set(Math.max(-4, Math.min(4, px * 8)));
+  };
+
+  const onEnter = () => {
+    setHot(true);
+    if (!reducedMotion) lift.set(6);
+  };
+
+  const onLeave = () => {
+    setHot(false);
+    lift.set(0);
+    rotateX.set(0);
+    rotateY.set(0);
+  };
+
+  return (
+    <motion.div
+      className="w-[min(82vw,21rem)] shrink-0 snap-start md:w-[22rem]"
+      initial={reducedMotion ? false : { opacity: 0, y: 22 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{
+        duration: 0.5,
+        delay: reducedMotion ? 0 : index * 0.08,
+        ease: easeOut,
+      }}
+    >
+      <motion.article
+        ref={cardRef}
+        className={`product-stage ix-card group flex h-full flex-col justify-between rounded-3xl border border-white/8 p-6 transition-colors duration-300 hover:border-brand-lime/60 ${
+          hot ? "is-hot" : ""
+        }`}
+        style={{
+          "--ix-media-h": mediaH,
+          rotateX: canTilt ? springX : 0,
+          rotateY: canTilt ? springY : 0,
+          y: reducedMotion ? 0 : liftY,
+          transformPerspective: 900,
+        }}
+        onMouseMove={onMove}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
+      >
+        <div
+          className="ix-card__media relative mb-5 flex items-center justify-center overflow-hidden border border-white/8 bg-[#0A0820]/50"
+          style={{ height: mediaH }}
+        >
+          {categoryName ? (
+            <span className="absolute end-3 top-3 rounded-full border border-white/8 bg-[#110E33] px-2.5 py-0.5 font-mono text-[10px] text-brand-lime">
+              {categoryName}
+            </span>
+          ) : null}
+          {item.imageUrl ? (
+            <SafeImage
+              src={item.imageUrl}
+              alt={name}
+              width={420}
+              className="max-h-[85%] max-w-[70%] object-contain"
+            />
+          ) : null}
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <div className="ix-card__title-row mt-0">
+              <span className="ix-card__num" dir="ltr">
+                {number}
+              </span>
+              <h3 className="ix-card__title font-display text-xl font-bold text-white">
+                {name}
+              </h3>
+            </div>
+            {overview ? (
+              <p className="ix-card__desc line-clamp-2 text-xs leading-relaxed text-white/60">
+                {overview}
+              </p>
+            ) : null}
+          </div>
+
+          {ingredients ? (
+            <div className="rounded-xl border border-white/8 bg-[#0A0820]/60 p-3 text-xs text-white/60">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <span>{t(UI.activeIngredientLabel, locale)}</span>
+                <span className="max-w-[70%] text-end font-mono text-white">
+                  {ingredients}
+                </span>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="flex items-center gap-3 pt-1">
+            <SplitArrowButton
+              to={`/products/${item.id}`}
+              variant="primary"
+              className="min-h-10 flex-1"
+            >
+              {t(UI.productDetails, locale)}
+            </SplitArrowButton>
+            {waHref ? (
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ix-icon-btn inline-flex rounded-full border border-white/8 bg-[#161242] p-2.5 text-brand-lime"
+                aria-label={t(UI.askAboutWhatsApp, locale)}
+              >
+                <IoLogoWhatsapp className="text-lg" aria-hidden="true" />
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </motion.article>
+    </motion.div>
+  );
+}
 
 export default function FeaturedProductsSection({ section }) {
   const { locale } = useLocale();
   const { contact } = useSiteData();
-  const { reducedMotion } = useMotionPrefs();
-  const [activeId, setActiveId] = useState("");
+  const { reducedMotion, canTilt } = useMotionPrefs();
 
   const items = useMemo(
-    () => (section?.items || []).filter(Boolean).slice(0, MAX_LIST),
+    () => (section?.items || []).filter(Boolean).slice(0, MAX_CARDS),
     [section?.items],
   );
 
@@ -39,206 +209,50 @@ export default function FeaturedProductsSection({ section }) {
     return map;
   }, [categoriesQuery.data, locale]);
 
-  useEffect(() => {
-    if (!items.length) {
-      setActiveId("");
-      return;
-    }
-    setActiveId((current) =>
-      items.some((item) => item.id === current) ? current : items[0].id,
-    );
-  }, [items]);
-
-  const active = items.find((item) => item.id === activeId) || items[0] || null;
   const phone = contact?.phones?.[0] || "";
-  const activeName = active ? t(active.name, locale) : "";
-  const activeCategory = active
-    ? categoryNameById.get(active.sectionId) || ""
-    : "";
-  const activeOverview =
-    (active && t(active.overview, locale)) ||
-    (active && t(active.details, locale)) ||
-    "";
-  const waMessage = t(UI.askAboutProductMessage, locale).replace(
-    "{name}",
-    activeName || "",
-  );
-  const waHref = toWhatsAppHref(phone, waMessage);
 
   if (!items.length) return null;
 
   return (
     <motion.section
-      className="rounded-t-[28px] border-t border-white/8 bg-[#110E33] py-[110px]"
+      className="border-t border-white/8 bg-[#0D0B2B] py-20 md:py-24"
       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.12 }}
       transition={{ duration: 0.5, ease: easeOut }}
     >
-      <div className="mx-auto max-w-[1320px] px-6">
-        <div className="flex items-center gap-4 text-[14px] text-white/70">
-          <span>{t(UI.featuredLabel, locale)}</span>
-          <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
-          <span className="font-mono text-brand-lime" dir="ltr">
-            {t(UI.productsIndexLabel, locale)}
-          </span>
-        </div>
-
-        <div className="mt-11 grid grid-cols-1 items-center gap-10 md:grid-cols-[7fr_5fr] md:gap-14">
-          <div className="relative h-[420px] overflow-hidden rounded-[24px] bg-[#0A0820] sm:h-[560px]">
-            <AnimatePresence mode="wait" initial={false}>
-              {activeName ? (
-                <motion.p
-                  key={`name-${active?.id}`}
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-x-0 top-[60px] z-0 truncate text-center font-display text-[clamp(3.5rem,14vw,9.375rem)] font-black leading-none text-transparent"
-                  style={{ WebkitTextStroke: "1px rgba(255,255,255,0.16)" }}
-                  initial={reducedMotion ? false : { opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={reducedMotion ? undefined : { opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {activeName}
-                </motion.p>
-              ) : null}
-            </AnimatePresence>
-
-            <div
-              className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_18%,rgba(140,198,63,0.22),transparent_55%)]"
-              aria-hidden="true"
-            />
-
-            <AnimatePresence mode="sync" initial={false}>
-              {active?.imageUrl ? (
-                <motion.div
-                  key={active.id}
-                  className="absolute inset-0 z-10 flex items-center justify-center p-10 sm:p-14"
-                  initial={
-                    reducedMotion
-                      ? false
-                      : { opacity: 0, scale: 1.12 }
-                  }
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={
-                    reducedMotion
-                      ? undefined
-                      : { opacity: 0, scale: 0.92 }
-                  }
-                  transition={{
-                    duration: reducedMotion ? 0 : 0.55,
-                    ease: easeOut,
-                  }}
-                >
-                  <motion.div
-                    className="flex h-full w-full items-center justify-center"
-                    initial={reducedMotion ? false : { scale: 1 }}
-                    animate={
-                      reducedMotion
-                        ? { scale: 1 }
-                        : { scale: [1, 1.06] }
-                    }
-                    transition={{
-                      duration: reducedMotion ? 0 : 8,
-                      ease: "linear",
-                      repeat: reducedMotion ? 0 : Infinity,
-                      repeatType: "reverse",
-                    }}
-                  >
-                    <SafeImage
-                      src={active.imageUrl}
-                      alt={activeName}
-                      width={720}
-                      className="max-h-full max-w-[min(100%,420px)] object-contain"
-                    />
-                  </motion.div>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-          </div>
-
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="mb-12 flex flex-col justify-between gap-4 md:mb-16 md:flex-row md:items-end">
           <div>
-            <AnimatePresence mode="wait" initial={false}>
-              {active ? (
-                <motion.div
-                  key={active.id}
-                  initial={reducedMotion ? false : { opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={reducedMotion ? undefined : { opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {activeCategory ? (
-                    <p className="text-[14px] text-brand-lime">{activeCategory}</p>
-                  ) : null}
-                  <h3 className="mt-3 font-display text-[clamp(2.25rem,6vw,4rem)] font-black tracking-[-0.01em] text-white">
-                    {activeName}
-                  </h3>
-                  {activeOverview ? (
-                    <p className="mt-4 line-clamp-3 text-[19px] leading-[1.7] text-white/72">
-                      {activeOverview}
-                    </p>
-                  ) : null}
-
-                  <div className="mt-7 flex flex-wrap items-center gap-[18px]">
-                    <Link
-                      to={`/products/${active.id}`}
-                      className="rounded-lg bg-brand-lime px-[26px] py-[15px] font-semibold text-[#0A0820] transition-colors hover:bg-brand-lime-hover"
-                    >
-                      {t(UI.productDetails, locale)} ←
-                    </Link>
-                    {waHref ? (
-                      <a
-                        href={waHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="border-b border-brand-lime pb-[3px] text-white transition-colors hover:text-brand-lime"
-                      >
-                        {t(UI.askAboutWhatsApp, locale)}
-                      </a>
-                    ) : null}
-                  </div>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-
-            <div className="mt-11 border-t border-white/12">
-              {items.map((item, index) => {
-                const name = t(item.name, locale);
-                const category = categoryNameById.get(item.sectionId) || "";
-                const isActive = item.id === active?.id;
-                const number = String(index + 1).padStart(2, "0");
-
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setActiveId(item.id)}
-                    className="row-item flex w-full items-center gap-[18px] border-b border-white/12 py-[18px] text-start text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
-                    aria-current={isActive ? "true" : undefined}
-                  >
-                    <span
-                      className={`font-mono text-[13px] ${
-                        isActive ? "text-brand-lime" : "text-white/50"
-                      }`}
-                      dir="ltr"
-                    >
-                      {number}
-                    </span>
-                    <span
-                      className={`flex-1 text-[20px] font-semibold transition-colors ${
-                        isActive ? "text-brand-lime" : "text-white hover:text-brand-lime"
-                      }`}
-                    >
-                      {name}
-                    </span>
-                    {category ? (
-                      <span className="text-[14px] text-white/55">{category}</span>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
+            <p className="mb-2 text-xs font-medium tracking-wide text-brand-lime">
+              {t(UI.productsIndexLabel, locale)}
+            </p>
+            <h2 className="font-display text-3xl font-bold text-white md:text-4xl">
+              {t(UI.featuredLabel, locale)}
+            </h2>
           </div>
+          <Link
+            to="/products"
+            className="ix-link text-sm font-medium text-brand-lime"
+          >
+            {t(UI.viewAllProducts, locale)}
+          </Link>
         </div>
+
+        <DragRail>
+          {items.map((item, index) => (
+            <ProductStageCard
+              key={item.id}
+              item={item}
+              categoryName={categoryNameById.get(item.sectionId) || ""}
+              locale={locale}
+              phone={phone}
+              reducedMotion={reducedMotion}
+              canTilt={canTilt}
+              index={index}
+            />
+          ))}
+        </DragRail>
       </div>
     </motion.section>
   );

@@ -88,6 +88,22 @@ export const UI = {
     ar: "منتجات من نفس الفئة",
     en: "Products in the same category",
   },
+  detailsAndUsage: {
+    ar: "التفاصيل وجدول الاستخدام",
+    en: "Details and usage table",
+  },
+  viewProduct: {
+    ar: "استعراض المنتج",
+    en: "View product",
+  },
+  viewProductsCatalog: {
+    ar: "عرض الكتالوج",
+    en: "View catalog",
+  },
+  requestFieldVisit: {
+    ar: "طلب زيارة مهندس للحقل",
+    en: "Request a field visit",
+  },
   backToAllProducts: {
     ar: "كل المنتجات",
     en: "All products",
@@ -265,12 +281,23 @@ export const UI = {
   mediaTagField: { ar: "من الحقل", en: "Field" },
   mediaTagUpdate: { ar: "تحديث", en: "Update" },
   mediaTagInsight: { ar: "معرفة", en: "Insight" },
-  growTogetherEyebrow: { ar: "شراكة ونمو", en: "Partnership & growth" },
+  growTogetherEyebrow: { ar: "شراكة في الحقل", en: "Partnership in the field" },
   growTogetherTitle: { ar: "هل ننمو معًا؟", en: "Shall we grow together?" },
   growTogetherBody: {
-    ar: "فريق كارجيل مستعد لمساعدتكم في اختيار الحل الأنسب لمحصولكم وموسمكم.",
-    en: "Cargill’s team is ready to help you choose the right solution for your crop and season.",
+    ar: "فريقنا الفني متواجد بجانبك في الحقل لتقديم المشورة المباشرة ووضع البرنامج المناسب لمحصولك.",
+    en: "Our technical team stands with you in the field to advise and set the right program for your crop.",
   },
+  requestFarmVisit: {
+    ar: "طلب زيارة مهندس للمزرعة",
+    en: "Request a farm visit",
+  },
+  categoryRailTitle: {
+    ar: "بوابات الحلول المتخصصة",
+    en: "Specialized solution gateways",
+  },
+  exploreSolutions: { ar: "استكشف الحلول", en: "Explore solutions" },
+  readFieldGuide: { ar: "قراءة المقال", en: "Read article" },
+  activeIngredientLabel: { ar: "المادة الفعالة", en: "Active ingredient" },
   whatsapp: { ar: "واتساب", en: "WhatsApp" },
   askAgronomist: { ar: "اسأل مهندس زراعي", en: "Ask an agronomist" },
   askAgronomistMessage: {
@@ -350,8 +377,8 @@ export const UI = {
   },
   experienceYears: { ar: "+20", en: "+20" },
   experienceBody: {
-    ar: "سنة خبرة لفريقنا في الحقل المصري",
-    en: "years of experience in Egyptian fields",
+    ar: "سنة خبرة لفريقنا",
+    en: "years of experience for our team",
   },
   ourProducts: { ar: "منتجاتنا", en: "Our products" },
   fieldEgypt: { ar: "من الحقل المصري", en: "From Egyptian fields" },
@@ -383,7 +410,7 @@ export const UI = {
   caseProgram: { ar: "البرنامج:", en: "Program:" },
   caseResult: { ar: "النتيجة:", en: "Result:" },
   heroMonoLabel: { ar: "FIELD PROFILE", en: "FIELD PROFILE" },
-  productsIndexLabel: { ar: "INDEX № 03 / PRODUCTS", en: "INDEX № 03 / PRODUCTS" },
+  productsIndexLabel: { ar: "المنتجات", en: "Products" },
 
   findSolution: { ar: "لاقي الحل", en: "Find a solution" },
   finderStepCrop: { ar: "بتزرع إيه؟", en: "What do you grow?" },

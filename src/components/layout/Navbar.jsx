@@ -11,7 +11,7 @@ import {
 import { RiMenu2Line } from "react-icons/ri";
 import SiteLogo from "@/components/ui/SiteLogo";
 import SafeImage from "@/components/ui/SafeImage";
-import { TriangleAccent } from "@/components/ui/TriangleMask";
+import SplitArrowButton from "@/components/ui/SplitArrowButton";
 import LanguageSwitch from "@/components/layout/LanguageSwitch";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 import { useLocale } from "@/context/LocaleContext";
@@ -24,7 +24,9 @@ import { easeOut } from "@/lib/motion";
 
 function linkClass(solid) {
   return ({ isActive }) =>
-    `relative inline-flex items-center gap-1 whitespace-nowrap px-1 py-2 text-[15px] font-semibold tracking-wide transition-colors duration-300 ${
+    `ix-link relative inline-flex items-center gap-1 whitespace-nowrap px-0.5 py-2 text-[13px] font-semibold tracking-wide transition-colors duration-300 xl:px-1 xl:text-[15px] ${
+      isActive ? "is-active" : ""
+    } ${
       solid
         ? isActive
           ? "text-ink"
@@ -35,30 +37,18 @@ function linkClass(solid) {
     }`;
 }
 
-function ActiveMark({ active }) {
-  return (
-    <span
-      className={`pointer-events-none absolute inset-x-1 -bottom-0.5 h-px bg-brand-lime transition-opacity duration-300 ${
-        active ? "opacity-100" : "opacity-0"
-      }`}
-      aria-hidden="true"
-    />
-  );
-}
-
 function AskAgronomistButton({ href, label, className = "", onClick }) {
   if (!href) return null;
   return (
-    <a
+    <SplitArrowButton
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
       onClick={onClick}
-      className={`inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand-lime px-4 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-lime-hover ${className}`.trim()}
+      variant="primary"
+      className={`min-h-10 ${className}`.trim()}
     >
       <IoLogoWhatsapp className="text-lg shrink-0" aria-hidden="true" />
       <span className="whitespace-nowrap">{label}</span>
-    </a>
+    </SplitArrowButton>
   );
 }
 
@@ -75,7 +65,7 @@ function ProductsMegaMenu({ categories = [], locale, onNavigate }) {
 
   return (
     <div
-      className="absolute inset-x-0 top-full z-40 pt-3"
+      className="absolute inset-x-0 top-full z-40 flex justify-center pt-2"
       style={{ visibility: "visible", pointerEvents: "auto" }}
     >
       <motion.div
@@ -83,26 +73,26 @@ function ProductsMegaMenu({ categories = [], locale, onNavigate }) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 6, transitionEnd: { visibility: "hidden" } }}
         transition={{ duration: 0.2, ease: easeOut }}
-        className="border border-line/12 bg-surface p-3 shadow-[0_18px_40px_rgba(10,8,32,0.45)] sm:p-4"
+        className="w-full max-w-[34rem] border border-line/12 bg-surface p-2.5 shadow-[0_18px_40px_rgba(10,8,32,0.45)] sm:p-3"
       >
-        <div className="mb-3 flex items-end justify-between gap-3 border-b border-line/10 pb-3">
+        <div className="mb-2 flex items-end justify-between gap-3 border-b border-line/10 pb-2">
           <div>
             <p className="font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-ink/45">
               Categories
             </p>
-            <p className="mt-1 text-sm font-bold text-ink">
+            <p className="mt-0.5 text-sm font-bold text-ink">
               {t(UI.nav.products, locale)}
             </p>
           </div>
           <Link
             to="/products"
             onClick={onNavigate}
-            className="text-xs font-bold text-ink/70 underline-offset-4 transition-colors hover:text-brand-lime hover:underline"
+            className="ix-link text-xs font-bold text-ink/70"
           >
             {t(UI.viewAll, locale)}
           </Link>
         </div>
-        <div className={`grid gap-2 lg:gap-3 ${cols}`}>
+        <div className={`grid gap-2 ${cols}`}>
           {tiles.map((category, index) => {
             const name = t(category.name, locale);
             return (
@@ -110,28 +100,28 @@ function ProductsMegaMenu({ categories = [], locale, onNavigate }) {
                 key={category.id}
                 to={`/products?section=${encodeURIComponent(category.id)}`}
                 onClick={onNavigate}
-                className="group relative aspect-[3/4] overflow-hidden border border-line/10 bg-brand-navy"
+                className="group relative aspect-[5/4] overflow-hidden border border-line/10 bg-brand-navy"
               >
                 {category.imageUrl ? (
                   <SafeImage
                     src={category.imageUrl}
                     alt={name}
-                    width={640}
+                    width={480}
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <div className="absolute inset-0 bg-gradient-to-br from-[#221a72] to-[#181060]" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/25 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-3">
-                  <p className="mb-1 font-mono text-[10px] font-medium tracking-[0.18em] text-brand-lime">
+                <div className="absolute inset-x-0 bottom-0 p-2.5">
+                  <p className="mb-0.5 font-mono text-[10px] font-medium tracking-[0.18em] text-brand-lime">
                     {String(index + 1).padStart(2, "0")}
                   </p>
-                  <p className="text-sm font-extrabold leading-snug text-white sm:text-base">
+                  <p className="text-[13px] font-extrabold leading-snug text-white sm:text-sm">
                     {name}
                   </p>
                   <span
-                    className="mt-2 block h-px w-0 bg-brand-lime transition-[width] duration-300 group-hover:w-full"
+                    className="mt-1.5 block h-px w-0 bg-brand-lime transition-[width] duration-300 group-hover:w-full"
                     aria-hidden="true"
                   />
                 </div>
@@ -147,6 +137,7 @@ function ProductsMegaMenu({ categories = [], locale, onNavigate }) {
 function MoreMenu({ locale, onNavigate }) {
   const items = [
     { to: "/events", label: t(UI.nav.events, locale) },
+    { to: "/contact", label: t(UI.nav.contact, locale) },
     { to: "/finder", label: t(UI.findSolution, locale) },
   ];
 
@@ -209,7 +200,7 @@ function MoreNavItem({ label, solid, children }) {
     >
       <button
         type="button"
-        className={`relative inline-flex items-center gap-1 whitespace-nowrap px-1 py-2 text-[15px] font-semibold tracking-wide transition-colors duration-300 ${tone}`}
+        className={`relative inline-flex items-center gap-1 whitespace-nowrap px-0.5 py-2 text-[13px] font-semibold tracking-wide transition-colors duration-300 xl:px-1 xl:text-[15px] ${tone}`}
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
@@ -218,7 +209,6 @@ function MoreNavItem({ label, solid, children }) {
           className={`text-[11px] transition-transform duration-300 ${open ? "rotate-180" : ""}`}
           aria-hidden="true"
         />
-        <ActiveMark active={open} />
       </button>
       <AnimatePresence>
         {open ? (
@@ -276,10 +266,10 @@ function NavItem({ to, end, label, children, onNavigate, mega, solid, className 
     return (
       <li className={className}>
         <NavLink to={to} end={end} onClick={onNavigate} className={classes}>
-          {({ isActive }) => (
+            {({ isActive }) => (
             <>
               {label}
-              <ActiveMark active={isActive} />
+              <span className="sr-only">{isActive ? "active" : ""}</span>
             </>
           )}
         </NavLink>
@@ -311,14 +301,13 @@ function NavItem({ to, end, label, children, onNavigate, mega, solid, className 
         className={classes}
         aria-expanded={open}
       >
-        {({ isActive }) => (
+        {() => (
           <>
             {label}
             <IoChevronDown
               className={`text-[11px] transition-transform duration-300 ${open ? "rotate-180" : ""}`}
               aria-hidden="true"
             />
-            <ActiveMark active={isActive || open} />
           </>
         )}
       </NavLink>
@@ -338,9 +327,12 @@ export default function Navbar() {
   const { contact } = useSiteData();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileCapsule, setMobileCapsule] = useState(false);
+  const lastScrollY = useRef(0);
   const [isWide, setIsWide] = useState(() =>
     typeof window !== "undefined"
-      ? window.matchMedia("(min-width: 1280px)").matches
+      ? window.matchMedia("(min-width: 1536px)").matches
       : true,
   );
   const companyName = t(contact?.companyName, locale);
@@ -389,8 +381,36 @@ export default function Navbar() {
   }, [location.pathname, location.search]);
 
   useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 80);
+      const isMobile = window.innerWidth < 768;
+      if (!isMobile) {
+        setMobileCapsule(false);
+        lastScrollY.current = y;
+        return;
+      }
+      if (y < 200) {
+        setMobileCapsule(false);
+      } else if (y > lastScrollY.current + 4) {
+        setMobileCapsule(true);
+      } else if (y < lastScrollY.current - 4) {
+        setMobileCapsule(false);
+      }
+      lastScrollY.current = y;
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  useEffect(() => {
     const desktop = window.matchMedia("(min-width: 1024px)");
-    const wide = window.matchMedia("(min-width: 1280px)");
+    const wide = window.matchMedia("(min-width: 1536px)");
     const onDesktop = (event) => {
       if (event.matches) closeMenu();
     };
@@ -424,7 +444,7 @@ export default function Navbar() {
     { to: "/products", label: t(UI.nav.products, locale), mega: true },
     { to: "/articles", label: t(UI.nav.articles, locale) },
     { to: "/events", label: t(UI.nav.events, locale), compactHide: true },
-    { to: "/contact", label: t(UI.nav.contact, locale) },
+    { to: "/contact", label: t(UI.nav.contact, locale), compactHide: true },
   ];
 
   const desktopLinks = navLinks.filter(
@@ -438,17 +458,28 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="pointer-events-none relative z-40 flex justify-center px-3 pt-3 sm:px-5 sm:pt-4 lg:px-6">
-        <div className="nav-bar-pill pointer-events-auto relative h-16 overflow-visible rounded-full nav-glass px-2.5 sm:h-[4.25rem] sm:px-4 xl:px-5">
+      <nav
+        className={`pointer-events-none relative z-40 flex justify-center px-3 pt-3 sm:px-5 sm:pt-4 lg:px-6 transition-opacity duration-300 ${
+          mobileCapsule ? "pointer-events-none opacity-0 max-md:invisible" : ""
+        }`}
+      >
+        <div
+          className={`nav-bar-pill pointer-events-auto relative overflow-visible rounded-full nav-glass px-2.5 sm:px-4 xl:px-5 ${
+            scrolled
+              ? "is-scrolled h-14 sm:h-[3.75rem]"
+              : "h-16 sm:h-[4.25rem]"
+          }`}
+        >
           <div className="nav-bar-cluster">
             <Link
               to="/"
               onClick={closeMenu}
               className="flex shrink-0 items-center justify-center px-1"
+              dir="ltr"
             >
               <SiteLogo
                 alt={companyName}
-                className="h-10 w-auto max-w-[8.5rem] object-contain object-right sm:h-12 sm:max-w-[9.5rem] xl:max-w-[11rem]"
+                className="h-9 w-auto max-w-[7.5rem] object-contain object-right sm:h-11 sm:max-w-[8.5rem] xl:max-w-[9.5rem]"
               />
             </Link>
 
@@ -499,13 +530,13 @@ export default function Navbar() {
             <AskAgronomistButton
               href={waHref}
               label={askLabel}
-              className="hidden px-3 text-[13px] lg:inline-flex xl:px-4 xl:text-sm"
+              className="hidden px-3 text-[13px] xl:inline-flex"
             />
             <ThemeToggle />
             <LanguageSwitch variant="toggle" tone="light" />
             <Link
               to="/products"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/5"
+              className="ix-icon-btn inline-flex h-9 w-9 items-center justify-center rounded-full text-ink"
               aria-label={t(UI.searchProducts, locale)}
             >
               <IoSearchOutline className="text-xl" aria-hidden="true" />
@@ -513,7 +544,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setIsMenuOpen((open) => !open)}
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/5 lg:hidden"
+              className="ix-icon-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink lg:hidden"
               aria-label={isMenuOpen ? t(UI.closeMenu, locale) : t(UI.openMenu, locale)}
               aria-expanded={isMenuOpen}
             >
@@ -526,6 +557,33 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
+
+      <div
+        className={`nav-mobile-capsule ${
+          mobileCapsule && !isMenuOpen ? "is-visible" : ""
+        }`}
+      >
+        <Link
+          to="/"
+          onClick={closeMenu}
+          className="flex items-center"
+          dir="ltr"
+        >
+          <SiteLogo
+            variant="white"
+            alt={companyName}
+            className="h-7 w-auto max-w-[7rem] object-contain"
+          />
+        </Link>
+        <button
+          type="button"
+          onClick={() => setIsMenuOpen(true)}
+          className="ix-icon-btn inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/12 text-white"
+          aria-label={t(UI.openMenu, locale)}
+        >
+          <RiMenu2Line className="text-xl" aria-hidden="true" />
+        </button>
+      </div>
 
       <AnimatePresence>
         {isMenuOpen ? (

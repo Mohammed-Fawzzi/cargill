@@ -1,6 +1,6 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { IoCallOutline, IoLogoWhatsapp } from "react-icons/io5";
+import SplitArrowButton from "@/components/ui/SplitArrowButton";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { toTelHref, toWhatsAppHref } from "@/lib/phone";
@@ -24,7 +24,7 @@ export default function StickyLeadBar() {
           <a
             href={telHref}
             aria-label={t(UI.phone, locale)}
-            className="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-brand-lime hover:text-brand-navy"
+            className="ix-icon-btn inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white"
           >
             <IoCallOutline className="text-lg" aria-hidden="true" />
           </a>
@@ -35,17 +35,18 @@ export default function StickyLeadBar() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={t(UI.whatsapp, locale)}
-            className="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-[#25D366] text-white transition-opacity hover:opacity-90"
+            className="ix-icon-btn inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#25D366] text-white"
           >
             <IoLogoWhatsapp className="text-xl" aria-hidden="true" />
           </a>
         ) : null}
-        <Link
+        <SplitArrowButton
           to="/contact"
-          className="inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center rounded-xl bg-brand-lime px-4 text-sm font-extrabold text-brand-navy transition-colors hover:bg-brand-lime-hover"
+          variant="primary"
+          className="min-h-11 flex-1"
         >
           {t(UI.imInterested, locale)}
-        </Link>
+        </SplitArrowButton>
       </div>
     </div>
   );

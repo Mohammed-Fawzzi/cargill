@@ -12,18 +12,28 @@ export default function MediaCard({
   body,
   meta,
   badge,
+  index = 0,
 }) {
   const { locale } = useLocale();
+  const number = `${String(index + 1).padStart(2, "0")}.`;
+  const mediaH = "11.5rem";
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-black/5 bg-page shadow-[0_10px_30px_rgba(12,18,14,0.06)] transition-transform hover:-translate-y-1">
-      <Link to={to} className="block">
-        <div className="relative aspect-[16/10] overflow-hidden bg-surface-muted">
+    <article className="h-full">
+      <Link
+        to={to}
+        className="ix-card group text-ink"
+        style={{ "--ix-media-h": mediaH }}
+      >
+        <div
+          className="ix-card__media bg-surface-muted"
+          style={{ height: mediaH }}
+        >
           {imageUrl ? (
             <SafeImage
               src={imageUrl}
               alt={title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="h-full w-full object-cover"
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-brand-forest text-brand-lime">
@@ -36,17 +46,26 @@ export default function MediaCard({
             </span>
           ) : null}
         </div>
-        <div className="p-5">
+        <div>
           {meta ? (
-            <p className="mb-2 text-xs font-bold text-brand-moss">{meta}</p>
+            <p className="mt-3 text-xs font-bold text-brand-moss">{meta}</p>
           ) : null}
           {title ? (
-            <h3 className="mb-2 text-lg font-extrabold text-ink">{title}</h3>
+            <div className="ix-card__title-row">
+              <span className="ix-card__num text-ink/20" dir="ltr">
+                {number}
+              </span>
+              <h3 className="ix-card__title text-lg font-extrabold text-ink">
+                {title}
+              </h3>
+            </div>
           ) : null}
           {body ? (
-            <p className="line-clamp-3 text-sm leading-7 text-text-muted">{body}</p>
+            <p className="ix-card__desc line-clamp-3 text-sm leading-7 text-text-muted">
+              {body}
+            </p>
           ) : null}
-          <span className="mt-4 inline-flex text-sm font-bold text-brand-moss transition-colors group-hover:text-brand-lime">
+          <span className="ix-link mt-4 text-sm font-bold text-brand-moss">
             {t(UI.readMore, locale)}
           </span>
         </div>

@@ -8,7 +8,7 @@ import ReadingProgress from "@/components/ui/ReadingProgress";
 import SafeImage from "@/components/ui/SafeImage";
 import RevealHeading from "@/components/ui/RevealHeading";
 import ArticleCard from "@/components/articles/ArticleCard";
-import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
+import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getArticle, getArticles } from "@/services/cms/articles";
 import { useLocale } from "@/context/LocaleContext";
@@ -44,36 +44,33 @@ function ShareLinks({ url, title, locale, copied, onCopy }) {
   const fbHref = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
 
   return (
-    <div>
-      <p
-        className="font-mono text-[11px] tracking-[2px] text-brand-lime"
-        dir="ltr"
-      >
-        SHARE
-      </p>
-      <div className="mt-3 flex flex-col gap-2.5 text-[14px] text-white/65">
+    <div className="flex w-full flex-col gap-3 bg-[#1B1931] p-5">
+      <span className="text-[11px] font-semibold tracking-wide text-brand-lime">
+        {t(UI.shareArticle, locale)}
+      </span>
+      <div className="flex flex-col gap-1 text-sm">
         <a
           href={waHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-white transition-colors hover:text-brand-lime"
+          className="flex items-center justify-between bg-[#1F1D35] px-3 py-2.5 text-white transition-colors hover:bg-[#292740]"
         >
-          {t(UI.shareWhatsApp, locale)}
+          <span>{t(UI.shareWhatsApp, locale)}</span>
         </a>
         <a
           href={fbHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-white transition-colors hover:text-brand-lime"
+          className="flex items-center justify-between bg-[#1F1D35] px-3 py-2.5 text-white transition-colors hover:bg-[#292740]"
         >
-          {t(UI.shareFacebook, locale)}
+          <span>{t(UI.shareFacebook, locale)}</span>
         </a>
         <button
           type="button"
           onClick={onCopy}
-          className="text-start text-white transition-colors hover:text-brand-lime"
+          className="flex items-center justify-between bg-[#1F1D35] px-3 py-2.5 text-start text-white transition-colors hover:bg-[#292740]"
         >
-          {copied ? t(UI.linkCopied, locale) : t(UI.copyLink, locale)}
+          <span>{copied ? t(UI.linkCopied, locale) : t(UI.copyLink, locale)}</span>
         </button>
       </div>
     </div>
@@ -162,11 +159,8 @@ export default function ArticleDetails() {
     }
   };
 
-  const metaParts = [
-    categoryLabel || t(UI.nav.articles, locale),
-    dateLabel,
-    minutes > 0 ? `${minutes} ${t(UI.readingMinutes, locale)}` : "",
-  ].filter(Boolean);
+  const minutesLabel =
+    minutes > 0 ? `${minutes} ${t(UI.readingMinutes, locale)}` : "";
 
   return (
     <>
@@ -185,157 +179,180 @@ export default function ArticleDetails() {
           <ReadingProgress />
 
           <article>
-            <header className="mx-auto max-w-[1000px] px-6 pb-10 pt-[calc(var(--navbar-height)+var(--ticker-height)+3.5rem)]">
-              <Link
-                to="/articles"
-                className="text-[14px] text-brand-lime transition-colors hover:text-[#B5E06E]"
-              >
-                ← {t(UI.backToArticles, locale)}
-              </Link>
-
-              {metaParts.length ? (
-                <div className="mt-7 text-[14px]">
-                  <span className="text-brand-lime">{metaParts[0]}</span>
-                  {metaParts.slice(1).map((part) => (
-                    <span key={part} className="text-white/60">
-                      {" "}
-                      · {part}
-                    </span>
-                  ))}
+            <header className="mx-auto max-w-4xl px-4 pb-8 pt-[calc(var(--navbar-height)+var(--ticker-height)+2.5rem)] sm:px-6 md:pb-10">
+              <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-white/55">
+                <Link
+                  to="/articles"
+                  className="inline-flex items-center gap-1 text-brand-lime transition-colors hover:text-brand-lime-hover"
+                >
+                  <span aria-hidden="true">←</span>
+                  <span>{t(UI.backToArticles, locale)}</span>
+                </Link>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="bg-[#1F1D35] px-2 py-0.5 text-[11px] font-semibold tracking-wide text-brand-lime">
+                    {categoryLabel || t(UI.nav.articles, locale)}
+                  </span>
+                  {dateLabel ? (
+                    <>
+                      <span className="text-white/30">·</span>
+                      <span>{dateLabel}</span>
+                    </>
+                  ) : null}
+                  {minutesLabel ? (
+                    <>
+                      <span className="text-white/30">·</span>
+                      <span>{minutesLabel}</span>
+                    </>
+                  ) : null}
                 </div>
-              ) : null}
+              </div>
 
               {title ? (
                 <RevealHeading
                   as="h1"
                   text={title}
-                  className="mt-[18px] max-w-full break-words font-display text-[clamp(2.5rem,6.5vw,5rem)] font-black leading-[1.15] text-white"
+                  className="mt-6 max-w-full break-words font-display text-[clamp(2rem,5vw,3.5rem)] font-bold leading-[1.15] tracking-tight text-white"
                 />
               ) : null}
 
               {excerpt ? (
-                <p className="mt-6 max-w-[720px] text-[20px] leading-[1.7] text-white/72 md:text-[24px]">
+                <p className="mt-5 max-w-2xl font-ruqaa text-lg leading-relaxed text-brand-lime/90 md:text-xl">
                   {excerpt}
                 </p>
               ) : null}
             </header>
 
             {article.imageUrl ? (
-              <div className="mx-auto max-w-[1320px] px-6">
+              <section className="mx-auto my-6 max-w-6xl px-4 sm:px-6">
                 <figure>
-                  <div className="overflow-hidden rounded-[20px] border border-white/8 bg-[#110E33]">
+                  <div className="relative aspect-[21/9] overflow-hidden bg-[#1B1931] sm:aspect-[16/7]">
                     <SafeImage
                       src={article.imageUrl}
                       alt={title}
                       width={1400}
-                      className="h-[280px] w-full object-cover sm:h-[560px]"
+                      className="h-full w-full object-cover"
                     />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A0820] via-transparent to-transparent opacity-60" />
                   </div>
                   {caption ? (
-                    <figcaption className="mt-3 text-[13px] text-white/55">
+                    <figcaption className="mt-3 text-[13px] text-white/45">
                       {caption}
                     </figcaption>
                   ) : null}
                 </figure>
-              </div>
+              </section>
             ) : null}
 
-            <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-10 px-6 py-[72px] lg:grid-cols-[1fr_720px_1fr] lg:gap-10">
-              <aside className="hidden lg:block">
-                <div className="sticky top-[calc(var(--navbar-height)+var(--ticker-height)+1.5rem)]">
-                  <ShareLinks
-                    url={shareUrl}
-                    title={title}
-                    locale={locale}
-                    copied={copied}
-                    onCopy={onCopy}
-                  />
-                </div>
-              </aside>
-
-              <motion.div
-                initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.08 }}
-                transition={{ duration: 0.5, ease: easeOut }}
-              >
-                {content ? (
-                  htmlBody ? (
-                    <div
-                      ref={bodyRef}
-                      className="article-body article-body-dark text-[20px] leading-[1.95] text-white/85"
-                      dangerouslySetInnerHTML={{ __html: content }}
+            <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 md:py-14">
+              <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-10">
+                <aside className="order-2 lg:order-1 lg:col-span-3">
+                  <div className="lg:sticky lg:top-[calc(var(--navbar-height)+var(--ticker-height)+1.5rem)]">
+                    <ShareLinks
+                      url={shareUrl}
+                      title={title}
+                      locale={locale}
+                      copied={copied}
+                      onCopy={onCopy}
                     />
-                  ) : (
-                    <div
-                      ref={bodyRef}
-                      className="article-body article-body-dark whitespace-pre-wrap text-[20px] leading-[1.95] text-white/85"
-                    >
-                      {content}
-                    </div>
-                  )
-                ) : !excerpt ? (
-                  <EmptyState message={t(UI.empty, locale)} />
-                ) : null}
+                  </div>
+                </aside>
 
-                <div className="mt-12 lg:hidden">
-                  <ShareLinks
-                    url={shareUrl}
-                    title={title}
-                    locale={locale}
-                    copied={copied}
-                    onCopy={onCopy}
-                  />
-                </div>
-              </motion.div>
-
-              <div className="hidden lg:block" aria-hidden="true" />
-            </div>
-
-            <div className="mx-auto max-w-[1320px] px-6">
-              <div className="flex flex-wrap items-center justify-between gap-5 border-y border-white/12 py-8">
-                <span className="font-display text-[clamp(1.5rem,4vw,1.875rem)] font-extrabold">
-                  {t(UI.cropQuestion, locale)}
-                </span>
-                {askHref ? (
-                  <a
-                    href={askHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-lg bg-brand-lime px-7 py-4 text-[16px] font-semibold text-[#0A0820] transition-colors hover:bg-brand-lime-hover"
-                  >
-                    {t(UI.askAgronomist, locale)}
-                  </a>
-                ) : null}
+                <motion.div
+                  className="order-1 lg:order-2 lg:col-span-9"
+                  initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.08 }}
+                  transition={{ duration: 0.5, ease: easeOut }}
+                >
+                  {content ? (
+                    htmlBody ? (
+                      <div
+                        ref={bodyRef}
+                        className="article-body article-body-dark text-[18px] leading-[1.9] text-white/80 md:text-[20px]"
+                        dangerouslySetInnerHTML={{ __html: content }}
+                      />
+                    ) : (
+                      <div
+                        ref={bodyRef}
+                        className="article-body article-body-dark whitespace-pre-wrap text-[18px] leading-[1.9] text-white/80 md:text-[20px]"
+                      >
+                        {content}
+                      </div>
+                    )
+                  ) : !excerpt ? (
+                    <EmptyState message={t(UI.empty, locale)} />
+                  ) : null}
+                </motion.div>
               </div>
             </div>
 
+            <section className="my-10 bg-[#1B1931] py-10 md:my-14">
+              <div className="mx-auto max-w-4xl px-4 sm:px-6">
+                <div className="flex flex-col items-center justify-between gap-6 bg-[#1F1D35] p-6 shadow-lg sm:flex-row sm:p-7">
+                  <div className="text-center sm:text-start">
+                    <h2 className="font-display text-xl font-bold text-white md:text-[22px]">
+                      {t(UI.cropQuestion, locale)}
+                    </h2>
+                  </div>
+                  {askHref ? (
+                    <a
+                      href={askHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex w-full shrink-0 items-center justify-center bg-brand-lime px-6 py-3.5 text-sm font-bold text-[#0A0820] transition-colors hover:bg-brand-lime-hover sm:w-auto"
+                    >
+                      {t(UI.askAgronomist, locale)}
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            </section>
+
             {related.length > 0 ? (
-              <section className="mx-auto max-w-[1320px] px-6 pb-10 pt-20">
+              <section className="mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6 md:pb-14 md:pt-10">
                 <motion.div
                   initial={reducedMotion ? false : { opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.12 }}
                   transition={{ duration: 0.5, ease: easeOut }}
                 >
-                  <div className="flex items-center gap-4 text-[14px] text-white/70">
-                    <span>{t(UI.moreFieldArticles, locale)}</span>
-                    <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
-                    <span className="font-mono text-brand-lime" dir="ltr">
-                      § MORE
-                    </span>
+                  <div className="mb-8 flex items-center justify-between gap-4">
+                    <h3 className="font-display text-[22px] font-semibold text-white md:text-[30px]">
+                      {t(UI.moreFieldArticles, locale)}
+                    </h3>
+                    <Link
+                      to="/articles"
+                      className="shrink-0 text-sm text-white/55 transition-colors hover:text-brand-lime"
+                    >
+                      {t(UI.backToArticles, locale)}
+                    </Link>
                   </div>
-                  <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {related.map((item) => (
-                      <ArticleCard
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {related.map((item, index) => (
+                      <motion.div
                         key={item.id}
-                        to={`/articles/${item.id}`}
-                        imageUrl={item.imageUrl}
-                        title={t(item.title, locale)}
-                        body={t(item.excerpt, locale)}
-                        meta={formatMillis(item.createdAt, locale)}
-                        category={t(item.category, locale)}
-                      />
+                        initial={
+                          reducedMotion ? false : { opacity: 0, y: 20 }
+                        }
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.15 }}
+                        transition={{
+                          duration: 0.45,
+                          delay: reducedMotion
+                            ? 0
+                            : Math.min(index * 0.08, 0.16),
+                          ease: easeOut,
+                        }}
+                      >
+                        <ArticleCard
+                          to={`/articles/${item.id}`}
+                          imageUrl={item.imageUrl}
+                          title={t(item.title, locale)}
+                          body={t(item.excerpt, locale)}
+                          meta={formatMillis(item.createdAt, locale)}
+                          category={t(item.category, locale)}
+                        />
+                      </motion.div>
                     ))}
                   </div>
                 </motion.div>

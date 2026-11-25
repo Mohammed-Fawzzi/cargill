@@ -20,7 +20,7 @@ export default function FloatingCta() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={t(UI.whatsapp, locale)}
-      className="site-float fixed bottom-[max(1.25rem,env(safe-area-inset-bottom,0px))] left-[max(1rem,env(safe-area-inset-left,0px))] z-40 inline-flex h-11 w-11 items-center justify-center rounded-full bg-brand-lime text-brand-navy transition-transform hover:scale-[1.04] hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:h-12 sm:w-12"
+      className="site-float ix-icon-btn fixed bottom-[max(1.25rem,env(safe-area-inset-bottom,0px))] left-[max(1rem,env(safe-area-inset-left,0px))] z-40 inline-flex h-11 w-11 items-center justify-center rounded-full bg-brand-lime text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:h-12 sm:w-12"
     >
       <IoLogoWhatsapp className="text-xl" aria-hidden="true" />
     </a>

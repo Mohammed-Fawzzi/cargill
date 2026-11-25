@@ -1,13 +1,11 @@
 import React, { useCallback, useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
-import AccentHeading from "@/components/ui/AccentHeading";
-import LogoTriangle from "@/components/ui/LogoTriangle";
+import PageBanner from "@/components/ui/PageBanner";
 import EventAgendaRow from "@/components/events/EventAgendaRow";
-import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
+import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getEvents } from "@/services/cms/events";
 import { useHomepageSection } from "@/hooks/useHomepageSection";
@@ -18,8 +16,6 @@ import { eventDayKey } from "@/lib/time";
 import { resolveCompanySocial } from "@/utils/social";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
-import { easeOut } from "@/lib/motion";
-import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 const FILTERS = [
   ["all", UI.allEvents],
@@ -44,7 +40,6 @@ function sortPast(list) {
 export default function Events() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
-  const { reducedMotion } = useMotionPrefs();
   const sectionQuery = useHomepageSection("events");
   const [params, setParams] = useSearchParams();
   const filter = params.get("status") || "all";
@@ -84,6 +79,15 @@ export default function Events() {
     [filtered],
   );
 
+  const counts = useMemo(
+    () => ({
+      all: events.length,
+      upcoming: events.filter((item) => item.status === "upcoming").length,
+      ended: events.filter((item) => item.status === "ended").length,
+    }),
+    [events],
+  );
+
   const setFilter = (nextFilter) => {
     updateParams({ status: nextFilter });
   };
@@ -94,7 +98,7 @@ export default function Events() {
     locale,
     fallbackTitle: t(UI.nav.events, locale),
     fallbackSubtitle: t(UI.eventsIntro, locale),
-    fallbackImage: events.find((item) => item.imageUrl)?.imageUrl || "",
+    fallbackImage: "",
   });
 
   const facebook = resolveCompanySocial(contact?.social).find(
@@ -126,55 +130,18 @@ export default function Events() {
       ) : null}
       {!pending && !error ? (
         <main className="min-h-screen bg-[#0A0820] text-white">
-          <header className="mx-auto max-w-[1320px] px-6 pb-14 pt-[calc(var(--navbar-height)+var(--ticker-height)+3.5rem)] md:pb-[56px] md:pt-[calc(var(--navbar-height)+var(--ticker-height)+4.5rem)]">
-            <div className="flex items-center gap-4 text-[14px] text-white/62">
-              <nav aria-label="Breadcrumb" className="shrink-0">
-                <ol className="flex flex-wrap items-center gap-x-2">
-                  <li>
-                    <Link to="/" className="transition-colors hover:text-brand-lime">
-                      {t(UI.nav.home, locale)}
-                    </Link>
-                  </li>
-                  <li aria-hidden="true">/</li>
-                  <li>{t(UI.nav.events, locale)}</li>
-                </ol>
-              </nav>
-              <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
-            </div>
+          <PageBanner
+            title={hero.title}
+            subtitle={hero.subtitle}
+            label={t(UI.nav.events, locale)}
+            breadcrumbs={[
+              { label: t(UI.nav.home, locale), to: "/" },
+              { label: t(UI.nav.events, locale) },
+            ]}
+          />
 
-            <div className="mt-7 flex flex-wrap items-end justify-between gap-8">
-              <div className="min-w-0 flex-1">
-                <div className="overflow-hidden py-[0.1em]">
-                  <motion.div
-                    initial={reducedMotion ? false : { y: "110%" }}
-                    animate={{ y: "0%" }}
-                    transition={{ duration: 0.65, ease: easeOut }}
-                  >
-                    <AccentHeading
-                      as="h1"
-                      text={hero.title}
-                      className="max-w-full break-words font-display text-[clamp(2.75rem,8.5vw,7.5rem)] font-black leading-[1.1] text-white"
-                    />
-                  </motion.div>
-                </div>
-                {hero.subtitle ? (
-                  <p className="mt-[22px] max-w-[560px] text-[18px] leading-[1.7] text-white/72 md:text-[20px]">
-                    {hero.subtitle}
-                  </p>
-                ) : null}
-              </div>
-              <div
-                className="flex items-center gap-2.5 font-mono text-[13px] tracking-[3px] text-white/70"
-                dir="ltr"
-              >
-                <LogoTriangle className="h-3 w-3.5" />
-                {UI.pageLabel.events}
-              </div>
-            </div>
-          </header>
-
-          <div className="border-b border-white/12">
-            <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-[30px] gap-y-1 px-6 text-[16px]">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <div className="inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-full bg-[#1B1931] p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {FILTERS.map(([key, label]) => {
                 const active = filter === key;
                 return (
@@ -182,23 +149,27 @@ export default function Events() {
                     key={key}
                     type="button"
                     onClick={() => setFilter(key)}
-                    className={`border-b-2 py-4 transition-colors ${
+                    className={`whitespace-nowrap rounded-full px-4 py-2 text-sm transition-all ${
                       active
-                        ? "border-brand-lime font-semibold text-white"
-                        : "border-transparent font-normal text-white/65 hover:text-white"
+                        ? "bg-brand-lime font-semibold text-[#0A0820]"
+                        : "font-medium text-white/55 hover:text-white"
                     }`}
                   >
                     {t(label, locale)}
+                    <span
+                      className={`ms-1 text-[11px] ${
+                        active ? "opacity-80" : "text-brand-lime/80"
+                      }`}
+                    >
+                      ({counts[key] || 0})
+                    </span>
                   </button>
                 );
               })}
-              <span className="py-4 text-[13px] text-white/55">
-                {filtered.length} {t(UI.resultsCount, locale)}
-              </span>
             </div>
           </div>
 
-          <section className="mx-auto max-w-[1320px] px-6 pb-[100px] pt-14">
+          <section className="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 md:py-14">
             {filtered.length === 0 ? (
               <div className="space-y-4">
                 <EmptyState message={emptyMessage} />
@@ -215,42 +186,52 @@ export default function Events() {
               </div>
             ) : showSplit ? (
               <>
-                {upcomingItems.map((item) => (
-                  <EventAgendaRow key={item.id} item={item} />
-                ))}
-
-                <div className="mt-10 flex items-center gap-4 text-[14px] text-white/55">
-                  <span>{t(UI.pastEventsLabel, locale)}</span>
-                  <span className="h-px flex-1 bg-white/12" aria-hidden="true" />
+                <div className="space-y-8">
+                  {upcomingItems.map((item) => (
+                    <EventAgendaRow key={item.id} item={item} />
+                  ))}
                 </div>
 
-                {pastItems.length > 0 ? (
-                  pastItems.map((item) => (
-                    <EventAgendaRow key={item.id} item={item} />
-                  ))
-                ) : (
-                  <p className="mt-6 text-[17px] text-white/60">
-                    {t(UI.noPastEvents, locale)}
-                    {facebook?.url ? (
-                      <>
-                        {" "}
+                <div className="pt-4">
+                  <div className="mb-5 flex items-center justify-between gap-4">
+                    <h3 className="font-display text-[22px] font-semibold text-white">
+                      {t(UI.pastEventsLabel, locale)}
+                    </h3>
+                  </div>
+                  {pastItems.length > 0 ? (
+                    <div className="space-y-8">
+                      {pastItems.map((item) => (
+                        <EventAgendaRow key={item.id} item={item} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-start justify-between gap-4 bg-[#1B1931] p-6 md:flex-row md:items-center">
+                      <p className="text-[15px] text-white/60">
+                        {t(UI.noPastEvents, locale)}
+                      </p>
+                      {facebook?.url ? (
                         <a
                           href={facebook.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-brand-lime"
+                          className="inline-flex items-center gap-1 bg-[#292740] px-4 py-2 text-sm font-semibold text-brand-lime transition-colors hover:bg-[#34324C]"
                         >
                           {t(UI.followFacebook, locale)}
+                          <span aria-hidden="true">←</span>
                         </a>
-                      </>
-                    ) : null}
-                  </p>
-                )}
+                      ) : null}
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
-              (filter === "upcoming" ? upcomingItems : pastItems).map((item) => (
-                <EventAgendaRow key={item.id} item={item} />
-              ))
+              <div className="space-y-8">
+                {(filter === "upcoming" ? upcomingItems : pastItems).map(
+                  (item) => (
+                    <EventAgendaRow key={item.id} item={item} />
+                  ),
+                )}
+              </div>
             )}
           </section>
 

@@ -51,7 +51,7 @@ export default function BackToTop() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.9 }}
           transition={{ duration: 0.2 }}
-          className="site-float fixed z-40 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/12 bg-[#110E33] text-white shadow-[0_12px_32px_rgba(10,8,32,0.45)] transition-colors hover:border-brand-lime hover:bg-brand-lime hover:text-[#0A0820] sm:h-12 sm:w-12"
+          className="site-float ix-icon-btn fixed z-40 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/12 bg-[#110E33] text-white shadow-[0_12px_32px_rgba(10,8,32,0.45)] sm:h-12 sm:w-12"
           style={{
             bottom:
               "max(6.25rem, calc(env(safe-area-inset-bottom, 0px) + 5.75rem))",

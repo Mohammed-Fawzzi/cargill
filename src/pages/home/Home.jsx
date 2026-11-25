@@ -8,7 +8,7 @@ import HomepageIntro from "@/components/home/HomepageIntro";
 import ValuesTrio from "@/components/home/ValuesTrio";
 import FeaturedProductsSection from "@/components/home/FeaturedProductsSection";
 import ArticlesSection from "@/components/home/ArticlesSection";
-import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
+import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import { useHomePage } from "@/hooks/useHomePage";
 import { useLocale } from "@/context/LocaleContext";
 import { getCategories, getProducts } from "@/services/cms/products";

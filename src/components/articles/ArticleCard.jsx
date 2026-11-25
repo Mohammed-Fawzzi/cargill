@@ -13,16 +13,18 @@ export default function ArticleCard({
   meta,
   category,
   featured = false,
-  layout: _layout,
 }) {
   const { locale } = useLocale();
   const categoryLabel = category || t(UI.nav.articles, locale);
 
   return (
-    <Link to={to} className="group block text-white">
+    <Link
+      to={to}
+      className="group flex h-full flex-col overflow-hidden rounded-xl bg-[#1F1D35] text-white transition-colors duration-300 hover:bg-[#292740]"
+    >
       <div
-        className={`relative overflow-hidden border border-white/8 bg-[#110E33] ${
-          featured ? "h-[280px] rounded-[20px] sm:h-[480px]" : "h-[240px] rounded-[14px] sm:h-[360px]"
+        className={`relative overflow-hidden bg-[#1B1931] ${
+          featured ? "h-72 md:h-80" : "h-72"
         }`}
       >
         {imageUrl ? (
@@ -37,40 +39,44 @@ export default function ArticleCard({
             {title}
           </div>
         )}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1F1D35] via-transparent to-transparent" />
       </div>
 
-      {(categoryLabel || meta) && (
-        <div className="mt-[18px] text-[13px]">
-          {categoryLabel ? (
-            <span className="text-brand-lime">{categoryLabel}</span>
-          ) : null}
-          {categoryLabel && meta ? (
-            <span className="text-white/55"> · {meta}</span>
-          ) : meta ? (
-            <span className="text-white/55">{meta}</span>
-          ) : null}
-        </div>
-      )}
+      <div className="flex flex-1 flex-col gap-3 p-6">
+        {(categoryLabel || meta) && (
+          <p className="text-[11px] font-medium tracking-wide text-white/45">
+            {[categoryLabel, meta].filter(Boolean).join(" · ")}
+          </p>
+        )}
 
-      {title ? (
-        <div
-          className={`mt-2 font-display font-extrabold leading-tight text-white transition-colors group-hover:text-brand-lime ${
-            featured ? "text-[clamp(1.75rem,4vw,3.25rem)]" : "text-[28px]"
-          }`}
-        >
-          {title}
-        </div>
-      ) : null}
+        {title ? (
+          <h3
+            className={`font-display font-bold leading-tight text-white transition-colors group-hover:text-brand-lime ${
+              featured
+                ? "text-[clamp(1.35rem,3vw,1.875rem)]"
+                : "text-[22px] md:text-[30px] md:leading-[38px]"
+            }`}
+          >
+            {title}
+          </h3>
+        ) : null}
 
-      {body ? (
-        <p
-          className={`mt-2.5 line-clamp-3 leading-[1.7] text-white/65 ${
-            featured ? "text-[19px] text-white/72" : "text-[16px]"
-          }`}
-        >
-          {body}
-        </p>
-      ) : null}
+        {body ? (
+          <p className="line-clamp-3 text-[15px] leading-relaxed text-white/55">
+            {body}
+          </p>
+        ) : null}
+
+        <span className="mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold text-brand-lime">
+          <span>{t(UI.readArticle, locale)}</span>
+          <span
+            className="transition-transform duration-300 group-hover:-translate-x-1"
+            aria-hidden="true"
+          >
+            ←
+          </span>
+        </span>
+      </div>
     </Link>
   );
 }

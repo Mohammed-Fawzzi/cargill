@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
-import TiltCard from "@/components/ui/TiltCard";
 import { easeOut } from "@/lib/motion";
 
 export default function ContentCard({
@@ -12,64 +11,59 @@ export default function ContentCard({
   body,
   category,
   secondary,
+  index = 0,
   layout = "default",
   imageFit = "cover",
 }) {
   const reduceMotion = useReducedMotion();
   const horizontal = layout === "horizontal";
   const contain = imageFit === "contain";
+  const number = `${String(index + 1).padStart(2, "0")}.`;
+  const mediaH = horizontal ? "14rem" : "12.5rem";
 
   return (
     <article className="h-full">
       <Link
         to={to}
-        className={`group relative flex h-full ${
+        className={`ix-card group relative ${
           horizontal
-            ? "flex-col gap-6 sm:flex-row sm:items-stretch sm:gap-10"
-            : "flex-col"
+            ? "flex flex-col gap-6 sm:flex-row sm:items-stretch sm:gap-10"
+            : ""
         }`}
+        style={{ "--ix-media-h": mediaH }}
       >
-        <TiltCard
-          className={`relative overflow-hidden rounded-md bg-surface-muted ${
-            horizontal
-              ? "aspect-[4/3] w-full sm:aspect-auto sm:w-[46%] sm:min-h-[280px]"
-              : contain
-                ? "aspect-[4/3] w-full"
-                : "aspect-[16/10] w-full"
+        <motion.div
+          className={`ix-card__media bg-surface-muted ${
+            horizontal ? "w-full sm:w-[46%]" : "w-full"
           }`}
+          style={{ height: mediaH }}
+          initial={reduceMotion ? false : { clipPath: "inset(100% 0 0 0)" }}
+          whileInView={{ clipPath: "inset(0% 0 0 0)" }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.55, ease: easeOut }}
         >
-          <motion.div
-            className="h-full w-full"
-            initial={
-              reduceMotion ? false : { clipPath: "inset(100% 0 0 0)" }
-            }
-            whileInView={{ clipPath: "inset(0% 0 0 0)" }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.55, ease: easeOut }}
-          >
-            {imageUrl ? (
-              <SafeImage
-                src={imageUrl}
-                alt={title || ""}
-                className={`h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100 ${
-                  contain ? "object-contain p-4" : "object-cover"
-                }`}
-              />
-            ) : (
-              <div className="flex h-full min-h-[180px] items-center justify-center px-4 text-center text-sm font-semibold text-ink/50">
-                {title}
-              </div>
-            )}
-          </motion.div>
-        </TiltCard>
+          {imageUrl ? (
+            <SafeImage
+              src={imageUrl}
+              alt={title || ""}
+              className={`h-full w-full ${
+                contain ? "object-contain p-4" : "object-cover"
+              }`}
+            />
+          ) : (
+            <div className="flex h-full min-h-[180px] items-center justify-center px-4 text-center text-sm font-semibold text-ink/50">
+              {title}
+            </div>
+          )}
+        </motion.div>
 
         <div
           className={`flex min-w-0 flex-1 flex-col ${
-            horizontal ? "justify-center pb-5 sm:pb-2" : "pt-4 pb-5"
+            horizontal ? "justify-center pb-5 sm:pb-2" : "pb-5"
           }`}
         >
           {category || secondary ? (
-            <p className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+            <p className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
               {category ? (
                 <span className="font-semibold text-brand-lime">{category}</span>
               ) : null}
@@ -85,26 +79,22 @@ export default function ContentCard({
           ) : null}
 
           {title ? (
-            <h3 className="mb-2 line-clamp-2 text-[22px] font-extrabold leading-8 text-ink">
-              {title}
-            </h3>
+            <div className="ix-card__title-row mt-0">
+              <span className="ix-card__num text-ink/20" dir="ltr">
+                {number}
+              </span>
+              <h3 className="ix-card__title text-[22px] font-extrabold text-ink">
+                {title}
+              </h3>
+            </div>
           ) : null}
 
           {body ? (
-            <p className="line-clamp-2 text-sm leading-7 text-text-muted">
+            <p className="ix-card__desc line-clamp-2 text-sm leading-7 text-text-muted">
               {body}
             </p>
           ) : null}
         </div>
-
-        <span
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-brand-navy/15"
-          aria-hidden="true"
-        />
-        <span
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-brand-lime transition-transform duration-500 ease-out group-hover:scale-x-100 motion-reduce:transition-none"
-          aria-hidden="true"
-        />
       </Link>
     </article>
   );

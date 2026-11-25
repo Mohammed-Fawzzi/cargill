@@ -5,10 +5,10 @@ import { motion, useScroll } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import SafeImage from "@/components/ui/SafeImage";
-import AccentHeading from "@/components/ui/AccentHeading";
 import LogoTriangle from "@/components/ui/LogoTriangle";
 import ScrollWords from "@/components/ui/ScrollWords";
-import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
+import PageBanner from "@/components/ui/PageBanner";
+import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 import useCountUp from "@/hooks/useCountUp";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
@@ -60,15 +60,17 @@ function ExperienceCard({ locale, reducedMotion, isMobile }) {
   return (
     <div
       ref={cardRef}
-      className="relative flex h-[360px] items-center justify-center overflow-hidden rounded-[24px] border border-white/8 bg-[#110E33] sm:h-[440px]"
+      className="relative mx-auto flex aspect-square w-full max-w-md flex-col justify-between overflow-hidden bg-[#1F1D35] p-7 shadow-[0_24px_60px_rgba(10,8,32,0.45)]"
     >
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="relative z-10 flex flex-1 items-center justify-center py-4">
         {reducedMotion ? (
-          <LogoTriangle className="w-[280px]" />
+          <LogoTriangle className="w-[200px] drop-shadow-lg" />
         ) : (
-          <Suspense fallback={<LogoTriangle className="w-[280px]" />}>
+          <Suspense
+            fallback={<LogoTriangle className="w-[200px] drop-shadow-lg" />}
+          >
             <BrandTriangle3D
-              className="h-[70%] w-[75%] max-w-[280px]"
+              className="h-[70%] w-[75%] max-w-[220px]"
               softLight
               spin={0.16}
               followMouse={!isMobile}
@@ -76,18 +78,56 @@ function ExperienceCard({ locale, reducedMotion, isMobile }) {
           </Suspense>
         )}
       </div>
-      <div className="absolute inset-x-6 bottom-6 z-10 rounded-[14px] border border-white/12 bg-[rgba(10,8,32,0.75)] px-5 py-5">
+
+      <div className="relative z-10 flex items-end justify-between gap-4 pt-4">
         <p
-          className="font-display text-[64px] font-black leading-none text-brand-lime"
+          className="font-display text-[64px] font-bold leading-none text-brand-lime"
           dir="ltr"
         >
           +{value}
         </p>
-        <p className="mt-1.5 text-[15px] text-white/78">
+        <p className="max-w-[140px] text-start text-[13px] leading-snug text-white/55">
           {t(UI.experienceBody, locale)}
         </p>
       </div>
     </div>
+  );
+}
+
+function PillarCard({ index, tag, title, body, reducedMotion }) {
+  if (!body) return null;
+
+  return (
+    <motion.div
+      className="flex flex-col items-start justify-between gap-6 bg-[#1F1D35] p-7 transition-colors hover:bg-[#292740] lg:flex-row lg:items-center lg:p-10"
+      initial={reducedMotion ? false : { opacity: 0, y: 22 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.5, ease: easeOut }}
+    >
+      <div className="flex max-w-3xl flex-1 flex-col gap-2">
+        <div className="mb-1 flex items-center gap-3">
+          <span className="bg-[#0D0B23] px-2 py-0.5 text-[11px] font-semibold tracking-wide text-brand-lime">
+            {String(index).padStart(2, "0")}
+          </span>
+          {tag ? (
+            <span className="text-[13px] text-white/55">{tag}</span>
+          ) : null}
+        </div>
+        <p className="whitespace-pre-wrap text-base leading-relaxed text-white/85 md:text-lg">
+          {body}
+        </p>
+      </div>
+      <div className="flex shrink-0 items-center gap-4">
+        <span
+          className="hidden h-px w-12 bg-brand-lime/30 lg:block"
+          aria-hidden="true"
+        />
+        <span className="font-display text-[22px] font-bold tracking-tight text-white md:text-[30px]">
+          {title}
+        </span>
+      </div>
+    </motion.div>
   );
 }
 
@@ -132,60 +172,26 @@ export default function About() {
       {!isPending && isError ? <ErrorState /> : null}
       {!isPending && !isError ? (
         <main className="min-h-screen bg-[#0A0820] text-white">
-          <header className="mx-auto max-w-[1320px] px-6 pb-14 pt-[calc(var(--navbar-height)+var(--ticker-height)+3.5rem)] md:pb-[56px] md:pt-[calc(var(--navbar-height)+var(--ticker-height)+4.5rem)]">
-            <div className="flex items-center gap-4 text-[14px] text-white/62">
-              <nav aria-label="Breadcrumb" className="shrink-0">
-                <ol className="flex flex-wrap items-center gap-x-2">
-                  <li>
-                    <Link to="/" className="transition-colors hover:text-brand-lime">
-                      {t(UI.nav.home, locale)}
-                    </Link>
-                  </li>
-                  <li aria-hidden="true">/</li>
-                  <li>{t(UI.nav.about, locale)}</li>
-                </ol>
-              </nav>
-              <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
-            </div>
-
-            <div className="mt-7 flex flex-wrap items-end justify-between gap-8">
-              <div className="min-w-0 flex-1">
-                <div className="overflow-hidden py-[0.1em]">
-                  <motion.div
-                    initial={reducedMotion ? false : { y: "110%" }}
-                    animate={{ y: "0%" }}
-                    transition={{ duration: 0.65, ease: easeOut }}
-                  >
-                    <AccentHeading
-                      as="h1"
-                      text={titleText}
-                      className="max-w-full break-words font-display text-[clamp(2.75rem,8.5vw,7.5rem)] font-black leading-[1.1] text-white"
-                    />
-                  </motion.div>
-                </div>
-                <p className="mt-[22px] max-w-[560px] text-[18px] leading-[1.7] text-white/72 md:text-[20px]">
-                  {t(UI.aboutIntro, locale)}
-                </p>
-              </div>
-              <div
-                className="flex items-center gap-2.5 font-mono text-[13px] tracking-[3px] text-white/70"
-                dir="ltr"
-              >
-                <LogoTriangle className="h-3 w-3.5" />
-                {UI.pageLabel.about}
-              </div>
-            </div>
-          </header>
+          <PageBanner
+            title={titleText}
+            subtitle={t(UI.aboutIntro, locale)}
+            label={t(UI.nav.about, locale)}
+            breadcrumbs={[
+              { label: t(UI.nav.home, locale), to: "/" },
+              { label: t(UI.nav.about, locale) },
+            ]}
+          />
 
           {bannerUrl ? (
-            <div className="mx-auto max-w-[1320px] px-6">
-              <div className="relative h-[280px] overflow-hidden rounded-[20px] border border-white/8 bg-[#110E33] sm:h-[420px]">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6">
+              <div className="relative h-[260px] overflow-hidden bg-[#1B1931] md:h-[340px]">
                 <SafeImage
                   src={bannerUrl}
                   alt=""
                   width={1400}
                   className="h-full w-full object-cover"
                 />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A0820] via-transparent to-transparent opacity-80" />
               </div>
             </div>
           ) : null}
@@ -196,151 +202,131 @@ export default function About() {
             <>
               {about ? (
                 <motion.section
-                  className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-12 px-6 pb-[60px] pt-[100px] md:grid-cols-[7fr_5fr] md:gap-16"
-                  initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.15 }}
-                  transition={{ duration: 0.5, ease: easeOut }}
-                >
-                  <div>
-                    <div className="flex items-center gap-4 text-[14px] text-white/70">
-                      <span>{t(UI.whoWeAre, locale)}</span>
-                      <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
-                      <span className="font-mono text-brand-lime" dir="ltr">
-                        § 01
-                      </span>
-                    </div>
-                    <div ref={aboutRef} className="mt-[30px]">
-                      <ScrollWords
-                        text={about}
-                        progress={scrollYProgress}
-                        reducedMotion={reducedMotion}
-                        mobile={isMobile}
-                        accentPhrase
-                        className="text-[clamp(1.25rem,2.6vw,1.6875rem)] font-medium leading-[1.8] text-white/62"
-                      />
-                    </div>
-                  </div>
-                  <ExperienceCard
-                    locale={locale}
-                    reducedMotion={reducedMotion}
-                    isMobile={isMobile}
-                  />
-                </motion.section>
-              ) : null}
-
-              {(vision || mission) && (
-                <section className="mx-auto max-w-[1320px] px-6 py-10">
-                  {vision ? (
-                    <motion.div
-                      className="grid grid-cols-1 items-start gap-6 border-b border-white/12 py-11 md:grid-cols-[2fr_7fr_2fr] md:gap-8"
-                      initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, amount: 0.2 }}
-                      transition={{ duration: 0.5, ease: easeOut }}
-                    >
-                      <div>
-                        <span
-                          className="font-mono text-[13px] text-brand-lime"
-                          dir="ltr"
-                        >
-                          02
-                        </span>
-                        <h2 className="mt-2 font-display text-[clamp(2rem,5vw,2.75rem)] font-black leading-none">
-                          {t(UI.ourVision, locale)}
-                        </h2>
-                      </div>
-                      <p className="whitespace-pre-wrap text-[20px] leading-[1.7] text-white/85 md:text-[24px]">
-                        {vision}
-                      </p>
-                      <div>
-                        <span className="inline-block rounded-full border border-white/30 px-3.5 py-1.5 text-[13px]">
-                          {t(UI.valuesTagVision, locale)}
-                        </span>
-                      </div>
-                    </motion.div>
-                  ) : null}
-
-                  {mission ? (
-                    <motion.div
-                      className="grid grid-cols-1 items-start gap-6 border-b border-white/12 py-11 md:grid-cols-[2fr_7fr_2fr] md:gap-8"
-                      initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, amount: 0.2 }}
-                      transition={{ duration: 0.5, ease: easeOut }}
-                    >
-                      <div>
-                        <span
-                          className="font-mono text-[13px] text-brand-lime"
-                          dir="ltr"
-                        >
-                          03
-                        </span>
-                        <h2 className="mt-2 font-display text-[clamp(2rem,5vw,2.75rem)] font-black leading-none">
-                          {t(UI.ourMission, locale)}
-                        </h2>
-                      </div>
-                      <p className="whitespace-pre-wrap text-[20px] leading-[1.7] text-white/85 md:text-[24px]">
-                        {mission}
-                      </p>
-                      <div>
-                        <span className="inline-block rounded-full border border-white/30 px-3.5 py-1.5 text-[13px]">
-                          {t(UI.valuesTagMission, locale)}
-                        </span>
-                      </div>
-                    </motion.div>
-                  ) : null}
-                </section>
-              )}
-
-              {categories.length > 0 ? (
-                <motion.section
-                  className="mx-auto max-w-[1320px] px-6 pb-10 pt-[60px]"
+                  className="mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20"
                   initial={reducedMotion ? false : { opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.12 }}
                   transition={{ duration: 0.5, ease: easeOut }}
                 >
-                  <div className="flex items-center gap-4 text-[14px] text-white/70">
-                    <span>{t(UI.whatWeOffer, locale)}</span>
-                    <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
-                    <span className="font-mono text-brand-lime" dir="ltr">
-                      § 04
-                    </span>
+                  <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-12">
+                    <div className="order-2 flex flex-col gap-5 lg:order-1 lg:col-span-7">
+                      <div className="flex items-center gap-2 text-white/55">
+                        <span className="text-[11px] font-semibold tracking-wide text-brand-lime">
+                          01
+                        </span>
+                        <span className="text-sm">
+                          {t(UI.whoWeAre, locale)}
+                        </span>
+                      </div>
+                      <div ref={aboutRef}>
+                        <ScrollWords
+                          text={about}
+                          progress={scrollYProgress}
+                          reducedMotion={reducedMotion}
+                          mobile={isMobile}
+                          accentPhrase
+                          className="text-base font-medium leading-relaxed text-white/60 md:text-lg"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="order-1 lg:order-2 lg:col-span-5">
+                      <ExperienceCard
+                        locale={locale}
+                        reducedMotion={reducedMotion}
+                        isMobile={isMobile}
+                      />
+                    </div>
                   </div>
-                  <div className="mt-4">
+                </motion.section>
+              ) : null}
+
+              {(vision || mission) && (
+                <section className="bg-[#1B1931] py-16 md:py-20">
+                  <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6">
+                    <PillarCard
+                      index={2}
+                      tag={t(UI.valuesTagVision, locale)}
+                      title={t(UI.ourVision, locale)}
+                      body={vision}
+                      reducedMotion={reducedMotion}
+                    />
+                    <PillarCard
+                      index={3}
+                      tag={t(UI.valuesTagMission, locale)}
+                      title={t(UI.ourMission, locale)}
+                      body={mission}
+                      reducedMotion={reducedMotion}
+                    />
+                  </div>
+                </section>
+              )}
+
+              {categories.length > 0 ? (
+                <motion.section
+                  className="mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20"
+                  initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.12 }}
+                  transition={{ duration: 0.5, ease: easeOut }}
+                >
+                  <div className="mb-6 flex items-end justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-semibold tracking-wide text-brand-lime">
+                        04
+                      </span>
+                      <h2 className="font-display text-[22px] font-semibold text-white md:text-[30px]">
+                        {t(UI.whatWeOffer, locale)}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
                     {categories.map((item, index) => (
-                      <Link
+                      <motion.div
                         key={item.id}
-                        to={`/products?section=${encodeURIComponent(item.id)}`}
-                        className="group flex items-center justify-between gap-4 border-b border-white/12 py-[26px] text-white"
+                        initial={
+                          reducedMotion ? false : { opacity: 0, y: 16 }
+                        }
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.2 }}
+                        transition={{
+                          duration: 0.45,
+                          delay: reducedMotion
+                            ? 0
+                            : Math.min(index * 0.08, 0.32),
+                          ease: easeOut,
+                        }}
                       >
-                        <span className="flex items-baseline gap-5">
-                          <span
-                            className="font-mono text-[13px] text-brand-lime"
-                            dir="ltr"
-                          >
-                            {String(index + 1).padStart(2, "0")}
-                          </span>
-                          <span className="font-display text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold transition-colors group-hover:text-brand-lime">
-                            {t(item.name, locale)}
-                          </span>
-                        </span>
-                        <span
-                          className="text-[22px] transition-transform duration-300 group-hover:-translate-x-1 rtl:group-hover:translate-x-1"
-                          aria-hidden="true"
+                        <Link
+                          to={`/products?section=${encodeURIComponent(item.id)}`}
+                          className="group relative flex items-center justify-between bg-[#1B1931] p-6 transition-colors duration-300 hover:bg-[#292740] md:p-7"
                         >
-                          ←
-                        </span>
-                      </Link>
+                          <div className="flex items-center gap-4 md:gap-6">
+                            <span
+                              className="text-[11px] font-semibold tracking-wide text-brand-lime"
+                              dir="ltr"
+                            >
+                              {String(index + 1).padStart(2, "0")}
+                            </span>
+                            <span className="font-display text-xl font-semibold text-white transition-colors group-hover:text-brand-lime md:text-[30px] md:leading-[38px]">
+                              {t(item.name, locale)}
+                            </span>
+                          </div>
+                          <span
+                            className="text-[22px] text-white/45 transition-transform duration-300 group-hover:-translate-x-1 group-hover:text-brand-lime"
+                            aria-hidden="true"
+                          >
+                            ←
+                          </span>
+                        </Link>
+                      </motion.div>
                     ))}
                   </div>
                 </motion.section>
               ) : null}
 
-              <div className="mt-10">
-                <GrowTogetherBanner />
-              </div>
+              <GrowTogetherBanner />
             </>
           )}
         </main>

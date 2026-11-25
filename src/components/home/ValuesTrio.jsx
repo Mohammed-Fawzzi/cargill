@@ -66,78 +66,82 @@ export default function ValuesTrio() {
 
   return (
     <motion.section
-      className="mx-auto max-w-[1320px] px-6 pb-[110px] pt-[130px]"
+      className="relative bg-[#0A0820] py-20 md:py-24"
       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.5, ease: easeOut }}
     >
-      <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-[7fr_5fr] md:gap-16">
-        <div>
-          <div className="flex items-center gap-4 text-[14px] text-white/70">
-            <span>{t(UI.whoWeAre, locale)}</span>
-            <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
-            <span className="font-mono text-brand-lime" dir="ltr">
-              § 02
-            </span>
-          </div>
-
-          {heading ? (
-            <AccentHeading
-              as="h2"
-              text={heading}
-              className="mt-[30px] font-display text-[clamp(2.75rem,8vw,5.25rem)] font-black leading-[1.02] tracking-[-0.02em] text-white md:text-[84px]"
-            />
-          ) : null}
-
-          {about ? (
-            <div ref={paragraphRef} className="mt-[34px]">
-              <ScrollWords
-                text={about}
-                progress={scrollYProgress}
-                reducedMotion={reducedMotion}
-                mobile={isMobile}
-                accentPhrase
-                className="text-[clamp(1.125rem,2.4vw,1.5625rem)] font-medium leading-[1.85] text-white/62"
-              />
-            </div>
-          ) : null}
-        </div>
-
-        <div
-          ref={cardRef}
-          className="relative h-[420px] overflow-hidden rounded-[24px] border border-white/8 bg-[#110E33] sm:h-[520px]"
-        >
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
           <div
-            className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(140,198,63,0.2),transparent_60%)]"
-            aria-hidden="true"
-          />
-
-          <div className="absolute start-1/2 top-[42%] h-[58%] w-[78%] max-w-[340px] -translate-x-1/2 -translate-y-1/2 rtl:translate-x-1/2">
-            {reducedMotion ? (
+            ref={cardRef}
+            className="relative order-2 overflow-hidden rounded-3xl border border-white/8 bg-[#110E33] p-8 shadow-[0_24px_60px_rgba(10,8,32,0.45)] lg:order-1 lg:col-span-5"
+          >
+            <div
+              className="pointer-events-none absolute -start-12 -bottom-12 h-64 w-64 opacity-10"
+              aria-hidden="true"
+            >
               <LogoTriangle className="h-full w-full" />
-            ) : (
-              <Suspense fallback={<LogoTriangle className="h-full w-full" />}>
-                <BrandTriangle3D
-                  className="h-full w-full"
-                  softLight
-                  spin={0.18}
-                  followMouse={!isMobile}
-                />
-              </Suspense>
-            )}
+            </div>
+
+            <div className="relative mb-8 h-20 w-20">
+              {reducedMotion ? (
+                <LogoTriangle className="h-full w-full drop-shadow-lg" />
+              ) : (
+                <Suspense
+                  fallback={
+                    <LogoTriangle className="h-full w-full drop-shadow-lg" />
+                  }
+                >
+                  <BrandTriangle3D
+                    className="h-full w-full"
+                    softLight
+                    spin={0.18}
+                    followMouse={!isMobile}
+                  />
+                </Suspense>
+              )}
+            </div>
+
+            <div className="relative space-y-3">
+              <p
+                className="font-display text-6xl font-bold tracking-tight text-brand-lime md:text-7xl"
+                dir="ltr"
+              >
+                +{value}
+              </p>
+              <h3 className="font-display text-xl font-bold text-white">
+                {t(UI.experienceBody, locale)}
+              </h3>
+            </div>
           </div>
 
-          <div className="absolute inset-x-7 bottom-7 z-10 rounded-[14px] border border-white/12 bg-[rgba(10,8,32,0.72)] px-6 py-[22px] backdrop-blur-[10px]">
-            <p
-              className="font-display text-[clamp(3rem,8vw,4.5rem)] font-black leading-none text-brand-lime"
-              dir="ltr"
-            >
-              +{value}
+          <div className="order-1 space-y-6 lg:order-2 lg:col-span-7">
+            <p className="text-xs font-medium tracking-wide text-brand-lime">
+              {t(UI.whoWeAre, locale)}
             </p>
-            <p className="mt-2 text-[16px] text-white/78">
-              {t(UI.experienceBody, locale)}
-            </p>
+
+            {heading ? (
+              <AccentHeading
+                as="h2"
+                text={heading}
+                className="font-display text-3xl font-bold leading-tight text-white md:text-5xl"
+              />
+            ) : null}
+
+            {about ? (
+              <div ref={paragraphRef}>
+                <ScrollWords
+                  text={about}
+                  progress={scrollYProgress}
+                  reducedMotion={reducedMotion}
+                  mobile={isMobile}
+                  accentPhrase
+                  className="text-base font-medium leading-relaxed text-white/62 md:text-lg"
+                />
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

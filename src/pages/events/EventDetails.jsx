@@ -8,7 +8,8 @@ import SafeImage from "@/components/ui/SafeImage";
 import RevealHeading from "@/components/ui/RevealHeading";
 import LtrText from "@/components/ui/LtrText";
 import EventAgendaRow, { getEventParts } from "@/components/events/EventAgendaRow";
-import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
+import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
+import SplitArrowButton from "@/components/ui/SplitArrowButton";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getEvent, getEvents } from "@/services/cms/events";
 import { useLocale } from "@/context/LocaleContext";
@@ -189,8 +190,6 @@ export default function EventDetails() {
     );
   };
 
-  const meta = [location, time].filter(Boolean).join(" · ");
-
   return (
     <>
       <Seo title={title || t(UI.nav.events, locale)} path={`/events/${id}`} />
@@ -209,108 +208,165 @@ export default function EventDetails() {
             !isEnded ? "pb-28 md:pb-0" : ""
           }`}
         >
-          <section className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 pb-16 pt-[calc(var(--navbar-height)+var(--ticker-height)+3.5rem)] md:grid-cols-[2fr_5fr_5fr] md:gap-10">
-            <motion.div
+          <div className="mx-auto max-w-6xl px-4 pb-6 pt-[calc(var(--navbar-height)+var(--ticker-height)+2rem)] sm:px-6">
+            <nav className="mb-6 text-sm text-white/45">
+              <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <li>
+                  <Link
+                    to="/"
+                    className="transition-colors hover:text-brand-lime"
+                  >
+                    {t(UI.nav.home, locale)}
+                  </Link>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-white/25" aria-hidden="true">
+                    /
+                  </span>
+                  <Link
+                    to="/events"
+                    className="transition-colors hover:text-brand-lime"
+                  >
+                    {t(UI.nav.events, locale)}
+                  </Link>
+                </li>
+                {title ? (
+                  <li className="flex items-center gap-2">
+                    <span className="text-white/25" aria-hidden="true">
+                      /
+                    </span>
+                    <span className="text-white/80">{title}</span>
+                  </li>
+                ) : null}
+              </ol>
+            </nav>
+
+            <motion.article
+              className="overflow-hidden rounded-2xl bg-[#1F1D35]"
               initial={reducedMotion ? false : { opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: easeOut }}
             >
-              <Link
-                to="/events"
-                className="text-[14px] text-brand-lime transition-colors hover:text-[#B5E06E]"
-              >
-                ← {t(UI.backToEvents, locale)}
-              </Link>
-              <span
-                className={`mt-5 inline-block rounded-full px-2.5 py-1 text-[12px] font-semibold ${
-                  isEnded
-                    ? "border border-white/25 text-white/70"
-                    : "bg-brand-lime text-[#0A0820]"
-                }`}
-              >
-                {statusLabel}
-              </span>
-              {parts.day ? (
-                <div className="mt-3 font-display text-[clamp(4rem,12vw,7.5rem)] font-black leading-none">
-                  <LtrText>{parts.day}</LtrText>
+              <div className="grid min-h-[420px] grid-cols-1 lg:grid-cols-12">
+                <div className="relative min-h-[280px] overflow-hidden bg-[#0D0B23] lg:col-span-6 lg:min-h-full">
+                  {images[0] ? (
+                    <SafeImage
+                      src={images[0]}
+                      alt={title}
+                      width={1000}
+                      className="h-full w-full object-cover sm:min-h-[380px]"
+                    />
+                  ) : (
+                    <div className="flex h-full min-h-[280px] items-center justify-center px-6 text-center text-white/40">
+                      {title}
+                    </div>
+                  )}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1F1D35] via-[#1F1D35]/30 to-transparent lg:bg-gradient-to-l" />
                 </div>
-              ) : null}
-              {parts.monthYear ? (
-                <div className="mt-2 text-[16px] text-white/70">{parts.monthYear}</div>
-              ) : null}
-              {countdownLabel ? (
-                <div className="mt-2.5 text-[14px] text-brand-lime">
-                  {countdownLabel}
-                </div>
-              ) : null}
-            </motion.div>
 
-            <motion.div
-              initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: reducedMotion ? 0 : 0.06, ease: easeOut }}
-            >
-              {title ? (
-                <RevealHeading
-                  as="h1"
-                  text={title}
-                  className="max-w-full break-words font-display text-[clamp(2.25rem,5.5vw,4rem)] font-extrabold leading-[1.2] text-white"
-                />
-              ) : null}
-              {meta ? (
-                <div className="mt-3 text-[14px] text-white/60">{meta}</div>
-              ) : null}
-              {details ? (
-                <p className="mt-4 line-clamp-4 text-[18px] leading-[1.7] text-white/75">
-                  {details}
-                </p>
-              ) : null}
-              {!isEnded ? (
-                <div className="mt-6 hidden flex-wrap items-center gap-[18px] md:flex">
-                  {waHref ? (
-                    <a
-                      href={waHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-lg bg-brand-lime px-7 py-4 text-[16px] font-semibold text-[#0A0820] transition-colors hover:bg-brand-lime-hover"
-                    >
-                      {t(UI.bookEventWa, locale)}
-                    </a>
+                <div className="flex flex-col justify-between p-7 lg:col-span-6 lg:p-10">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <span
+                        className={`mb-3 inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide ${
+                          isEnded
+                            ? "border border-white/20 text-white/60"
+                            : "bg-brand-lime/15 text-brand-lime"
+                        }`}
+                      >
+                        {statusLabel}
+                      </span>
+                      {title ? (
+                        <RevealHeading
+                          as="h1"
+                          text={title}
+                          className="font-display text-[clamp(1.6rem,3.5vw,2.25rem)] font-bold leading-tight text-white"
+                        />
+                      ) : null}
+                    </div>
+
+                    {parts.day ? (
+                      <div className="flex min-w-[90px] shrink-0 flex-col items-center justify-center bg-[#292740] px-4 py-3 text-center">
+                        <span className="font-display text-[46px] font-bold leading-none tracking-tight text-white">
+                          <LtrText>{parts.day}</LtrText>
+                        </span>
+                        {parts.monthYear ? (
+                          <span className="mt-1 text-[11px] font-medium uppercase tracking-wide text-white/55">
+                            {parts.monthYear}
+                          </span>
+                        ) : null}
+                        {countdownLabel ? (
+                          <span className="mt-2 rounded-full bg-brand-lime/20 px-2 py-0.5 text-[10px] font-semibold text-brand-lime">
+                            {countdownLabel}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {details ? (
+                    <p className="mt-4 line-clamp-4 text-[15px] leading-relaxed text-white/55">
+                      {details}
+                    </p>
                   ) : null}
-                  {canAddToCalendar ? (
-                    <button
-                      type="button"
-                      onClick={onAddToCalendar}
-                      className="border-b border-brand-lime pb-[3px] text-white transition-colors hover:text-brand-lime"
-                    >
-                      {t(UI.addToCalendar, locale)}
-                    </button>
+
+                  {(location || time) && (
+                    <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {location ? (
+                        <div className="bg-[#1B1931]/70 p-3">
+                          <span className="block text-[11px] font-medium tracking-wide text-white/45">
+                            {t(UI.eventPlace, locale)}
+                          </span>
+                          <span className="mt-0.5 block text-sm font-semibold text-white">
+                            {location}
+                          </span>
+                        </div>
+                      ) : null}
+                      {time ? (
+                        <div className="bg-[#1B1931]/70 p-3">
+                          <span className="block text-[11px] font-medium tracking-wide text-white/45">
+                            {t(UI.eventTime, locale)}
+                          </span>
+                          <span className="mt-0.5 block text-sm font-semibold text-white">
+                            <LtrText>{time}</LtrText>
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+
+                  {!isEnded ? (
+                    <div className="mt-6 hidden flex-col items-stretch gap-3 sm:flex-row sm:items-center md:flex">
+                      {waHref ? (
+                        <a
+                          href={waHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center rounded-full bg-brand-lime px-6 py-3 text-sm font-bold text-[#0A0820] transition-colors hover:bg-brand-lime-hover"
+                        >
+                          {t(UI.bookEventWa, locale)}
+                        </a>
+                      ) : null}
+                      {canAddToCalendar ? (
+                        <button
+                          type="button"
+                          onClick={onAddToCalendar}
+                          className="inline-flex items-center justify-center rounded-full bg-[#292740] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#34324C]"
+                        >
+                          {t(UI.addToCalendar, locale)}
+                        </button>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
-              ) : null}
-            </motion.div>
+              </div>
+            </motion.article>
+          </div>
 
-            {images[0] ? (
-              <motion.div
-                className="overflow-hidden rounded-[20px] border border-white/8 bg-[#110E33]"
-                initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: reducedMotion ? 0 : 0.1, ease: easeOut }}
-              >
-                <SafeImage
-                  src={images[0]}
-                  alt={title}
-                  width={1000}
-                  className="h-[280px] w-full object-cover sm:h-[380px]"
-                />
-              </motion.div>
-            ) : null}
-          </section>
-
-          <div className="mx-auto max-w-[1320px] px-6 pb-16">
+          <div className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
             {details ? (
               <motion.div
-                className="mx-auto max-w-[720px] whitespace-pre-wrap text-[20px] leading-[1.95] text-white/85"
+                className="mx-auto max-w-[720px] whitespace-pre-wrap text-[18px] leading-[1.9] text-white/80"
                 initial={reducedMotion ? false : { opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.12 }}
@@ -331,7 +387,7 @@ export default function EventDetails() {
                 <iframe
                   title={location}
                   src={mapSrc}
-                  className="h-[320px] w-full rounded-[14px] border-0 grayscale"
+                  className="h-[320px] w-full border-0 grayscale"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />
@@ -356,7 +412,7 @@ export default function EventDetails() {
                       key={`${src}-${index}`}
                       type="button"
                       onClick={() => setLightboxIndex(index)}
-                      className={`overflow-hidden rounded-[14px] border border-white/8 bg-[#110E33] ${
+                      className={`overflow-hidden bg-[#110E33] ${
                         index === 0 ? "col-span-2 row-span-2 md:col-span-2" : ""
                       }`}
                     >
@@ -375,22 +431,16 @@ export default function EventDetails() {
           </div>
 
           {related.length > 0 ? (
-            <section className="mx-auto max-w-[1320px] px-6 pb-10">
-              <div className="mb-4 flex items-center gap-4 text-[14px] text-white/70">
-                <span>{t(UI.relatedEvents, locale)}</span>
-                <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
-                <span className="font-mono text-brand-lime" dir="ltr">
-                  § MORE
-                </span>
+            <section className="mx-auto max-w-6xl px-4 pb-10 sm:px-6">
+              <div className="mb-5 flex items-center gap-4">
+                <h2 className="font-display text-[22px] font-semibold text-white">
+                  {t(UI.relatedEvents, locale)}
+                </h2>
+                <span className="h-px flex-1 bg-white/12" aria-hidden="true" />
               </div>
-              <div className="border-t border-white/12">
+              <div className="space-y-6">
                 {related.map((item) => (
-                  <EventAgendaRow
-                    key={item.id}
-                    item={item}
-                    compact
-                    showImage={false}
-                  />
+                  <EventAgendaRow key={item.id} item={item} />
                 ))}
               </div>
             </section>
@@ -400,14 +450,13 @@ export default function EventDetails() {
 
           {!isEnded && waHref ? (
             <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#0A0820] p-3 md:hidden">
-              <a
+              <SplitArrowButton
                 href={waHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex w-full items-center justify-center rounded-lg bg-brand-lime px-6 py-3.5 text-[16px] font-semibold text-[#0A0820]"
+                variant="primary"
+                className="w-full"
               >
                 {t(UI.bookEventWa, locale)}
-              </a>
+              </SplitArrowButton>
             </div>
           ) : null}
 

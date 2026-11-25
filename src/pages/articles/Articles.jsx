@@ -4,11 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
-import AccentHeading from "@/components/ui/AccentHeading";
-import LogoTriangle from "@/components/ui/LogoTriangle";
 import SafeImage from "@/components/ui/SafeImage";
+import PageBanner from "@/components/ui/PageBanner";
 import ArticleCard from "@/components/articles/ArticleCard";
-import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
+import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
+import SplitArrowButton from "@/components/ui/SplitArrowButton";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getArticles } from "@/services/cms/articles";
 import { useHomepageSection } from "@/hooks/useHomepageSection";
@@ -80,8 +80,9 @@ export default function Articles() {
     contact,
     locale,
     fallbackTitle: t(UI.knowledgeTitle, locale),
-    fallbackSubtitle: t(UI.articlesIntro, locale) || t(UI.knowledgeBody, locale),
-    fallbackImage: articles.find((item) => item.imageUrl)?.imageUrl || "",
+    fallbackSubtitle:
+      t(UI.articlesIntro, locale) || t(UI.knowledgeBody, locale),
+    fallbackImage: "",
   });
 
   const pending = articlesQuery.isPending;
@@ -89,6 +90,8 @@ export default function Articles() {
   const featuredCategory =
     categoryKey(featured, locale) || t(UI.nav.articles, locale);
   const featuredDate = featured ? formatMillis(featured.createdAt, locale) : "";
+  const featuredTitle = featured ? t(featured.title, locale) : "";
+  const featuredExcerpt = featured ? t(featured.excerpt, locale) : "";
 
   return (
     <>
@@ -104,63 +107,26 @@ export default function Articles() {
       ) : null}
       {!pending && !error ? (
         <main className="min-h-screen bg-[#0A0820] text-white">
-          <header className="mx-auto max-w-[1320px] px-6 pb-14 pt-[calc(var(--navbar-height)+var(--ticker-height)+3.5rem)] md:pb-[56px] md:pt-[calc(var(--navbar-height)+var(--ticker-height)+4.5rem)]">
-            <div className="flex items-center gap-4 text-[14px] text-white/62">
-              <nav aria-label="Breadcrumb" className="shrink-0">
-                <ol className="flex flex-wrap items-center gap-x-2">
-                  <li>
-                    <Link to="/" className="transition-colors hover:text-brand-lime">
-                      {t(UI.nav.home, locale)}
-                    </Link>
-                  </li>
-                  <li aria-hidden="true">/</li>
-                  <li>{t(UI.nav.articles, locale)}</li>
-                </ol>
-              </nav>
-              <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
-            </div>
-
-            <div className="mt-7 flex flex-wrap items-end justify-between gap-8">
-              <div className="min-w-0 flex-1">
-                <div className="overflow-hidden py-[0.1em]">
-                  <motion.div
-                    initial={reducedMotion ? false : { y: "110%" }}
-                    animate={{ y: "0%" }}
-                    transition={{ duration: 0.65, ease: easeOut }}
-                  >
-                    <AccentHeading
-                      as="h1"
-                      text={hero.title}
-                      className="max-w-full break-words font-display text-[clamp(2.75rem,8.5vw,7.5rem)] font-black leading-[1.1] text-white"
-                    />
-                  </motion.div>
-                </div>
-                {hero.subtitle ? (
-                  <p className="mt-[22px] max-w-[560px] text-[18px] leading-[1.7] text-white/72 md:text-[20px]">
-                    {hero.subtitle}
-                  </p>
-                ) : null}
-              </div>
-              <div
-                className="flex items-center gap-2.5 font-mono text-[13px] tracking-[3px] text-white/70"
-                dir="ltr"
-              >
-                <LogoTriangle className="h-3 w-3.5" />
-                {UI.pageLabel.articles}
-              </div>
-            </div>
-          </header>
+          <PageBanner
+            title={hero.title}
+            subtitle={hero.subtitle}
+            label={t(UI.nav.articles, locale)}
+            breadcrumbs={[
+              { label: t(UI.nav.home, locale), to: "/" },
+              { label: t(UI.nav.articles, locale) },
+            ]}
+          />
 
           {categoryOptions.length > 0 ? (
-            <div className="mx-auto max-w-[1320px] px-6">
-              <div className="flex flex-wrap items-center gap-x-[30px] gap-y-1 border-b border-white/12 text-[16px]">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6">
+              <div className="flex items-center gap-1 overflow-x-auto bg-[#1B1931] p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <button
                   type="button"
                   onClick={() => setCategory("")}
-                  className={`border-b-2 py-4 transition-colors ${
+                  className={`whitespace-nowrap px-4 py-2 text-sm transition-colors ${
                     !category
-                      ? "border-brand-lime font-semibold text-white"
-                      : "border-transparent text-white/65 hover:text-white"
+                      ? "bg-brand-lime font-semibold text-[#0A0820]"
+                      : "font-medium text-white/55 hover:bg-[#1F1D35] hover:text-white"
                   }`}
                 >
                   {t(UI.filterAll, locale)}
@@ -172,95 +138,106 @@ export default function Articles() {
                       key={label}
                       type="button"
                       onClick={() => setCategory(label)}
-                      className={`border-b-2 py-4 transition-colors ${
+                      className={`whitespace-nowrap px-4 py-2 text-sm transition-colors ${
                         active
-                          ? "border-brand-lime font-semibold text-white"
-                          : "border-transparent text-white/65 hover:text-white"
+                          ? "bg-brand-lime font-semibold text-[#0A0820]"
+                          : "font-medium text-white/55 hover:bg-[#1F1D35] hover:text-white"
                       }`}
                     >
                       {label}
                     </button>
                   );
                 })}
-                <span className="py-4 text-[13px] text-white/55">
+                <span className="ms-auto hidden shrink-0 px-3 text-[11px] text-white/45 sm:inline">
                   {filtered.length} {t(UI.resultsCount, locale)}
                 </span>
               </div>
             </div>
           ) : null}
 
-          <section className="mx-auto max-w-[1320px] px-6 pb-10 pt-10 md:pt-6">
+          <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 md:py-14">
             {filtered.length === 0 ? (
               <EmptyState message={t(UI.noArticles, locale)} />
             ) : (
               <>
                 {featured ? (
-                  <motion.article
-                    className="grid grid-cols-1 items-center gap-8 border-b border-white/12 pb-16 md:grid-cols-[5fr_7fr] md:gap-12"
+                  <motion.div
                     initial={reducedMotion ? false : { opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.15 }}
+                    viewport={{ once: true, amount: 0.12 }}
                     transition={{ duration: 0.5, ease: easeOut }}
                   >
-                    <div className="order-2 md:order-1">
-                      <div className="text-[13px]">
-                        <span className="text-brand-lime">
-                          {t(UI.latest, locale)} · {featuredCategory}
-                        </span>
-                        {featuredDate ? (
-                          <span className="text-white/55"> · {featuredDate}</span>
-                        ) : null}
-                      </div>
-                      <Link to={`/articles/${featured.id}`}>
-                        <h2 className="mt-3.5 font-display text-[clamp(1.75rem,4vw,3.25rem)] font-black leading-[1.15] text-white transition-colors hover:text-brand-lime">
-                          {t(featured.title, locale)}
-                        </h2>
-                      </Link>
-                      {t(featured.excerpt, locale) ? (
-                        <p className="mt-[18px] text-[19px] leading-[1.7] text-white/72">
-                          {t(featured.excerpt, locale)}
-                        </p>
-                      ) : null}
-                      <div className="mt-[26px]">
-                        <Link
-                          to={`/articles/${featured.id}`}
-                          className="border-b border-brand-lime pb-[3px] text-white transition-colors hover:text-brand-lime"
-                        >
-                          {t(UI.readArticle, locale)} ←
-                        </Link>
-                      </div>
-                    </div>
                     <Link
                       to={`/articles/${featured.id}`}
-                      className="group order-1 block overflow-hidden rounded-[20px] border border-white/8 bg-[#110E33] md:order-2"
+                      className="group relative block overflow-hidden rounded-xl bg-[#1F1D35] transition-shadow duration-300"
                     >
-                      {featured.imageUrl ? (
-                        <SafeImage
-                          src={featured.imageUrl}
-                          alt={t(featured.title, locale)}
-                          width={1200}
-                          className="h-[280px] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100 sm:h-[480px]"
-                        />
-                      ) : (
-                        <div className="flex h-[280px] items-center justify-center px-6 text-center text-white/40 sm:h-[480px]">
-                          {t(featured.title, locale)}
+                      <div className="grid min-h-[440px] grid-cols-1 lg:grid-cols-12">
+                        <div className="relative min-h-[300px] overflow-hidden lg:col-span-7 lg:min-h-full">
+                          {featured.imageUrl ? (
+                            <SafeImage
+                              src={featured.imageUrl}
+                              alt={featuredTitle}
+                              width={1400}
+                              className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                            />
+                          ) : (
+                            <div className="flex h-full min-h-[300px] items-center justify-center bg-[#1B1931] px-6 text-center text-white/40">
+                              {featuredTitle}
+                            </div>
+                          )}
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1F1D35] via-[#1F1D35]/40 to-transparent lg:bg-gradient-to-l" />
                         </div>
-                      )}
+
+                        <div className="relative z-10 flex flex-col justify-between p-7 lg:col-span-5 lg:p-10">
+                          <div className="flex flex-col gap-4">
+                            <p className="flex flex-wrap items-center gap-2 text-[11px] font-medium tracking-wide">
+                              <span className="rounded bg-[#292740] px-2 py-0.5 text-brand-lime">
+                                {t(UI.latest, locale)}
+                              </span>
+                              <span className="text-white/45">·</span>
+                              <span className="text-white/45">
+                                {featuredCategory}
+                              </span>
+                              {featuredDate ? (
+                                <>
+                                  <span className="text-white/45">·</span>
+                                  <span className="text-white/45">
+                                    {featuredDate}
+                                  </span>
+                                </>
+                              ) : null}
+                            </p>
+                            <h2 className="font-display text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-tight text-white transition-colors group-hover:text-brand-lime">
+                              {featuredTitle}
+                            </h2>
+                            {featuredExcerpt ? (
+                              <p className="text-base leading-relaxed text-white/55 md:text-lg">
+                                {featuredExcerpt}
+                              </p>
+                            ) : null}
+                          </div>
+                          <span className="ix-link pt-8 text-[22px] font-semibold text-brand-lime">
+                            {t(UI.readArticle, locale)}
+                          </span>
+                        </div>
+                      </div>
                     </Link>
-                  </motion.article>
+                  </motion.div>
                 ) : null}
 
                 {visibleRest.length > 0 ? (
-                  <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="mt-10 grid grid-cols-1 gap-6 md:mt-14 md:grid-cols-2">
                     {visibleRest.map((item, index) => (
                       <motion.div
                         key={item.id}
-                        initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                        initial={reducedMotion ? false : { opacity: 0, y: 22 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, amount: 0.15 }}
                         transition={{
                           duration: 0.45,
-                          delay: Math.min(index * 0.04, 0.2),
+                          delay: reducedMotion
+                            ? 0
+                            : Math.min(index * 0.08, 0.4),
                           ease: easeOut,
                         }}
                       >
@@ -271,6 +248,7 @@ export default function Articles() {
                           body={t(item.excerpt, locale)}
                           meta={formatMillis(item.createdAt, locale)}
                           category={categoryKey(item, locale)}
+                          index={index}
                         />
                       </motion.div>
                     ))}
@@ -279,15 +257,15 @@ export default function Articles() {
 
                 {hasMore ? (
                   <div className="mt-12 flex justify-center">
-                    <button
+                    <SplitArrowButton
                       type="button"
+                      variant="secondary"
                       onClick={() =>
                         setVisibleCount((count) => count + PAGE_SIZE)
                       }
-                      className="rounded-lg border border-white/20 px-7 py-3 text-white transition-colors hover:border-brand-lime hover:text-brand-lime"
                     >
                       {t(UI.showMore, locale)}
-                    </button>
+                    </SplitArrowButton>
                   </div>
                 ) : null}
               </>
