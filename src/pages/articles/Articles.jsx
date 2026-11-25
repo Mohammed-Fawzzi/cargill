@@ -62,6 +62,15 @@ export default function Articles() {
     return articles.filter((item) => categoryKey(item, locale) === category);
   }, [articles, category, locale]);
 
+  const latestArticle = useMemo(() => {
+    return [...articles]
+      .sort(
+        (a, b) =>
+          (b.createdAt || 0) - (a.createdAt || 0) ||
+          (b.updatedAt || 0) - (a.updatedAt || 0),
+      )
+      .find((item) => item.imageUrl) || null;
+  }, [articles]);
   const featured = filtered[0] || null;
   const rest = featured ? filtered.slice(1) : [];
   const visibleRest = rest.slice(0, Math.max(0, visibleCount - 1));
@@ -110,8 +119,10 @@ export default function Articles() {
           <PageHero
             title={hero.title}
             description={hero.subtitle}
-            imageUrl={featured?.imageUrl || hero.imageUrl}
-            sideImages={rest.map((item) => item.imageUrl).filter(Boolean)}
+            imageUrl={latestArticle?.imageUrl || ""}
+            sideImages={articles
+              .map((item) => item.imageUrl)
+              .filter((src) => src && src !== latestArticle?.imageUrl)}
             size="mid"
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },
@@ -172,20 +183,30 @@ export default function Articles() {
                       className="group relative block overflow-hidden rounded-xl bg-[#1F1D35] transition-shadow duration-300"
                     >
                       <div className="grid min-h-[440px] grid-cols-1 lg:grid-cols-12">
-                        <div className="relative min-h-[300px] overflow-hidden lg:col-span-7 lg:min-h-full">
+                        <div className="curtain-frame relative min-h-[300px] overflow-hidden lg:col-span-7 lg:min-h-full">
                           {featured.imageUrl ? (
                             <SafeImage
                               src={featured.imageUrl}
                               alt={featuredTitle}
                               width={1400}
-                              className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                              className="h-full w-full object-cover"
                             />
                           ) : (
                             <div className="flex h-full min-h-[300px] items-center justify-center bg-[#1B1931] px-6 text-center text-white/40">
                               {featuredTitle}
                             </div>
                           )}
-                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1F1D35] via-[#1F1D35]/40 to-transparent lg:bg-gradient-to-l" />
+                          {featured.imageUrl ? (
+                            <div className="curtain-card__cover">
+                              <SafeImage
+                                src={featured.imageUrl}
+                                alt=""
+                                width={1400}
+                                className="curtain-card__photo is-cover"
+                              />
+                              <div className="curtain-card__shade" />
+                            </div>
+                          ) : null}
                         </div>
 
                         <div className="relative z-10 flex flex-col justify-between p-7 lg:col-span-5 lg:p-10">
@@ -207,7 +228,7 @@ export default function Articles() {
                                 </>
                               ) : null}
                             </p>
-                            <h2 className="font-display text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-tight text-white transition-colors group-hover:text-brand-lime">
+                            <h2 className="font-display text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-tight text-white">
                               {featuredTitle}
                             </h2>
                             {featuredExcerpt ? (

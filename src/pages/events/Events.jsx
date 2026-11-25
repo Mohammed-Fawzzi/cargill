@@ -113,10 +113,16 @@ export default function Events() {
         ? t(UI.noPastEvents, locale)
         : t(UI.noEvents, locale);
 
-  const latestEvent = upcomingItems[0] || pastItems[0] || null;
-  const eventCovers = [...upcomingItems, ...pastItems]
-    .map((item) => item.imageUrl)
-    .filter(Boolean);
+  const latestEvent = useMemo(() => {
+    return [...events]
+      .sort(
+        (a, b) =>
+          (b.createdAt || 0) - (a.createdAt || 0) ||
+          (b.updatedAt || 0) - (a.updatedAt || 0),
+      )
+      .find((item) => item.imageUrl) || null;
+  }, [events]);
+  const eventCovers = events.map((item) => item.imageUrl).filter(Boolean);
   const pending = eventsQuery.isPending;
   const error = eventsQuery.isError;
   const showSplit = filter === "all";
@@ -138,7 +144,7 @@ export default function Events() {
           <PageHero
             title={hero.title}
             description={hero.subtitle}
-            imageUrl={latestEvent?.imageUrl || hero.imageUrl}
+            imageUrl={latestEvent?.imageUrl || ""}
             sideImages={eventCovers.filter((src) => src !== latestEvent?.imageUrl)}
             size="mid"
             crumbs={[

@@ -15,8 +15,6 @@ import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories, getProduct, getProducts } from "@/services/cms/products";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
-import { useHomepageSection } from "@/hooks/useHomepageSection";
-import { matchCategoryFieldImage } from "@/lib/homeIntro";
 import { toWhatsAppHref } from "@/lib/phone";
 import { easeOut } from "@/lib/motion";
 import { t } from "@/lib/i18n";
@@ -222,8 +220,6 @@ export default function ProductDetails() {
   });
 
   const product = productQuery.data;
-  const fieldQuery = useHomepageSection("hero");
-  const catalogQuery = useHomepageSection("product_categories");
   const categories = categoriesQuery.data || [];
   const section = categories.find((item) => item.id === product?.sectionId);
   const subcategory = section?.subcategories?.find(
@@ -295,16 +291,17 @@ export default function ProductDetails() {
     phone,
     t(UI.askAgronomistMessage, locale),
   );
-  const fieldSlides = fieldQuery.data?.slides || [];
-  const heroImage =
-    matchCategoryFieldImage(section, fieldSlides) ||
-    catalogQuery.data?.imageUrl ||
-    contact?.bannerUrl ||
-    fieldSlides.find((slide) => slide.imageUrl)?.imageUrl ||
-    "";
-  const sideImages = fieldSlides
-    .map((slide) => slide.imageUrl)
-    .filter((src) => src && src !== heroImage);
+  const heroImage = section?.imageUrl || product?.imageUrl || images[0] || "";
+  const sideImages = (productsQuery.data || [])
+    .filter(
+      (item) =>
+        item.id !== product?.id &&
+        item.sectionId &&
+        item.sectionId === product?.sectionId &&
+        item.imageUrl &&
+        item.imageUrl !== heroImage,
+    )
+    .map((item) => item.imageUrl);
   const currentImage = images[Math.min(activeImage, Math.max(images.length - 1, 0))];
 
   useEffect(() => {

@@ -135,7 +135,7 @@ export default function Contact() {
           <PageHero
             title={heading}
             description={hoursLine || description}
-            imageUrl={section?.imageUrl || contact?.bannerUrl || ""}
+            imageUrl={section?.imageUrl || ""}
             size="mid"
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },

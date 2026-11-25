@@ -193,7 +193,7 @@ export default function EventDetails() {
           <PageHero
             title={title}
             description={details}
-            imageUrl={images[0] || ""}
+            imageUrl={event.imageUrl || ""}
             sideImages={(eventsQuery.data || [])
               .filter((item) => item.id !== id && item.imageUrl)
               .map((item) => item.imageUrl)}

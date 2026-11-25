@@ -1,7 +1,7 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import SafeImage from "@/components/ui/SafeImage";
+import CurtainCard from "@/components/ui/CurtainCard";
 import LtrText from "@/components/ui/LtrText";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
@@ -12,16 +12,6 @@ import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
-
-function daysUntil(date) {
-  const key = eventDayKey(date);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return null;
-  const [year, month, day] = key.split("-").map(Number);
-  const target = new Date(year, month - 1, day);
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return Math.ceil((target - start) / (1000 * 60 * 60 * 24));
-}
 
 export function getEventParts(date, locale) {
   const key = eventDayKey(date);
@@ -62,13 +52,6 @@ export default function EventAgendaRow({
   const time = String(item.time || "").trim();
   const parts = getEventParts(item.date, locale);
   const upcoming = item.status === "upcoming";
-  const remaining = useMemo(() => daysUntil(item.date), [item.date]);
-  const countdownLabel =
-    upcoming && remaining != null && remaining > 0
-      ? remaining === 1
-        ? t(UI.dayLeft, locale)
-        : t(UI.daysLeft, locale).replace("{n}", String(remaining))
-      : "";
 
   const phone = contact?.phones?.[0] || "";
   const dateLabel = parts.full;
@@ -120,83 +103,26 @@ export default function EventAgendaRow({
     );
   }
 
+  const statusLabel = upcoming ? t(UI.upcoming, locale) : t(UI.eventEnded, locale);
+  const label = [statusLabel, dateLabel].filter(Boolean).join(" / ");
+
   return (
-    <motion.article
-      className="overflow-hidden rounded-2xl bg-[#1F1D35] text-white"
+    <motion.div
       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.12 }}
       transition={{ duration: 0.5, ease: easeOut }}
     >
-      <div className="grid min-h-[420px] grid-cols-1 lg:grid-cols-12">
-        {showImage ? (
-          <Link
-            to={`/events/${item.id}`}
-            className="group relative min-h-[280px] overflow-hidden bg-[#0D0B23] lg:col-span-6 lg:min-h-full"
-          >
-            {item.imageUrl ? (
-              <SafeImage
-                src={item.imageUrl}
-                alt={title}
-                width={1000}
-                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center px-6 text-center text-white/40">
-                {title}
-              </div>
-            )}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1F1D35] via-[#1F1D35]/30 to-transparent lg:bg-gradient-to-l" />
-          </Link>
-        ) : null}
-
-        <div
-          className={`flex flex-col justify-between p-7 lg:p-10 ${
-            showImage ? "lg:col-span-6" : "lg:col-span-12"
-          }`}
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <span
-                className={`mb-3 inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide ${
-                  upcoming
-                    ? "bg-brand-lime/15 text-brand-lime"
-                    : "border border-white/20 text-white/60"
-                }`}
-              >
-                {upcoming ? t(UI.upcoming, locale) : t(UI.eventEnded, locale)}
-              </span>
-              <Link to={`/events/${item.id}`}>
-                <h2 className="font-display text-[clamp(1.5rem,3vw,1.875rem)] font-bold leading-tight text-white transition-colors hover:text-brand-lime">
-                  {title}
-                </h2>
-              </Link>
-            </div>
-
-            {parts.day ? (
-              <div className="flex min-w-[90px] shrink-0 flex-col items-center justify-center bg-[#292740] px-4 py-3 text-center">
-                <span className="font-display text-[46px] font-bold leading-none tracking-tight text-white">
-                  <LtrText>{parts.day}</LtrText>
-                </span>
-                {parts.monthYear ? (
-                  <span className="mt-1 text-[11px] font-medium uppercase tracking-wide text-white/55">
-                    {parts.monthYear}
-                  </span>
-                ) : null}
-                {countdownLabel ? (
-                  <span className="mt-2 rounded-full bg-brand-lime/20 px-2 py-0.5 text-[10px] font-semibold text-brand-lime">
-                    {countdownLabel}
-                  </span>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-
-          {details ? (
-            <p className="mt-4 line-clamp-3 text-[15px] leading-relaxed text-white/55">
-              {details}
-            </p>
-          ) : null}
+      <CurtainCard
+        titleTo={showImage ? `/events/${item.id}` : ""}
+        imageUrl={showImage ? item.imageUrl : ""}
+        imageAlt={title}
+        label={label}
+        title={title}
+        description={details}
+        titleAs="h2"
+        className="rounded-2xl"
+      >
 
           {(location || time) && (
             <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -223,7 +149,7 @@ export default function EventAgendaRow({
             </div>
           )}
 
-          <div className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+          <div className="relative z-[3] mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
             {waHref ? (
               <a
                 href={waHref}
@@ -253,8 +179,7 @@ export default function EventAgendaRow({
               </Link>
             )}
           </div>
-        </div>
-      </div>
-    </motion.article>
+      </CurtainCard>
+    </motion.div>
   );
 }

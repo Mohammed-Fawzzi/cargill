@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import SafeImage from "@/components/ui/SafeImage";
+import CurtainCard from "@/components/ui/CurtainCard";
 import DragRail from "@/components/ui/DragRail";
 import SectionIntro from "@/components/ui/SectionIntro";
 import { useLocale } from "@/context/LocaleContext";
@@ -47,9 +47,7 @@ function FieldNoteCard({ item, locale, index, reducedMotion }) {
   const minutes = readingMinutes(`${excerpt} ${content}`);
   const minutesLabel =
     minutes > 0 ? `${minutes} ${t(UI.readingMinutes, locale)}` : "";
-  const number = `${String(index + 1).padStart(2, "0")}.`;
-  const mediaH = "12.5625rem";
-  const mediaHover = "15rem";
+  const label = [category, dateLabel, minutesLabel].filter(Boolean).join(" / ");
 
   return (
     <motion.article
@@ -63,56 +61,19 @@ function FieldNoteCard({ item, locale, index, reducedMotion }) {
         ease: easeOut,
       }}
     >
-      <Link
+      <CurtainCard
         to={`/articles/${item.id}`}
-        className="ix-card group text-white"
-        style={{ "--ix-media-h": mediaH, "--ix-media-h-hover": mediaHover }}
+        imageUrl={item.imageUrl}
+        imageAlt={title}
+        label={label}
+        title={title}
+        description={excerpt}
+        className="h-full rounded-xl"
       >
-        <div className="ix-card__media bg-[#110E33]">
-          <div className="ix-card__zoom">
-            {item.imageUrl ? (
-              <SafeImage
-                src={item.imageUrl}
-                alt={title}
-                width={720}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="h-full w-full bg-[#0A0820]" />
-            )}
-          </div>
-          {category ? (
-            <span className="absolute end-3 top-3 z-20 rounded-full border border-white/8 bg-[#0A0820]/85 px-2.5 py-0.5 text-[11px] text-brand-lime backdrop-blur-sm">
-              {category}
-            </span>
-          ) : null}
-        </div>
-
-        {dateLabel || minutesLabel ? (
-          <p className="mt-3 font-mono text-xs text-white/45">
-            {[dateLabel, minutesLabel].filter(Boolean).join(" · ")}
-          </p>
-        ) : null}
-
-        <div className="ix-card__title-row">
-          <span className="ix-card__num" dir="ltr">
-            {number}
-          </span>
-          <h3 className="ix-card__title font-display text-lg font-bold text-white transition-colors group-hover:text-brand-lime">
-            {title}
-          </h3>
-        </div>
-
-        {excerpt ? (
-          <p className="ix-card__desc line-clamp-3 text-xs leading-relaxed text-white/60">
-            {excerpt}
-          </p>
-        ) : null}
-
-        <span className="ix-link mt-3 text-xs font-semibold text-brand-lime">
+        <span className="mt-4 text-xs font-semibold text-brand-lime">
           {t(UI.readFieldGuide, locale)}
         </span>
-      </Link>
+      </CurtainCard>
     </motion.article>
   );
 }

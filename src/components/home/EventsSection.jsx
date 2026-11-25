@@ -59,26 +59,32 @@ function EventRow({ item, locale, single }) {
       to={`/events/${item.id}`}
       className="group relative block border-b border-line/15 py-7 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2 sm:py-8"
     >
-      <span
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-brand-lime transition-transform duration-300 group-hover:scale-x-100"
-        aria-hidden="true"
-      />
-
       <div className="grid grid-cols-1 gap-5 md:hidden">
-        <div className="overflow-hidden rounded-md bg-surface-muted">
+        <div className="curtain-frame overflow-hidden rounded-md bg-surface-muted">
           {item.imageUrl ? (
             <SafeImage
               src={item.imageUrl}
               alt={title}
               width={900}
               loading="lazy"
-              className="aspect-[4/3] h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+              className="aspect-[4/3] h-full w-full object-cover"
             />
           ) : (
             <div className="flex aspect-[4/3] items-center justify-center bg-surface-muted text-sm font-bold text-ink/40">
               {title}
             </div>
           )}
+          {item.imageUrl ? (
+            <div className="curtain-card__cover">
+              <SafeImage
+                src={item.imageUrl}
+                alt=""
+                width={900}
+                className="curtain-card__photo is-cover"
+              />
+              <div className="curtain-card__shade" />
+            </div>
+          ) : null}
         </div>
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -135,20 +141,31 @@ function EventRow({ item, locale, single }) {
         </div>
 
         <div className={single ? "md:col-span-6" : "md:col-span-4"}>
-          <div className="overflow-hidden rounded-md bg-page">
+          <div className="curtain-frame overflow-hidden rounded-md bg-page">
             {item.imageUrl ? (
               <SafeImage
                 src={item.imageUrl}
                 alt={title}
                 width={single ? 1100 : 720}
                 loading="lazy"
-                className="aspect-[4/3] h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                className="aspect-[4/3] h-full w-full object-cover"
               />
             ) : (
               <div className="flex aspect-[4/3] items-center justify-center bg-page text-sm font-bold text-ink/40">
                 {title}
               </div>
             )}
+            {item.imageUrl ? (
+              <div className="curtain-card__cover">
+                <SafeImage
+                  src={item.imageUrl}
+                  alt=""
+                  width={single ? 1100 : 720}
+                  className="curtain-card__photo is-cover"
+                />
+                <div className="curtain-card__shade" />
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

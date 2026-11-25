@@ -132,14 +132,3 @@ export function buildHomeIntroTiles({
     { id: sides[3].id || "side-d", src: sides[3].src, isHero: false },
   ];
 }
-
-export function matchCategoryFieldImage(category, slides = []) {
-  const images = (slides || []).map((slide) => slide?.imageUrl || "").filter(Boolean);
-  if (!images.length || !category) return images[0] || "";
-  const hay = categoryHaystack(category);
-  const index = CATEGORY_MATCHERS.findIndex((matcher) =>
-    matcher.needles.some((needle) => hay.includes(String(needle).toLowerCase())),
-  );
-  if (index >= 0 && images[index]) return images[index];
-  return images[0] || "";
-}

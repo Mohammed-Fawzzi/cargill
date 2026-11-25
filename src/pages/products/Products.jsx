@@ -57,7 +57,6 @@ export default function Products() {
   const { contact } = useSiteData();
   const { reducedMotion } = useMotionPrefs();
   const sectionQuery = useHomepageSection("product_categories");
-  const fieldQuery = useHomepageSection("hero");
   const [params, setParams] = useSearchParams();
   const sectionId = params.get("section") || "";
   const subcategoryId = params.get("sub") || "";
@@ -190,12 +189,7 @@ export default function Products() {
     fallbackImage: "",
   });
 
-  const fieldSlides = fieldQuery.data?.slides || [];
-  const fieldImage = fieldSlides.find((slide) => slide.imageUrl)?.imageUrl || "";
-  const heroImage = hero.imageUrl || fieldImage;
-  const sideImages = fieldSlides
-    .map((slide) => slide.imageUrl)
-    .filter((src) => src && src !== heroImage);
+  const heroImage = sectionQuery.data?.imageUrl || "";
   const phone = contact?.phones?.[0] || "";
   const askSearchHref = toWhatsAppHref(
     phone,
@@ -227,7 +221,6 @@ export default function Products() {
             title={hero.title}
             description={hero.subtitle}
             imageUrl={heroImage}
-            sideImages={sideImages}
             size="mid"
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },

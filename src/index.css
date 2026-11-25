@@ -1380,7 +1380,6 @@ html[dir="ltr"] .ix-link::before,
   overflow: hidden;
   border-radius: 12px;
   height: var(--ix-media-h, 12.5625rem);
-  transition: height 500ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .ix-card__zoom {
@@ -1389,10 +1388,7 @@ html[dir="ltr"] .ix-link::before,
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: scale(1);
-  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
-  backface-visibility: hidden;
+  transform: none;
 }
 
 .ix-card__zoom img {
@@ -1423,40 +1419,203 @@ html[dir="ltr"] .ix-link::before,
 }
 
 .ix-card__desc {
-  margin-top: 0;
+  margin-top: 0.55rem;
   overflow: hidden;
-  height: 0;
-  opacity: 0;
-  transition:
-    height 500ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 500ms cubic-bezier(0.22, 1, 0.36, 1),
-    margin-top 500ms cubic-bezier(0.22, 1, 0.36, 1);
+  height: auto;
+  opacity: 1;
+}
+
+.curtain-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.75rem;
+  min-height: 22rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #110e33;
+  padding: 1.15rem 1.15rem 1.25rem;
+  color: #fff;
+  text-decoration: none;
+}
+
+.curtain-card:focus-visible {
+  outline: 1px solid #8cc63f;
+  outline-offset: 3px;
+}
+
+.curtain-card__thumb {
+  position: relative;
+  z-index: 0;
+  align-self: flex-start;
+  width: 45%;
+  aspect-ratio: 3 / 2;
+  height: auto;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #0a0820;
+}
+
+.curtain-card__thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-position: center;
+}
+
+.curtain-card__thumb img.is-cover {
+  object-fit: cover;
+}
+
+.curtain-card__thumb img.is-contain {
+  object-fit: contain;
+}
+
+.curtain-card__cover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  background: #110e33;
+  clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+  transition: clip-path 800ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.curtain-card__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.12);
+  transform-origin: center center;
+  transition: transform 800ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.curtain-card__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10, 8, 32, 0.85) 0%,
+    rgba(10, 8, 32, 0.2) 55%,
+    transparent 100%
+  );
+}
+
+.curtain-card__copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+}
+
+.curtain-card__label {
+  margin: 0 0 0.4rem;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 300ms linear;
+}
+
+.curtain-card__title {
+  margin: 0;
+  color: #fff;
+  font-family: "Alexandria", "DIN Next LT Arabic", sans-serif;
+  font-size: clamp(1.25rem, 2vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.curtain-card .curtain-card__desc,
+.curtain-card:hover .curtain-card__desc,
+.curtain-card:focus-visible .curtain-card__desc {
+  height: auto;
+  margin-top: 0.45rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: #fff;
+  opacity: 0.6;
+  transition: opacity 300ms linear;
+}
+
+.curtain-frame {
+  position: relative;
+  overflow: hidden;
+}
+
+.curtain-frame > .curtain-card__cover {
+  z-index: 1;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .ix-card:hover .ix-card__media,
-  .ix-card:focus-within .ix-card__media {
-    height: var(--ix-media-h-hover, 15rem);
+  .curtain-card:hover .curtain-card__cover,
+  .curtain-card:focus-visible .curtain-card__cover,
+  .curtain-card:focus-within .curtain-card__cover,
+  .curtain-frame:hover .curtain-card__cover,
+  .group:hover .curtain-frame .curtain-card__cover {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    transition-duration: 900ms;
   }
 
-  .ix-card:hover .ix-card__zoom,
-  .ix-card:focus-within .ix-card__zoom {
-    transform: scale(1.06);
+  .curtain-card:hover .curtain-card__photo,
+  .curtain-card:focus-visible .curtain-card__photo,
+  .curtain-card:focus-within .curtain-card__photo,
+  .curtain-frame:hover .curtain-card__photo,
+  .group:hover .curtain-frame .curtain-card__photo {
+    transform: scale(1);
+    transition-duration: 900ms;
   }
 
-  .ix-card:hover .ix-card__desc,
-  .ix-card:focus-within .ix-card__desc {
-    height: 5.25em;
-    margin-top: 0.55rem;
-    opacity: 1;
+  .curtain-card:hover .curtain-card__desc,
+  .curtain-card:focus-visible .curtain-card__desc,
+  .curtain-card:focus-within .curtain-card__desc {
+    opacity: 0.9;
+  }
+
+  .curtain-card:hover .curtain-card__label,
+  .curtain-card:focus-visible .curtain-card__label,
+  .curtain-card:focus-within .curtain-card__label {
+    color: #8cc63f;
   }
 }
 
-@media (hover: none), (pointer: coarse) {
-  .ix-card__desc {
-    height: auto;
-    margin-top: 0.55rem;
+@media (prefers-reduced-motion: reduce) {
+  .curtain-card__cover,
+  .curtain-frame > .curtain-card__cover {
+    clip-path: none;
+    opacity: 0;
+    transition: opacity 200ms linear;
+  }
+
+  .curtain-card__photo {
+    transform: none;
+    transition: none;
+  }
+
+  .curtain-card:hover .curtain-card__cover,
+  .curtain-card:focus-visible .curtain-card__cover,
+  .curtain-card:focus-within .curtain-card__cover,
+  .curtain-frame:hover .curtain-card__cover,
+  .group:hover .curtain-frame .curtain-card__cover {
+    clip-path: none;
     opacity: 1;
+    transition-duration: 200ms;
+  }
+
+  .curtain-card:hover .curtain-card__photo,
+  .curtain-card:focus-visible .curtain-card__photo,
+  .curtain-card:focus-within .curtain-card__photo,
+  .curtain-frame:hover .curtain-card__photo,
+  .group:hover .curtain-frame .curtain-card__photo {
+    transform: none;
   }
 }
 
@@ -1627,8 +1786,8 @@ html[dir="ltr"] .ix-link::before,
     transition: none !important;
   }
 
-  .ix-card:hover .ix-card__media,
-  .ix-card:focus-within .ix-card__media {
+  .ix-card:hover .ix-card__media:not(.curtain-card__thumb),
+  .ix-card:focus-within .ix-card__media:not(.curtain-card__thumb) {
     height: var(--ix-media-h, 12.5625rem);
   }
 

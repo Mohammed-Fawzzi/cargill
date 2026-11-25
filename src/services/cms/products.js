@@ -39,6 +39,7 @@ function parseSection(item) {
     id,
     name,
     order: typeof item.order === "number" ? item.order : 0,
+    imageUrl: asString(item.imageUrl || item.image),
     subcategories,
     _sort: typeof item.order === "number" ? item.order : 0,
   };
