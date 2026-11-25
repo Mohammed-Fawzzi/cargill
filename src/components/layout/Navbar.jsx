@@ -54,7 +54,7 @@ function AskAgronomistButton({ href, label, className = "", onClick }) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={onClick}
-      className={`inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand-lime px-4 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-lime-hover ${className}`}
+      className={`inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand-lime px-4 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-lime-hover ${className}`.trim()}
     >
       <IoLogoWhatsapp className="text-lg shrink-0" aria-hidden="true" />
       <span className="whitespace-nowrap">{label}</span>
@@ -367,6 +367,15 @@ export default function Navbar() {
   }, [location.pathname, location.search]);
 
   useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const onChange = (event) => {
+      if (event.matches) closeMenu();
+    };
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
+
+  useEffect(() => {
     if (!isMenuOpen) return undefined;
     const onKeyDown = (event) => {
       if (event.key === "Escape") closeMenu();
@@ -389,11 +398,16 @@ export default function Navbar() {
     { to: "/contact", label: t(UI.nav.contact, locale) },
   ];
 
+  const mobileLinks = [
+    ...navLinks,
+    { to: "/finder", label: t(UI.findSolution, locale) },
+  ];
+
   return (
     <>
-      <nav className="pointer-events-none relative z-40 px-4 pt-3 sm:px-5 sm:pt-4 lg:px-6">
-        <div className="pointer-events-auto relative mx-auto flex h-16 max-w-[1180px] items-center justify-between gap-3 overflow-visible rounded-full nav-glass px-3 sm:h-[4.25rem] sm:px-5">
-          <div className="order-3 flex shrink-0 items-center gap-1.5 sm:gap-2">
+      <nav className="pointer-events-none relative z-40 px-3 pt-3 sm:px-5 sm:pt-4 lg:px-6">
+        <div className="pointer-events-auto relative mx-auto flex h-16 w-full min-w-0 max-w-[1180px] items-center justify-between gap-2 overflow-visible rounded-full nav-glass px-2.5 sm:h-[4.25rem] sm:gap-3 sm:px-4 xl:max-w-[1320px] xl:px-5">
+          <div className="order-3 flex shrink-0 items-center gap-1 sm:gap-1.5 xl:gap-2">
             <Link
               to="/finder"
               onClick={closeMenu}
@@ -402,7 +416,11 @@ export default function Navbar() {
               {t(UI.findSolution, locale)}
             </Link>
             <div className="hidden lg:block">
-              <AskAgronomistButton href={waHref} label={askLabel} />
+              <AskAgronomistButton
+                href={waHref}
+                label={askLabel}
+                className="px-3 text-[13px] xl:px-4 xl:text-sm"
+              />
             </div>
             <ThemeToggle />
             <LanguageSwitch variant="toggle" tone="light" />
@@ -428,7 +446,7 @@ export default function Navbar() {
             </button>
           </div>
 
-          <ul className="order-2 hidden items-center justify-center gap-x-[22px] lg:flex">
+          <ul className="order-2 hidden min-w-0 items-center justify-center gap-x-5 lg:flex xl:gap-x-[22px]">
             {navLinks.map((item) =>
               item.mega ? (
                 <NavItem
@@ -465,11 +483,11 @@ export default function Navbar() {
           <Link
             to="/"
             onClick={closeMenu}
-            className="order-1 flex shrink-0 items-center justify-center px-1"
+            className="order-1 flex max-w-[40%] shrink-0 items-center justify-center px-1 sm:max-w-none"
           >
             <SiteLogo
               alt={companyName}
-              className="h-11 w-auto max-w-[9.5rem] object-contain object-right sm:h-12 sm:max-w-[11rem]"
+              className="h-10 w-auto max-w-full object-contain object-right sm:h-12 sm:max-w-[9.5rem] xl:max-w-[11rem]"
             />
           </Link>
         </div>
@@ -496,8 +514,8 @@ export default function Navbar() {
                 </div>
               </div>
 
-              <ul className="flex flex-1 flex-col justify-center gap-1">
-                {navLinks.map((item, index) => (
+              <ul className="flex flex-1 flex-col justify-center gap-1 overflow-y-auto">
+                {mobileLinks.map((item, index) => (
                   <motion.li
                     key={item.to}
                     initial={{ opacity: 0, y: 14 }}
@@ -513,16 +531,16 @@ export default function Navbar() {
                       end={item.end}
                       onClick={closeMenu}
                       className={({ isActive }) =>
-                        `block border-b border-white/10 py-3 text-3xl font-extrabold tracking-tight sm:text-4xl ${
+                        `block border-b border-white/10 py-3 text-[clamp(1.75rem,8vw,2.25rem)] font-extrabold tracking-tight sm:text-4xl ${
                           isActive ? "text-brand-lime" : "text-white"
                         }`
                       }
                     >
-                      <span className="inline-flex items-baseline gap-3">
-                        <span className="text-xs font-bold tracking-[0.18em] text-brand-lime/80">
+                      <span className="inline-flex max-w-full items-baseline gap-3">
+                        <span className="shrink-0 text-xs font-bold tracking-[0.18em] text-brand-lime/80">
                           {String(index + 1).padStart(2, "0")}
                         </span>
-                        {item.label}
+                        <span className="min-w-0 break-words">{item.label}</span>
                       </span>
                     </NavLink>
                     {item.mega && categories.length ? (
