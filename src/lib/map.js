@@ -8,9 +8,28 @@ export function extractIframeSrc(value) {
   return raw;
 }
 
+function roadPin(raw) {
+  const text = String(raw || "");
+  if (text.startsWith("http")) return null;
+  if (
+    text.includes("الكيلو 13") &&
+    text.includes("الزراعي") &&
+    text.includes("الإسكندرية")
+  ) {
+    return { lat: 31.203075, lng: 30.009764, label: text };
+  }
+  return null;
+}
+
 export function toMapEmbedSrc(value) {
   const raw = extractIframeSrc(value);
   if (!raw) return "";
+
+  const pin = roadPin(raw);
+  if (pin) {
+    const q = encodeURIComponent(`${pin.lat},${pin.lng} (${pin.label})`);
+    return `https://maps.google.com/maps?q=${q}&z=16&hl=ar&output=embed`;
+  }
 
   if (
     /google\.com\/maps\/embed/i.test(raw) ||
@@ -30,6 +49,10 @@ export function toMapEmbedSrc(value) {
 export function toMapLink(value) {
   const raw = extractIframeSrc(value);
   if (!raw) return "";
+  const pin = roadPin(raw);
+  if (pin) {
+    return `https://www.google.com/maps?q=${pin.lat},${pin.lng}&hl=ar&z=16`;
+  }
   if (raw.startsWith("http")) return raw.replace("&output=embed", "");
   return `https://maps.google.com/maps?q=${encodeURIComponent(raw)}`;
 }

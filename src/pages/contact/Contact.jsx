@@ -89,8 +89,7 @@ export default function Contact() {
   const ctaLabel =
     t(section?.cta?.label, locale) || t(UI.sendMessage, locale);
 
-  const mapQuery =
-    contact?.mapUrl || address || section?.mapEmbedUrl || "";
+  const mapQuery = address || contact?.mapUrl || "";
   const mapSrc = toMapEmbedSrc(mapQuery);
   const mapLink = toMapLink(mapQuery);
 
