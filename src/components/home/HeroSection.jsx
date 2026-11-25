@@ -111,42 +111,36 @@ export default function HeroSection({ section, entranceReady = true }) {
               <motion.div
                 key={images[slide] || "hero"}
                 className="absolute inset-0 overflow-hidden"
-                initial={
-                  showMotion && slide !== 0
-                    ? { opacity: 0, scale: 1.1 }
-                    : false
-                }
-                animate={{ opacity: 1, scale: 1 }}
-                exit={
-                  showMotion
-                    ? { opacity: 0, scale: 1.05 }
-                    : undefined
-                }
+                initial={showMotion ? { opacity: 0 } : false}
+                animate={{ opacity: 1 }}
+                exit={showMotion ? { opacity: 0 } : undefined}
                 transition={{
-                  duration: showMotion ? 0.85 : 0,
+                  duration: showMotion ? 0.9 : 0,
                   ease: easeOut,
                 }}
               >
                 <motion.div
-                  className="absolute inset-[-6%] h-[112%] w-[112%]"
-                  initial={false}
-                  animate={
+                  className="absolute inset-0 origin-center will-change-transform backface-hidden"
+                  initial={
                     entered && !reducedMotion
-                      ? { scale: 1.1 }
-                      : { scale: 1 }
+                      ? { scale: 1 }
+                      : false
                   }
+                  animate={{
+                    scale: entered && !reducedMotion ? 1.06 : 1,
+                  }}
                   transition={{
-                    duration: entered && !reducedMotion ? 12 : 0,
-                    ease: "linear",
+                    duration: entered && !reducedMotion ? 5.6 : 0,
+                    ease: [0.25, 0.1, 0.25, 1],
                   }}
                 >
                   <SafeImage
                     src={images[slide]}
                     alt=""
-                    width={1600}
+                    width={1920}
                     loading="eager"
                     fetchPriority="high"
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover object-center"
                     aria-hidden="true"
                   />
                 </motion.div>
