@@ -111,7 +111,7 @@ export default function FeaturedProductsSection({ section }) {
   if (!items.length) return null;
 
   return (
-    <section className="bg-white py-[4.5rem] sm:py-24 lg:py-[7.5rem]">
+    <section className="bg-white py-[4.5rem] lg:py-[7.5rem]">
       <motion.div
         className="container mx-auto px-4 lg:px-8"
         initial={reducedMotion ? false : { opacity: 0, y: 12 }}
@@ -120,7 +120,7 @@ export default function FeaturedProductsSection({ section }) {
         transition={{ duration: 0.35, ease: easeOut }}
       >
         <div className="mb-6 flex items-center gap-4">
-          <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
+          <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
             {t(UI.featuredLabel, locale)}
           </p>
           <span className="h-px flex-1 bg-brand-ink" aria-hidden="true" />
@@ -131,7 +131,7 @@ export default function FeaturedProductsSection({ section }) {
 
         <div className="mb-10 flex flex-col gap-4 sm:mb-14 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <h2 className="text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
+            <h2 className="text-clip-safe text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
               {heading}
             </h2>
             {dashboardBody ? (
@@ -150,7 +150,7 @@ export default function FeaturedProductsSection({ section }) {
         </div>
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
-          <div ref={featuredRef} className="scroll-mt-28 lg:col-span-7">
+          <div ref={featuredRef} className="scroll-mt-[calc(var(--navbar-height)+1.5rem)] lg:col-span-7">
             <AnimatePresence mode="wait" initial={false}>
               {active ? (
                 <motion.div
@@ -182,7 +182,7 @@ export default function FeaturedProductsSection({ section }) {
                       {activeCategory}
                     </p>
                   ) : null}
-                  <h3 className="mb-3 text-2xl font-extrabold tracking-tight text-brand-ink sm:text-3xl lg:text-[2.25rem]">
+                  <h3 className="text-clip-safe mb-3 text-2xl font-extrabold tracking-tight text-brand-ink sm:text-3xl lg:text-[2.25rem]">
                     {activeName}
                   </h3>
                   {activeOverview ? (

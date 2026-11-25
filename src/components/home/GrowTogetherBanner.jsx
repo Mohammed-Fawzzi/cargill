@@ -57,18 +57,23 @@ export default function GrowTogetherBanner() {
   const title = t(UI.growTogetherTitle, locale);
 
   return (
-    <section className="relative overflow-hidden bg-brand-forest-deep py-[4.5rem] text-white sm:py-24 lg:py-[7.5rem]">
-      <TriangleAccent className="pointer-events-none absolute -bottom-10 -start-6 h-40 w-48 opacity-90 sm:h-52 sm:w-60 lg:h-64 lg:w-72" />
+    <section className="relative bg-brand-forest-deep py-[4.5rem] text-white lg:py-[7.5rem]">
+      <div
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        aria-hidden="true"
+      >
+        <TriangleAccent className="absolute -bottom-10 -end-10 z-0 h-40 w-48 opacity-30 sm:-bottom-14 sm:-end-14 sm:h-52 sm:w-64 lg:h-64 lg:w-72" />
+      </div>
 
       <motion.div
-        className="relative container mx-auto px-4 lg:px-8"
+        className="relative z-10 container mx-auto px-4 lg:px-8"
         initial={reducedMotion ? false : { opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.35, ease: easeOut }}
       >
         <div className="mb-6 flex items-center gap-4">
-          <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+          <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
             {t(UI.contactLabel, locale)}
           </p>
           <span className="h-px flex-1 bg-white/20" aria-hidden="true" />
@@ -77,7 +82,7 @@ export default function GrowTogetherBanner() {
           </p>
         </div>
 
-        <h2 className="mb-10 max-w-5xl text-[clamp(2.75rem,9vw,7.5rem)] font-extrabold leading-[0.95] tracking-tight">
+        <h2 className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.75rem,9vw,7.5rem)] font-extrabold leading-[1.05] tracking-tight">
           {accentLastWord(title)}
         </h2>
 
@@ -99,7 +104,7 @@ export default function GrowTogetherBanner() {
           ))}
         </div>
 
-        <div className="flex flex-col gap-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-8">
+        <div className="relative z-10 flex max-w-3xl flex-col gap-5 pe-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-8 lg:pe-8">
           {waHref ? (
             <a
               href={waHref}

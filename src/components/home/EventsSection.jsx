@@ -113,7 +113,7 @@ function EventRow({ item, locale, single }) {
             </p>
           ) : null}
           {parts.day ? (
-            <p className="text-5xl font-extrabold leading-none tracking-tight text-brand-ink lg:text-[4rem]">
+            <p className="text-clip-safe text-5xl font-extrabold leading-none tracking-tight text-brand-ink lg:text-[4rem]">
               {parts.day}
             </p>
           ) : null}
@@ -176,7 +176,7 @@ export default function EventsSection({ section }) {
   const single = items.length === 1;
 
   return (
-    <section className="bg-surface-muted py-[4.5rem] sm:py-24 lg:py-[7.5rem]">
+    <section className="bg-surface-muted py-[4.5rem] lg:py-[7.5rem]">
       <motion.div
         className="container mx-auto px-4 lg:px-8"
         initial={reducedMotion ? false : { opacity: 0, y: 12 }}
@@ -185,7 +185,7 @@ export default function EventsSection({ section }) {
         transition={{ duration: 0.35, ease: easeOut }}
       >
         <div className="mb-6 flex items-center gap-4">
-          <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
+          <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
             {t(UI.nav.events, locale)}
           </p>
           <span className="h-px flex-1 bg-brand-ink" aria-hidden="true" />
@@ -196,7 +196,7 @@ export default function EventsSection({ section }) {
 
         <div className="mb-10 flex flex-col gap-4 sm:mb-12 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <h2 className="text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
+            <h2 className="text-clip-safe text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
               {title || t(UI.nav.events, locale)}
             </h2>
             {body ? (

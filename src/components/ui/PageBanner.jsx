@@ -87,7 +87,7 @@ export default function PageBanner({
               </p>
             ) : null}
             {title ? (
-              <h1 className="text-[clamp(2.75rem,8vw,6.5rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-brand-ink">
+              <h1 className="text-[clamp(2.75rem,8vw,6.5rem)] font-extrabold leading-[0.95] tracking-tight text-brand-ink">
                 {title}
               </h1>
             ) : null}

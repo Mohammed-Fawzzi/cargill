@@ -64,7 +64,7 @@ export default function ContactSection({ section }) {
   };
 
   return (
-    <section className="bg-surface-muted py-[4.5rem] sm:py-24 lg:py-[7.5rem]">
+    <section className="bg-surface-muted py-[4.5rem] lg:py-[7.5rem]">
       <motion.div
         className="container mx-auto px-4 lg:px-8"
         initial={reducedMotion ? false : { opacity: 0, y: 12 }}
@@ -74,7 +74,7 @@ export default function ContactSection({ section }) {
       >
         <div className="mb-12 grid grid-cols-1 gap-10 lg:mb-16 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-5">
-            <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-ink/55">
+            <p className="text-clip-safe mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-ink/55">
               {t(UI.contactInfo, locale)}
             </p>
             <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">

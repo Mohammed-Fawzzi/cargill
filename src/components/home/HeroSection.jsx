@@ -130,7 +130,7 @@ function Panel({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: easeOut }}
         >
-          <div className="max-w-md">
+          <div className="max-w-md pe-1">
             <h3 className="mb-2 text-xl font-extrabold tracking-tight text-white sm:text-2xl lg:text-[1.75rem]">
               {panel.name}
             </h3>
@@ -149,14 +149,14 @@ function Panel({
         </motion.div>
       ) : isMobile ? (
         <div className="absolute inset-x-0 bottom-0 z-10 flex items-center px-3 pb-3 pt-8">
-          <p className="text-base font-extrabold tracking-tight text-white">
+          <p className="text-clip-safe text-base font-extrabold tracking-tight text-white">
             {panel.name}
           </p>
         </div>
       ) : (
-        <div className="absolute bottom-4 start-4 z-10">
+        <div className="absolute bottom-4 start-4 z-10 py-1">
           <p
-            className="text-sm font-extrabold tracking-wide text-white sm:text-base"
+            className="text-clip-safe text-sm font-extrabold tracking-wide text-white sm:text-base"
             style={{
               writingMode: "vertical-rl",
               transform: "rotate(180deg)",
@@ -245,7 +245,7 @@ export default function HeroSection({ section }) {
           transition={{ duration: 0.35, ease: easeOut }}
         >
           <div className="mb-3 flex items-center gap-3">
-            <p className="text-[11px] font-bold tracking-[0.18em] text-brand-lime sm:text-xs">
+            <p className="text-clip-safe text-[11px] font-bold tracking-[0.18em] text-brand-lime sm:text-xs">
               {brand}
             </p>
             <span className="h-px w-10 bg-brand-lime sm:w-14" aria-hidden="true" />

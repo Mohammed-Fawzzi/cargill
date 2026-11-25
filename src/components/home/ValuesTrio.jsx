@@ -119,6 +119,7 @@ function IndexRow({ number, title, body, tag }) {
         <h3 className="text-2xl font-extrabold tracking-tight text-brand-ink transition-transform duration-300 group-hover:translate-x-0 md:col-span-3 md:text-[2rem] rtl:group-hover:-translate-x-2 ltr:group-hover:translate-x-2">
           {title}
         </h3>
+
         <p className="text-lg leading-8 text-text-muted md:col-span-6">
           {body}
         </p>
@@ -154,7 +155,7 @@ export default function ValuesTrio() {
   if (!about && !vision && !mission) return null;
 
   return (
-    <section className="relative bg-surface-muted py-[4.5rem] sm:py-24 lg:py-[7.5rem]">
+    <section className="relative bg-surface-muted py-[4.5rem] lg:py-[7.5rem]">
       <motion.div
         className="container mx-auto px-4 lg:px-8"
         initial={reducedMotion ? false : { opacity: 0, y: 12 }}
@@ -163,7 +164,7 @@ export default function ValuesTrio() {
         transition={{ duration: 0.35, ease: easeOut }}
       >
         <div className="mb-8 flex items-center gap-4 sm:mb-10">
-          <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
+          <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
             {t(UI.whoWeAre, locale)}
           </p>
           <span className="h-px flex-1 bg-brand-ink" aria-hidden="true" />
@@ -172,13 +173,13 @@ export default function ValuesTrio() {
           </p>
         </div>
 
-        <h2 className="mb-10 max-w-5xl text-[clamp(2.25rem,6vw,5.5rem)] font-extrabold leading-[1.05] tracking-tight text-brand-ink sm:mb-14">
+        <h2 className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.25rem,6vw,5.5rem)] font-extrabold leading-[1.05] tracking-tight text-brand-ink sm:mb-14">
           {accentLastWord(heading)}
         </h2>
 
         <div
           ref={paragraphRef}
-          className="mb-16 grid grid-cols-1 gap-10 lg:mb-20 lg:grid-cols-12 lg:gap-8"
+          className="mb-12 grid grid-cols-1 gap-10 lg:mb-14 lg:grid-cols-12 lg:gap-8"
         >
           <div className="lg:col-span-7">
             {about ? (

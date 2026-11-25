@@ -29,7 +29,7 @@ export default function MediaStrip({ items = [] }) {
   if (!rows.length) return null;
 
   return (
-    <section className="bg-white py-[4.5rem] sm:py-24 lg:py-[7.5rem]">
+    <section className="bg-white py-[4.5rem] lg:py-[7.5rem]">
       <motion.div
         className="container mx-auto px-4 lg:px-8"
         initial={reducedMotion ? false : { opacity: 0, y: 12 }}
@@ -38,7 +38,7 @@ export default function MediaStrip({ items = [] }) {
         transition={{ duration: 0.35, ease: easeOut }}
       >
         <div className="mb-6 flex items-center gap-4">
-          <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
+          <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
             {t(UI.mediaReleases, locale)}
           </p>
           <span className="h-px flex-1 bg-brand-ink" aria-hidden="true" />
@@ -48,7 +48,7 @@ export default function MediaStrip({ items = [] }) {
         </div>
 
         <div className="mb-10 flex flex-col gap-4 sm:mb-12 lg:flex-row lg:items-end lg:justify-between">
-          <h2 className="text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
+          <h2 className="text-clip-safe text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
             {t(UI.mediaReleases, locale)}
           </h2>
           <Link

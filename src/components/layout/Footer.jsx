@@ -173,7 +173,7 @@ export default function Footer() {
       </div>
 
       <div
-        className="pointer-events-none relative px-4 pb-6 pt-2 text-center text-[clamp(3.5rem,12vw,9rem)] font-extrabold leading-[1.15] tracking-tight text-white/[0.06] lg:px-8 lg:pb-8"
+        className="text-clip-safe pointer-events-none relative px-4 pb-6 pt-2 text-center text-[clamp(3.5rem,12vw,9rem)] font-extrabold leading-[1.15] tracking-tight text-white/[0.06] lg:px-8 lg:pb-8"
         aria-hidden="true"
       >
         {brandWord}

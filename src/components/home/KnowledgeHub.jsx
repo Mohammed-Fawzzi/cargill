@@ -199,10 +199,10 @@ export default function KnowledgeHub({ items = [], section }) {
   const useSimpleGrid = cards.length < 2;
 
   return (
-    <section className="scroll-mt-[var(--navbar-height)] bg-brand-forest-deep pb-[4.5rem] pt-[calc(var(--navbar-height)+2.5rem)] text-white sm:pb-24 lg:pb-[7.5rem] lg:pt-[calc(var(--navbar-height)+3.5rem)]">
+    <section className="bg-brand-forest-deep py-[4.5rem] text-white lg:py-[7.5rem]">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="mb-6 flex items-center gap-4">
-          <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+          <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
             {t(UI.knowledgeTitle, locale)}
           </p>
           <span className="h-px flex-1 bg-white/20" aria-hidden="true" />
@@ -213,7 +213,7 @@ export default function KnowledgeHub({ items = [], section }) {
 
         <div className="mb-10 flex flex-col gap-5 lg:mb-14 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-[2.75rem]">
+            <h2 className="text-clip-safe text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-[2.75rem]">
               {heading}
             </h2>
             {subtitle ? (

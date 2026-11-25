@@ -24,7 +24,7 @@ function splitLead(text) {
 function SectionLabel({ number, label }) {
   return (
     <div className="mb-8 flex items-center gap-4">
-      <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
+      <p className="text-clip-safe shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
         {label}
       </p>
       <span className="h-px flex-1 bg-brand-ink/15" aria-hidden="true" />

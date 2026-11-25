@@ -66,16 +66,16 @@ export default function ImpactStrip({ title: titleProp, eyebrow: eyebrowProp } =
 
   return (
     <section className="relative z-0 mt-0 px-4 pb-2 lg:px-8">
-      <div className="relative container mx-auto overflow-hidden rounded-[1.25rem] bg-brand-forest-deep text-white sm:rounded-[1.5rem]">
+      <div className="relative container mx-auto rounded-[1.25rem] bg-brand-forest-deep text-white sm:rounded-[1.5rem]">
         <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(136,196,60,0.16),transparent_40%)]"
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.25rem] bg-[radial-gradient(circle_at_20%_0%,rgba(136,196,60,0.16),transparent_40%)] sm:rounded-[1.5rem]"
           aria-hidden="true"
         />
         <div className="relative px-6 py-12 sm:px-10 sm:py-14 lg:px-16 lg:py-16">
           <Reveal className="mb-10 text-center lg:mb-12">
             <p className="mb-4 flex items-center justify-center gap-4 text-xs font-bold uppercase tracking-[0.28em] text-brand-lime sm:text-sm">
               <span className="hidden h-px w-16 bg-brand-lime/50 sm:block" aria-hidden="true" />
-              <span>{eyebrow}</span>
+              <span className="text-clip-safe">{eyebrow}</span>
               <span className="hidden h-px w-16 bg-brand-lime/50 sm:block" aria-hidden="true" />
             </p>
             {title ? (

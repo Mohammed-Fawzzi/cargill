@@ -1,110 +1,28 @@
-import React, { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { IoClose, IoLogoWhatsapp } from "react-icons/io5";
-import { MdEmail } from "react-icons/md";
-import { HiOutlineChatAlt2 } from "react-icons/hi";
-import { FaMobile } from "react-icons/fa6";
+import React from "react";
+import { IoLogoWhatsapp } from "react-icons/io5";
 import { useSiteData } from "@/context/SiteDataContext";
 import { useLocale } from "@/context/LocaleContext";
-import { toTelHref, toWhatsAppHref } from "@/lib/phone";
+import { toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
-
-const btnBase =
-  "relative z-[1] inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full shadow-[0_10px_28px_rgba(0,0,0,0.28)] transition-transform hover:scale-[1.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime/70 sm:h-12 sm:w-12";
 
 export default function FloatingCta() {
   const { contact } = useSiteData();
   const { locale } = useLocale();
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef(null);
   const phone = contact?.phones?.[0] || "";
-  const email = contact?.emails?.[0] || "";
-  const phoneHref = toTelHref(phone);
-  const waHref = toWhatsAppHref(phone);
-  const emailHref = email ? `mailto:${email}` : "";
+  const waHref = toWhatsAppHref(phone, t(UI.askAgronomistMessage, locale));
 
-  useEffect(() => {
-    if (!open) return undefined;
-    const onPointerDown = (event) => {
-      if (!rootRef.current?.contains(event.target)) setOpen(false);
-    };
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
-
-  if (!phoneHref && !emailHref && !waHref) return null;
+  if (!waHref) return null;
 
   return (
-    <div
-      ref={rootRef}
-      className="pointer-events-none fixed z-40 hidden flex-col items-center gap-2.5 md:flex sm:gap-3"
-      style={{
-        bottom: "max(1.25rem, env(safe-area-inset-bottom, 0px))",
-        insetInlineStart: "max(1rem, env(safe-area-inset-left, 0px))",
-      }}
+    <a
+      href={waHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={t(UI.whatsapp, locale)}
+      className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom,0px))] left-[max(1rem,env(safe-area-inset-left,0px))] z-40 inline-flex h-11 w-11 items-center justify-center rounded-full bg-brand-lime text-brand-ink transition-transform hover:scale-[1.04] hover:bg-brand-lime-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:h-12 sm:w-12"
     >
-      <AnimatePresence initial={false}>
-        {open && emailHref ? (
-          <motion.a
-            key="email"
-            href={emailHref}
-            initial={{ opacity: 0, y: 16, scale: 0.85 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0 }}
-            className={`pointer-events-auto ${btnBase} bg-brand-forest text-white ring-1 ring-brand-lime/35`}
-            aria-label={t(UI.email, locale)}
-          >
-            <MdEmail className="text-lg" />
-          </motion.a>
-        ) : null}
-        {open && waHref ? (
-          <motion.a
-            key="whatsapp"
-            href={waHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            initial={{ opacity: 0, y: 16, scale: 0.85 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0 }}
-            className={`pointer-events-auto ${btnBase} bg-[#25D366] text-white`}
-            aria-label={t(UI.whatsapp, locale)}
-          >
-            <IoLogoWhatsapp className="text-xl" />
-          </motion.a>
-        ) : null}
-      </AnimatePresence>
-
-      <div className="pointer-events-auto flex flex-col items-center gap-3">
-        <motion.button
-          type="button"
-          aria-label={t(UI.nav.contact, locale)}
-          onClick={() => setOpen((prev) => !prev)}
-          className={`${btnBase} bg-brand-black text-white ring-1 ring-brand-lime/35`}
-        >
-          {open ? (
-            <IoClose className="text-xl" />
-          ) : (
-            <HiOutlineChatAlt2 className="text-xl" />
-          )}
-        </motion.button>
-        {phoneHref ? (
-          <a
-            href={phoneHref}
-            aria-label={t(UI.phone, locale)}
-            className={`${btnBase} bg-brand-lime text-brand-ink`}
-          >
-            <FaMobile className="text-lg" />
-          </a>
-        ) : null}
-      </div>
-    </div>
+      <IoLogoWhatsapp className="text-xl" aria-hidden="true" />
+    </a>
   );
 }
