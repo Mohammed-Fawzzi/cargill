@@ -259,7 +259,7 @@ export default function Navbar() {
   return (
     <>
       <nav className="pointer-events-none fixed inset-x-0 top-0 z-40 px-3 pt-3 sm:px-4 sm:pt-4">
-        <div className="pointer-events-auto relative mx-auto flex h-14 max-w-[1180px] items-center justify-between gap-3 rounded-full nav-glass px-3 sm:h-[3.6rem] sm:px-5">
+        <div className="pointer-events-auto relative mx-auto flex h-16 max-w-[1180px] items-center justify-between gap-3 overflow-visible rounded-full nav-glass px-3 sm:h-[4.25rem] sm:px-5">
           <div className="order-3 flex shrink-0 items-center gap-1.5 sm:gap-2">
             <div className="hidden lg:block">
               <AskAgronomistButton href={waHref} label={askLabel} />
@@ -320,11 +320,11 @@ export default function Navbar() {
           <Link
             to="/"
             onClick={closeMenu}
-            className="order-1 flex min-w-0 shrink-0 items-center justify-center px-1"
+            className="order-1 flex shrink-0 items-center justify-center px-1"
           >
             <SiteLogo
               alt={companyName}
-              className="h-9 w-auto object-contain sm:h-10"
+              className="h-11 w-auto max-w-[9.5rem] object-contain object-right sm:h-12 sm:max-w-[11rem]"
             />
           </Link>
         </div>

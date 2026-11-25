@@ -1,29 +1,47 @@
-import React, { createElement, useMemo } from "react";
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { MdEmail, MdLocationOn } from "react-icons/md";
-import { FaMobile } from "react-icons/fa6";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
-import SiteLogo from "@/components/ui/SiteLogo";
-import { PrimaryButton } from "@/components/ui/AppButton";
-import ImpactStrip from "@/components/home/ImpactStrip";
+import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
-import { getProducts } from "@/services/cms/products";
+import { getCategories } from "@/services/cms/products";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
-import { resolveCompanySocial } from "@/utils/social";
+
+function splitLead(text) {
+  const value = String(text || "").trim();
+  if (!value) return { lead: "", rest: "" };
+  const match = value.match(/^([\s\S]+?[.!?؟。])\s+([\s\S]*)$/);
+  if (!match) return { lead: value, rest: "" };
+  return { lead: match[1], rest: match[2] };
+}
+
+function SectionLabel({ number, label }) {
+  return (
+    <div className="mb-8 flex items-center gap-4">
+      <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
+        {label}
+      </p>
+      <span className="h-px flex-1 bg-brand-ink/15" aria-hidden="true" />
+      <p className="shrink-0 text-[11px] font-bold tracking-[0.2em] text-brand-ink/45">
+        {number}
+      </p>
+    </div>
+  );
+}
 
 export default function About() {
   const { locale } = useLocale();
   const { contact, isPending, isError } = useSiteData();
 
-  const productsQuery = useQuery({
-    queryKey: ["cms", "products"],
-    queryFn: getProducts,
+  const categoriesQuery = useQuery({
+    queryKey: ["cms", "categories"],
+    queryFn: getCategories,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -32,43 +50,48 @@ export default function About() {
   const about = t(contact?.about, locale);
   const vision = t(contact?.vision, locale);
   const mission = t(contact?.mission, locale);
-  const address = t(contact?.address, locale);
-  const phones = contact?.phones || [];
-  const emails = contact?.emails || [];
-  const socials = resolveCompanySocial(contact?.social);
+  const categories = categoriesQuery.data || [];
+  const { lead, rest } = splitLead(about);
 
-  const heroImage = useMemo(() => {
-    if (contact?.bannerUrl) return contact.bannerUrl;
-    const products = productsQuery.data || [];
-    return products.find((item) => item.imageUrl)?.imageUrl || "";
-  }, [contact?.bannerUrl, productsQuery.data]);
+  const bannerTitle =
+    aboutHeading || t(UI.aboutPageTitle, locale) || name || t(UI.nav.about, locale);
 
-  const bannerTitle = aboutHeading || name || t(UI.nav.about, locale);
-  const bannerSubtitle = t(UI.aboutIntro, locale);
-
-  const hasContent = Boolean(
-    name ||
-      aboutHeading ||
-      about ||
-      vision ||
-      mission ||
-      contact?.logoUrl ||
-      address ||
-      phones.length ||
-      emails.length,
+  const pillars = useMemo(
+    () =>
+      [
+        {
+          title: t(UI.valuesTagField, locale),
+          body: t(UI.commitField, locale),
+        },
+        {
+          title: t(UI.valuesTagVision, locale),
+          body: t(UI.commitQuality, locale),
+        },
+        {
+          title: t(UI.valuesTagMission, locale),
+          body: t(UI.commitSupport, locale),
+        },
+      ].filter((item) => item.title && item.body),
+    [locale],
   );
+
+  const hasContent = Boolean(about || vision || mission || categories.length);
 
   return (
     <>
-      <Seo title={bannerTitle} description={about || vision || mission} path="/about" />
+      <Seo
+        title={bannerTitle}
+        description={about || vision || mission}
+        path="/about"
+      />
       {isPending ? <Loading /> : null}
       {!isPending && isError ? <ErrorState /> : null}
       {!isPending && !isError ? (
         <main className="min-h-screen bg-white">
           <PageBanner
             title={bannerTitle}
-            subtitle={bannerSubtitle}
-            imageUrl={heroImage}
+            subtitle={t(UI.aboutIntro, locale)}
+            imageUrl={contact?.bannerUrl || ""}
             label={UI.pageLabel.about}
             breadcrumbs={[
               { label: t(UI.nav.home, locale), to: "/" },
@@ -80,183 +103,163 @@ export default function About() {
             <EmptyState />
           ) : (
             <>
-              {(about || contact?.logoUrl || name) && (
-                <section className="relative overflow-hidden py-16 lg:py-24">
+              {about ? (
+                <section className="py-14 lg:py-20">
                   <div className="container mx-auto px-4 lg:px-8">
-                    <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
-                      <Reveal>
-                        <div className="relative overflow-hidden rounded-[2rem] bg-brand-forest-deep p-8 text-white shadow-[0_24px_60px_rgba(24,16,96,0.18)] sm:p-10">
-                          <div className="relative">
-                            <div className="mb-8 inline-flex rounded-2xl bg-white p-4 shadow-[0_10px_30px_rgba(24,16,96,0.08)]">
-                              <SiteLogo
-                                alt={name || bannerTitle}
-                                className="h-20 w-auto max-w-full object-contain sm:h-24"
-                              />
-                            </div>
-                            <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-brand-lime">
-                              {t(UI.whoWeAre, locale)}
+                    <Reveal>
+                      <SectionLabel
+                        number="01"
+                        label={t(UI.whoWeAre, locale)}
+                      />
+                      <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
+                        <div className="lg:col-span-7">
+                          {lead ? (
+                            <p className="mb-5 text-[1.35rem] font-extrabold leading-[1.7] text-brand-ink sm:text-[1.5rem]">
+                              {lead}
                             </p>
-                            {name ? (
-                              <h2 className="text-3xl font-extrabold leading-tight sm:text-4xl">
-                                {name}
-                              </h2>
-                            ) : null}
+                          ) : null}
+                          {rest ? (
+                            <p className="whitespace-pre-wrap text-[1.3125rem] font-medium leading-[1.9] text-brand-ink/85">
+                              {rest}
+                            </p>
+                          ) : null}
+                        </div>
+                        <div className="lg:col-span-4 lg:col-start-9">
+                          <div className="border-t border-brand-lime pt-4">
+                            <p className="text-5xl font-extrabold tracking-tight text-brand-ink sm:text-6xl lg:text-7xl">
+                              {t(UI.experienceYears, locale)}
+                            </p>
+                            <p className="mt-3 max-w-[14rem] text-sm leading-6 text-text-muted">
+                              {t(UI.experienceBody, locale)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </Reveal>
+                  </div>
+                </section>
+              ) : null}
+
+              {(vision || mission) && (
+                <section className="border-t border-brand-ink/10 py-14 lg:py-20">
+                  <div className="container mx-auto px-4 lg:px-8">
+                    {vision ? (
+                      <Reveal>
+                        <div className="grid grid-cols-1 gap-6 border-b border-brand-ink/15 py-10 lg:grid-cols-12 lg:gap-8 lg:py-12">
+                          <div className="lg:col-span-3">
+                            <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+                              02
+                            </p>
+                            <h2 className="text-[2.5rem] font-extrabold leading-none tracking-tight text-brand-ink">
+                              {t(UI.ourVision, locale)}
+                            </h2>
+                          </div>
+                          <div className="lg:col-span-9">
+                            <p className="whitespace-pre-wrap text-[1.5rem] font-semibold leading-[1.7] text-brand-ink sm:text-[1.625rem]">
+                              {vision}
+                            </p>
                           </div>
                         </div>
                       </Reveal>
-
-                      <Reveal delay={0.08}>
-                        {aboutHeading && aboutHeading !== name ? (
-                          <h2 className="mb-5 text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl">
-                            {aboutHeading}
-                          </h2>
-                        ) : null}
-                        {about ? (
-                          <p className="whitespace-pre-wrap text-base leading-9 text-text-muted sm:text-lg sm:leading-10">
-                            {about}
-                          </p>
-                        ) : null}
-                        <PrimaryButton to="/contact" className="mt-8">
-                          {t(UI.contactUsCta, locale)}
-                        </PrimaryButton>
-                      </Reveal>
-                    </div>
-                  </div>
-                </section>
-              )}
-
-              {(vision || mission) && (
-                <section className="relative overflow-hidden bg-surface-muted py-16 lg:py-20">
-                  <div className="container mx-auto px-4 lg:px-8">
-                    <div className="grid gap-5 lg:grid-cols-2 lg:gap-6">
-                      {vision ? (
-                        <Reveal>
-                          <article className="h-full rounded-[1.75rem] border border-brand-ink/8 bg-white p-7 sm:p-8">
-                            <h2 className="mb-4 text-2xl font-extrabold text-brand-ink sm:text-3xl">
-                              {t(UI.ourVision, locale)}
-                            </h2>
-                            <p className="whitespace-pre-wrap text-sm leading-8 text-text-muted sm:text-base sm:leading-9">
-                              {vision}
+                    ) : null}
+                    {mission ? (
+                      <Reveal delay={0.05}>
+                        <div className="grid grid-cols-1 gap-6 py-10 lg:grid-cols-12 lg:gap-8 lg:py-12">
+                          <div className="lg:col-span-3">
+                            <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+                              03
                             </p>
-                          </article>
-                        </Reveal>
-                      ) : null}
-                      {mission ? (
-                        <Reveal delay={0.06}>
-                          <article className="h-full rounded-[1.75rem] border border-brand-ink/8 bg-white p-7 sm:p-8">
-                            <h2 className="mb-4 text-2xl font-extrabold text-brand-ink sm:text-3xl">
+                            <h2 className="text-[2.5rem] font-extrabold leading-none tracking-tight text-brand-ink">
                               {t(UI.ourMission, locale)}
                             </h2>
-                            <p className="whitespace-pre-wrap text-sm leading-8 text-text-muted sm:text-base sm:leading-9">
+                          </div>
+                          <div className="lg:col-span-9">
+                            <p className="whitespace-pre-wrap text-[1.5rem] font-semibold leading-[1.7] text-brand-ink sm:text-[1.625rem]">
                               {mission}
                             </p>
-                          </article>
-                        </Reveal>
-                      ) : null}
-                    </div>
-                  </div>
-                </section>
-              )}
-
-              <ImpactStrip title={aboutHeading || name} eyebrow={t(UI.cultivateEvolve, locale)} />
-
-              {address || phones.length || emails.length || socials.length ? (
-                <section className="border-t border-black/5 bg-white py-14 lg:py-16">
-                  <div className="container mx-auto px-4 lg:px-8">
-                    <Reveal className="mb-8">
-                      <h2 className="text-2xl font-extrabold text-brand-ink sm:text-3xl">
-                        {t(UI.contactInfo, locale)}
-                      </h2>
-                    </Reveal>
-                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                      {address ? (
-                        <Reveal>
-                          <div className="h-full rounded-2xl border border-black/5 bg-surface-muted p-6 transition-shadow hover:shadow-[0_16px_40px_rgba(24,16,96,0.08)]">
-                            <span className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-lime/15 text-brand-lime">
-                              <MdLocationOn className="text-xl" aria-hidden="true" />
-                            </span>
-                            <h3 className="mb-2 font-extrabold text-brand-ink">
-                              {t(UI.address, locale)}
-                            </h3>
-                            <p className="text-sm leading-7 text-text-muted">{address}</p>
                           </div>
-                        </Reveal>
-                      ) : null}
-
-                      {phones.length ? (
-                        <Reveal delay={0.05}>
-                          <div className="h-full rounded-2xl border border-black/5 bg-surface-muted p-6 transition-shadow hover:shadow-[0_16px_40px_rgba(24,16,96,0.08)]">
-                            <span className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-lime/15 text-brand-lime">
-                              <FaMobile className="text-lg" aria-hidden="true" />
-                            </span>
-                            <h3 className="mb-2 font-extrabold text-brand-ink">
-                              {t(UI.phone, locale)}
-                            </h3>
-                            <ul className="space-y-1 text-sm leading-7 text-text-muted">
-                              {phones.map((phone) => (
-                                <li key={phone}>
-                                  <a
-                                    href={`tel:${phone.replace(/\s+/g, "")}`}
-                                    dir="ltr"
-                                    className="cursor-pointer transition-colors hover:text-brand-lime"
-                                  >
-                                    {phone}
-                                  </a>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </Reveal>
-                      ) : null}
-
-                      {emails.length ? (
-                        <Reveal delay={0.1}>
-                          <div className="h-full rounded-2xl border border-black/5 bg-surface-muted p-6 transition-shadow hover:shadow-[0_16px_40px_rgba(24,16,96,0.08)]">
-                            <span className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-lime/15 text-brand-lime">
-                              <MdEmail className="text-xl" aria-hidden="true" />
-                            </span>
-                            <h3 className="mb-2 font-extrabold text-brand-ink">
-                              {t(UI.email, locale)}
-                            </h3>
-                            <ul className="space-y-1 text-sm leading-7 text-text-muted">
-                              {emails.map((email) => (
-                                <li key={email}>
-                                  <a
-                                    href={`mailto:${email}`}
-                                    className="cursor-pointer transition-colors hover:text-brand-lime"
-                                  >
-                                    {email}
-                                  </a>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </Reveal>
-                      ) : null}
-                    </div>
-
-                    {socials.length ? (
-                      <Reveal delay={0.12} className="mt-8 flex flex-wrap gap-3">
-                        {socials.map((item) => (
-                          <a
-                            key={item.id}
-                            href={item.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={item.label}
-                            className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl bg-brand-forest-deep text-white transition-colors hover:bg-brand-lime hover:text-brand-ink"
-                          >
-                            {createElement(item.Icon, {
-                              className: "text-base",
-                              "aria-hidden": true,
-                            })}
-                          </a>
-                        ))}
+                        </div>
                       </Reveal>
                     ) : null}
                   </div>
                 </section>
+              )}
+
+              {pillars.length === 3 ? (
+                <section className="border-t border-brand-ink/10 py-14 lg:py-20">
+                  <div className="container mx-auto px-4 lg:px-8">
+                    <Reveal>
+                      <SectionLabel
+                        number="04"
+                        label={t(UI.howWeWork, locale)}
+                      />
+                      <div className="grid grid-cols-1 md:grid-cols-3">
+                        {pillars.map((item, index) => (
+                          <div
+                            key={item.title}
+                            className={`py-6 md:px-6 md:py-2 ${
+                              index > 0
+                                ? "border-t border-brand-ink/15 md:border-t-0 md:border-s"
+                                : ""
+                            }`}
+                          >
+                            <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+                              {String(index + 1).padStart(2, "0")}
+                            </p>
+                            <h3 className="mb-3 text-xl font-extrabold text-brand-ink">
+                              {item.title}
+                            </h3>
+                            <p className="text-sm leading-7 text-text-muted">
+                              {item.body}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </Reveal>
+                  </div>
+                </section>
               ) : null}
+
+              {categories.length > 0 ? (
+                <section className="border-t border-brand-ink/10 py-14 lg:py-20">
+                  <div className="container mx-auto px-4 lg:px-8">
+                    <Reveal>
+                      <SectionLabel
+                        number="05"
+                        label={t(UI.whatWeOffer, locale)}
+                      />
+                      <div className="flex flex-col gap-0 border-t border-brand-ink/15 sm:flex-row sm:flex-wrap">
+                        {categories.map((item, index) => (
+                          <Link
+                            key={item.id}
+                            to={`/products?section=${item.id}`}
+                            className={`group flex flex-1 items-center justify-between gap-4 border-b border-brand-ink/15 py-6 sm:border-b-0 sm:border-e sm:px-5 sm:py-8 sm:last:border-e-0 ${
+                              index === 0 ? "sm:ps-0" : ""
+                            }`}
+                          >
+                            <span className="flex min-w-0 flex-col gap-2">
+                              <span className="text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+                                {String(index + 1).padStart(2, "0")}
+                              </span>
+                              <span className="text-2xl font-extrabold tracking-tight text-brand-ink transition-colors group-hover:text-brand-lime sm:text-3xl">
+                                {t(item.name, locale)}
+                              </span>
+                            </span>
+                            <span
+                              className="shrink-0 text-brand-ink transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1 motion-reduce:transition-none"
+                              aria-hidden="true"
+                            >
+                              →
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </Reveal>
+                  </div>
+                </section>
+              ) : null}
+
+              <GrowTogetherBanner />
             </>
           )}
         </main>

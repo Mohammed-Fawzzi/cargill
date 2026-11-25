@@ -39,7 +39,7 @@ export default function Footer() {
     (companyName || title || "كارجيل").split(/\s+/)[0] || "كارجيل";
 
   return (
-    <footer className="relative overflow-hidden bg-brand-forest-deep text-white" aria-label="footer">
+    <footer className="relative bg-brand-forest-deep text-white" aria-label="footer">
       <div className="relative container mx-auto px-4 pt-14 lg:px-8 lg:pt-16">
         <div className="mb-12 flex flex-col gap-6 border-b border-white/15 pb-10 lg:flex-row lg:items-end lg:justify-between">
           <p className="order-2 max-w-xl text-sm leading-7 text-white/70 lg:order-1 lg:text-base">
@@ -173,7 +173,7 @@ export default function Footer() {
       </div>
 
       <div
-        className="pointer-events-none relative -mb-8 overflow-hidden px-4 text-center text-[18vw] font-extrabold leading-none tracking-tight text-white/[0.04] lg:px-8"
+        className="pointer-events-none relative px-4 pb-6 pt-2 text-center text-[clamp(3.5rem,12vw,9rem)] font-extrabold leading-[1.15] tracking-tight text-white/[0.06] lg:px-8 lg:pb-8"
         aria-hidden="true"
       >
         {brandWord}

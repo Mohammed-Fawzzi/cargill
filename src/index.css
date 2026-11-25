@@ -30,13 +30,13 @@
   --color-forest: #221a72;
   --color-text: #181060;
   --color-bg: #ffffff;
-  --navbar-height: 5.25rem;
+  --navbar-height: 5.75rem;
   --triangle-clip: polygon(50% 0%, 0% 100%, 100% 100%);
 }
 
 @media (min-width: 1024px) {
   :root {
-    --navbar-height: 5.5rem;
+    --navbar-height: 6rem;
   }
 }
 
