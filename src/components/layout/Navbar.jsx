@@ -64,6 +64,14 @@ function AskAgronomistButton({ href, label, className = "", onClick }) {
 
 function ProductsMegaMenu({ categories = [], locale, onNavigate }) {
   const tiles = categories.slice(0, 4);
+  const cols =
+    tiles.length >= 4
+      ? "grid-cols-2 lg:grid-cols-4"
+      : tiles.length === 3
+        ? "grid-cols-2 lg:grid-cols-3"
+        : tiles.length === 2
+          ? "grid-cols-2"
+          : "grid-cols-1";
 
   return (
     <div
@@ -94,7 +102,7 @@ function ProductsMegaMenu({ categories = [], locale, onNavigate }) {
             {t(UI.viewAll, locale)}
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+        <div className={`grid gap-2 lg:gap-3 ${cols}`}>
           {tiles.map((category, index) => {
             const name = t(category.name, locale);
             return (
