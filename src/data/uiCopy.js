@@ -107,6 +107,7 @@ export const UI = {
     en: "More field articles",
   },
   readArticle: { ar: "اقرأ المقال", en: "Read article" },
+  latest: { ar: "الأحدث", en: "Latest" },
   showMore: { ar: "عرض المزيد", en: "Show more" },
   shareArticle: { ar: "شارك المقال", en: "Share article" },
   shareWhatsApp: { ar: "واتساب", en: "WhatsApp" },
@@ -190,6 +191,8 @@ export const UI = {
   contactUsCta: { ar: "تواصل معنا", en: "Contact us" },
   callUs: { ar: "اتصل بينا", en: "Call us" },
   sendEmail: { ar: "ابعت إيميل", en: "Send email" },
+  contactDetails: { ar: "بيانات التواصل", en: "Contact details" },
+  sendUsMessage: { ar: "ابعتلنا رسالة", en: "Send us a message" },
   otherPhones: { ar: "أرقام تانية", en: "Other numbers" },
   workingHours: { ar: "المواعيد", en: "Hours" },
   alexMapAddress: {

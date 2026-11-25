@@ -108,22 +108,49 @@ export default function FeaturedProductsSection({ section }) {
               aria-hidden="true"
             />
 
-            <AnimatePresence mode="wait" initial={false}>
+            <AnimatePresence mode="sync" initial={false}>
               {active?.imageUrl ? (
                 <motion.div
                   key={active.id}
                   className="absolute inset-0 z-10 flex items-center justify-center p-10 sm:p-14"
-                  initial={reducedMotion ? false : { opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={reducedMotion ? undefined : { opacity: 0 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  initial={
+                    reducedMotion
+                      ? false
+                      : { opacity: 0, scale: 1.12 }
+                  }
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={
+                    reducedMotion
+                      ? undefined
+                      : { opacity: 0, scale: 0.92 }
+                  }
+                  transition={{
+                    duration: reducedMotion ? 0 : 0.55,
+                    ease: easeOut,
+                  }}
                 >
-                  <SafeImage
-                    src={active.imageUrl}
-                    alt={activeName}
-                    width={720}
-                    className="max-h-full max-w-[min(100%,420px)] object-contain"
-                  />
+                  <motion.div
+                    className="flex h-full w-full items-center justify-center"
+                    initial={reducedMotion ? false : { scale: 1 }}
+                    animate={
+                      reducedMotion
+                        ? { scale: 1 }
+                        : { scale: [1, 1.06] }
+                    }
+                    transition={{
+                      duration: reducedMotion ? 0 : 8,
+                      ease: "linear",
+                      repeat: reducedMotion ? 0 : Infinity,
+                      repeatType: "reverse",
+                    }}
+                  >
+                    <SafeImage
+                      src={active.imageUrl}
+                      alt={activeName}
+                      width={720}
+                      className="max-h-full max-w-[min(100%,420px)] object-contain"
+                    />
+                  </motion.div>
                 </motion.div>
               ) : null}
             </AnimatePresence>

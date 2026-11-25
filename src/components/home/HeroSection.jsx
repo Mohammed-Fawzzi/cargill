@@ -13,8 +13,9 @@ import { easeOut } from "@/lib/motion";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 const SPROUT = [0.22, 1, 0.36, 1];
+const INTRO_EASE = [0.76, 0, 0.24, 1];
 
-function HeadlineReveal({ text, reducedMotion }) {
+function HeadlineReveal({ text, reducedMotion, active }) {
   const lines = useMemo(() => {
     const raw = String(text || "").trim();
     if (!raw) return [];
@@ -25,16 +26,16 @@ function HeadlineReveal({ text, reducedMotion }) {
   if (!lines.length) return null;
 
   return (
-    <h1 className="mt-4 max-w-[18ch] font-display text-[clamp(2.5rem,6.5vw,4.75rem)] font-black leading-[1.05] tracking-[-0.03em] text-white sm:mt-[18px] md:max-w-[980px]">
+    <h1 className="mt-4 max-w-[18ch] break-words font-display text-[clamp(2.5rem,6.5vw,4.75rem)] font-black leading-[1.12] text-white sm:mt-[18px] md:max-w-[980px]">
       {lines.map((line, index) => (
-        <span key={index} className="block overflow-hidden py-[0.06em]">
+        <span key={index} className="block overflow-hidden px-[0.04em] py-[0.1em]">
           <motion.span
             className="block"
-            initial={reducedMotion ? false : { y: "110%" }}
-            animate={{ y: "0%" }}
+            initial={reducedMotion || !active ? false : { y: "110%" }}
+            animate={active ? { y: "0%" } : { y: reducedMotion ? "0%" : "110%" }}
             transition={{
               duration: 0.7,
-              delay: reducedMotion ? 0 : 0.28 + index * 0.12,
+              delay: reducedMotion || !active ? 0 : 0.28 + index * 0.12,
               ease: SPROUT,
             }}
           >
@@ -50,12 +51,13 @@ function HeadlineReveal({ text, reducedMotion }) {
   );
 }
 
-export default function HeroSection({ section }) {
+export default function HeroSection({ section, entranceReady = true }) {
   const { locale } = useLocale();
   const { contact } = useSiteData();
   const { reducedMotion } = useMotionPrefs();
   const [slide, setSlide] = useState(0);
   const [ready, setReady] = useState(false);
+  const [entered, setEntered] = useState(Boolean(entranceReady));
 
   const slides = useMemo(() => section?.data?.slides || [], [section?.data?.slides]);
   const images = useMemo(
@@ -69,42 +71,72 @@ export default function HeroSection({ section }) {
   const waHref = toWhatsAppHref(phone, t(UI.askAgronomistMessage, locale));
 
   useEffect(() => {
-    if (reducedMotion || images.length < 2) return undefined;
+    if (entranceReady) setEntered(true);
+  }, [entranceReady]);
+
+  useEffect(() => {
+    if (!entered || reducedMotion || images.length < 2) return undefined;
     const timer = window.setInterval(() => {
       setSlide((current) => (current + 1) % images.length);
     }, 5200);
     return () => window.clearInterval(timer);
-  }, [images.length, reducedMotion]);
+  }, [images.length, reducedMotion, entered]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setReady(true), reducedMotion ? 0 : 900);
+    if (!entered) {
+      setReady(false);
+      return undefined;
+    }
+    const timer = window.setTimeout(
+      () => setReady(true),
+      reducedMotion ? 0 : 900,
+    );
     return () => window.clearTimeout(timer);
-  }, [reducedMotion]);
+  }, [reducedMotion, entered]);
 
   if (!title && !body && !images.length) return null;
 
-  const delay = reducedMotion ? 0 : 0.2;
+  const delay = reducedMotion || !entered ? 0 : 0.12;
+  const showMotion = entered && !reducedMotion;
 
   return (
     <>
       <section className="relative isolate bg-[#0A0820]">
-        <div className="absolute inset-0 overflow-hidden">
+        <div
+          data-home-hero-media
+          className="absolute inset-0 overflow-hidden"
+        >
           <AnimatePresence mode="sync" initial={false}>
             {images.length ? (
               <motion.div
                 key={images[slide] || "hero"}
                 className="absolute inset-0 overflow-hidden"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: reducedMotion ? 0 : 0.9, ease: "easeInOut" }}
+                initial={
+                  showMotion && slide !== 0
+                    ? { opacity: 0, scale: 1.1 }
+                    : false
+                }
+                animate={{ opacity: 1, scale: 1 }}
+                exit={
+                  showMotion
+                    ? { opacity: 0, scale: 1.05 }
+                    : undefined
+                }
+                transition={{
+                  duration: showMotion ? 0.85 : 0,
+                  ease: easeOut,
+                }}
               >
                 <motion.div
-                  className="absolute inset-[-4%] h-[108%] w-[108%]"
-                  initial={reducedMotion ? false : { scale: 1 }}
-                  animate={reducedMotion ? { scale: 1 } : { scale: 1.08 }}
+                  className="absolute inset-[-6%] h-[112%] w-[112%]"
+                  initial={false}
+                  animate={
+                    entered && !reducedMotion
+                      ? { scale: 1.1 }
+                      : { scale: 1 }
+                  }
                   transition={{
-                    duration: reducedMotion ? 0 : 14,
+                    duration: entered && !reducedMotion ? 12 : 0,
                     ease: "linear",
                   }}
                 >
@@ -123,13 +155,19 @@ export default function HeroSection({ section }) {
               <div className="absolute inset-0 bg-[#0A0820]" />
             )}
           </AnimatePresence>
-          <div
+          <motion.div
             className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,8,32,0.92)_0%,rgba(10,8,32,0.4)_55%,rgba(10,8,32,0.15)_100%)]"
             aria-hidden="true"
+            initial={false}
+            animate={{ opacity: entered ? 1 : 0 }}
+            transition={{ duration: 0.45, ease: INTRO_EASE }}
           />
-          <div
+          <motion.div
             className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,8,32,0.25)_0%,transparent_28%,transparent_50%,#0A0820_100%)]"
             aria-hidden="true"
+            initial={false}
+            animate={{ opacity: entered ? 1 : 0 }}
+            transition={{ duration: 0.45, ease: INTRO_EASE }}
           />
         </div>
 
@@ -137,21 +175,39 @@ export default function HeroSection({ section }) {
           <motion.p
             className="shrink-0 font-mono text-[13px] tracking-[3px] text-brand-lime"
             dir="ltr"
-            initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={false}
+            animate={
+              entered
+                ? { opacity: 1, y: 0 }
+                : { opacity: 0, y: 12 }
+            }
             transition={{ duration: 0.45, delay, ease: SPROUT }}
           >
             § 01 — FIELD PROFILE · ALEXANDRIA, EGYPT
           </motion.p>
 
-          {title ? <HeadlineReveal text={title} reducedMotion={reducedMotion} /> : null}
+          {title ? (
+            <HeadlineReveal
+              text={title}
+              reducedMotion={reducedMotion}
+              active={entered}
+            />
+          ) : null}
 
           {body ? (
             <motion.p
               className="mt-5 max-w-[34rem] text-[16px] leading-[1.7] text-white/78 sm:mt-6 sm:text-[19px] md:text-[21px]"
-              initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: delay + 0.28, ease: easeOut }}
+              initial={false}
+              animate={
+                entered
+                  ? { opacity: 1, y: 0 }
+                  : { opacity: 0, y: 14 }
+              }
+              transition={{
+                duration: 0.45,
+                delay: delay + 0.28,
+                ease: easeOut,
+              }}
             >
               {body}
             </motion.p>
@@ -159,9 +215,17 @@ export default function HeroSection({ section }) {
 
           <motion.div
             className="mt-7 flex flex-wrap gap-3.5 sm:mt-8"
-            initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: delay + 0.38, ease: easeOut }}
+            initial={false}
+            animate={
+              entered
+                ? { opacity: 1, y: 0 }
+                : { opacity: 0, y: 14 }
+            }
+            transition={{
+              duration: 0.45,
+              delay: delay + 0.38,
+              ease: easeOut,
+            }}
           >
             <Link
               to="/products"

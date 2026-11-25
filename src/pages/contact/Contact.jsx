@@ -1,9 +1,11 @@
-import React, { lazy, Suspense, useState } from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
-import PageBanner from "@/components/ui/PageBanner";
-import Reveal from "@/components/ui/Reveal";
-import { SecondaryButton } from "@/components/ui/AppButton";
+import AccentHeading from "@/components/ui/AccentHeading";
+import LogoTriangle from "@/components/ui/LogoTriangle";
+import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
@@ -13,13 +15,11 @@ import { UI } from "@/data/uiCopy";
 import { toMapEmbedSrc, toMapLink } from "@/lib/map";
 import { toTelHref, toWhatsAppHref } from "@/lib/phone";
 import { resolveCompanySocial } from "@/utils/social";
-
-const EgyptDistributorMap = lazy(
-  () => import("@/components/map/EgyptDistributorMap"),
-);
+import { easeOut } from "@/lib/motion";
+import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 const inputClass =
-  "w-full border-0 border-b border-line/20 bg-transparent px-0 py-3 text-sm text-ink outline-none transition-colors placeholder:text-ink/35 focus:border-brand-lime";
+  "w-full border-0 border-b border-white/30 bg-transparent px-0 py-2.5 text-[17px] text-white outline-none transition-colors placeholder:text-white/35 focus:border-brand-lime";
 
 function FastLink({ label, value, href, external = false }) {
   if (!href || !value) return null;
@@ -27,29 +27,25 @@ function FastLink({ label, value, href, external = false }) {
     <a
       href={href}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="group flex items-center justify-between gap-4 border-b border-line/15 px-0 py-6 transition-colors lg:border-b-0 lg:border-e lg:px-6 lg:py-8 lg:last:border-e-0 lg:first:ps-0 lg:last:pe-0"
+      className="group block border-b border-white/12 px-0 py-8 text-white transition-colors md:border-b-0 md:border-s md:px-8 md:py-[34px] md:first:border-s-0 md:first:ps-0"
     >
-      <span className="min-w-0">
-        <span className="mb-2 block text-xs text-text-muted">{label}</span>
-        <span
-          className="block text-2xl font-extrabold tracking-tight text-ink transition-colors group-hover:text-brand-lime"
-          dir={/^\+?\d/.test(String(value)) ? "ltr" : undefined}
-        >
-          {value}
-        </span>
-      </span>
-      <span
-        className="shrink-0 text-ink transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1 motion-reduce:transition-none"
-        aria-hidden="true"
+      <div className="text-[14px] text-white/60">{label}</div>
+      <div
+        className="mt-2.5 font-display text-[clamp(1.35rem,3vw,1.75rem)] font-extrabold transition-colors group-hover:text-brand-lime"
+        dir={/^\+?\d/.test(String(value)) ? "ltr" : undefined}
       >
-        →
-      </span>
+        {value}
+      </div>
+      <div className="mt-3.5 text-[20px] transition-transform duration-300 group-hover:-translate-x-1 rtl:group-hover:translate-x-1">
+        ←
+      </div>
     </a>
   );
 }
 
 export default function Contact() {
   const { locale } = useLocale();
+  const { reducedMotion } = useMotionPrefs();
   const { contact, isPending, isError } = useSiteData();
   const sectionQuery = useHomepageSection("contact");
   const section = sectionQuery.data;
@@ -61,21 +57,21 @@ export default function Contact() {
   const hoursLine =
     t(contact?.subtitle, locale) || t(section?.body, locale) || "";
   const description = t(contact?.description, locale);
-  const address = t(contact?.address, locale);
+  const address =
+    t(contact?.address, locale) || t(UI.alexMapAddress, locale) || "";
   const phones = contact?.phones || [];
   const emails = contact?.emails || [];
   const socials = resolveCompanySocial(contact?.social);
   const targetEmail = emails[0] || "";
   const mainPhone = phones[0] || "";
   const otherPhones = phones.slice(1);
-  const bannerImage = contact?.bannerUrl || section?.imageUrl || "";
   const ctaLabel =
     t(section?.cta?.label, locale) || t(UI.sendMessage, locale);
 
   const mapQuery =
+    contact?.mapUrl ||
     address ||
     t(UI.alexMapAddress, locale) ||
-    contact?.mapUrl ||
     section?.mapEmbedUrl ||
     "";
   const mapSrc = toMapEmbedSrc(mapQuery);
@@ -126,296 +122,298 @@ export default function Contact() {
       {pending ? <Loading /> : null}
       {!pending && error ? <ErrorState /> : null}
       {!pending && !error ? (
-        <main className="min-h-screen bg-page">
-          <PageBanner
-            title={heading}
-            subtitle={hoursLine}
-            imageUrl={bannerImage}
-            label={UI.pageLabel.contact}
-            breadcrumbs={[
-              { label: t(UI.nav.home, locale), to: "/" },
-              { label: t(UI.nav.contact, locale) },
-            ]}
-          />
+        <main className="min-h-screen bg-[#0A0820] text-white">
+          <header className="mx-auto max-w-[1320px] px-6 pb-14 pt-[calc(var(--navbar-height)+var(--ticker-height)+3.5rem)] md:pb-[56px] md:pt-[calc(var(--navbar-height)+var(--ticker-height)+4.5rem)]">
+            <div className="flex items-center gap-4 text-[14px] text-white/62">
+              <nav aria-label="Breadcrumb" className="shrink-0">
+                <ol className="flex flex-wrap items-center gap-x-2">
+                  <li>
+                    <Link to="/" className="transition-colors hover:text-brand-lime">
+                      {t(UI.nav.home, locale)}
+                    </Link>
+                  </li>
+                  <li aria-hidden="true">/</li>
+                  <li>{t(UI.nav.contact, locale)}</li>
+                </ol>
+              </nav>
+              <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
+            </div>
+
+            <div className="mt-7 flex flex-wrap items-end justify-between gap-8">
+              <div className="min-w-0 flex-1">
+                <div className="overflow-hidden py-[0.1em]">
+                  <motion.div
+                    initial={reducedMotion ? false : { y: "110%" }}
+                    animate={{ y: "0%" }}
+                    transition={{ duration: 0.65, ease: easeOut }}
+                  >
+                    <AccentHeading
+                      as="h1"
+                      text={heading}
+                      className="max-w-full break-words font-display text-[clamp(2.75rem,8.5vw,7.5rem)] font-black leading-[1.1] text-white"
+                    />
+                  </motion.div>
+                </div>
+                {hoursLine ? (
+                  <p className="mt-[22px] max-w-[560px] text-[18px] leading-[1.7] text-white/72 md:text-[20px]">
+                    {hoursLine}
+                  </p>
+                ) : null}
+              </div>
+              <div
+                className="flex items-center gap-2.5 font-mono text-[13px] tracking-[3px] text-white/70"
+                dir="ltr"
+              >
+                <LogoTriangle className="h-3 w-3.5" />
+                {UI.pageLabel.contact}
+              </div>
+            </div>
+          </header>
 
           {!hasContent ? (
             <EmptyState />
           ) : (
             <>
-              <section className="border-b border-line/10">
-                <div className="container mx-auto px-4 lg:px-8">
-                <Reveal>
-                    <div className="grid grid-cols-1 lg:grid-cols-3">
-                      <FastLink
-                        label={t(UI.whatsapp, locale)}
-                        value={mainPhone}
-                        href={waHref}
-                        external
-                      />
-                      <FastLink
-                        label={t(UI.callUs, locale)}
-                        value={mainPhone}
-                        href={phoneHref}
-                      />
-                      <FastLink
-                        label={t(UI.sendEmail, locale)}
-                        value={targetEmail}
-                        href={targetEmail ? `mailto:${targetEmail}` : ""}
-                      />
-                    </div>
-                  </Reveal>
-                </div>
-              </section>
-
-              <div className="bg-surface-muted py-12 lg:py-16">
-                <div className="container mx-auto grid grid-cols-1 gap-10 px-4 lg:grid-cols-12 lg:gap-8 lg:px-8">
-                  <Reveal className="order-2 lg:order-1 lg:col-span-5">
-                    <ul>
-                      {address ? (
-                        <li className="border-b border-line/10 py-4">
-                          <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
-                            {t(UI.address, locale)}
-                          </p>
-                          <p className="text-base font-semibold leading-7 text-ink">
-                            {address}
-                          </p>
-                        </li>
-                      ) : null}
-                      {otherPhones.length ? (
-                        <li className="border-b border-line/10 py-4">
-                          <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
-                            {t(UI.otherPhones, locale)}
-                          </p>
-                          <div className="space-y-1">
-                            {otherPhones.map((phone) => (
-                              <a
-                                key={phone}
-                                href={toTelHref(phone)}
-                                dir="ltr"
-                                className="block text-base font-semibold text-ink transition-colors hover:text-brand-lime"
-                              >
-                                {phone}
-                              </a>
-                            ))}
-                          </div>
-                        </li>
-                      ) : null}
-                      {emails.length > 1 ? (
-                        <li className="border-b border-line/10 py-4">
-                          <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
-                            {t(UI.email, locale)}
-                          </p>
-                          <div className="space-y-1">
-                            {emails.slice(1).map((email) => (
-                              <a
-                                key={email}
-                                href={`mailto:${email}`}
-                                className="block text-base font-semibold text-ink transition-colors hover:text-brand-lime"
-                              >
-                                {email}
-                              </a>
-                            ))}
-                          </div>
-                        </li>
-                      ) : emails[0] ? (
-                        <li className="border-b border-line/10 py-4">
-                          <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
-                            {t(UI.email, locale)}
-                          </p>
-                          <a
-                            href={`mailto:${emails[0]}`}
-                            className="text-base font-semibold text-ink transition-colors hover:text-brand-lime"
-                          >
-                            {emails[0]}
-                          </a>
-                        </li>
-                      ) : null}
-                      {hoursLine ? (
-                        <li className="border-b border-line/10 py-4">
-                          <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-text-muted">
-                            {t(UI.workingHours, locale)}
-                          </p>
-                          <p className="text-base font-semibold leading-7 text-ink">
-                            {hoursLine}
-                          </p>
-                        </li>
-                      ) : null}
-                    </ul>
-
-                    {socials.length ? (
-                      <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-bold text-ink">
-                        {socials.map((item, index) => (
-                          <span
-                            key={item.id}
-                            className="inline-flex items-center gap-3"
-                          >
-                            {index > 0 ? (
-                              <span
-                                className="text-ink/25"
-                                aria-hidden="true"
-                              >
-                                ·
-                              </span>
-                            ) : null}
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline decoration-brand-lime decoration-1 underline-offset-4 transition-colors hover:text-brand-moss"
-                            >
-                              {item.label}
-                            </a>
-                          </span>
-                        ))}
-                      </div>
-                  ) : null}
-                  </Reveal>
-
-                  <Reveal
-                    delay={0.06}
-                    className="order-1 lg:order-2 lg:col-span-6 lg:col-start-7"
-                  >
-                    <div className="rounded-lg border border-line/10 bg-page p-5 sm:p-8">
-                      {submitted ? (
-                        <div className="flex min-h-[280px] flex-col items-center justify-center gap-6 text-center">
-                          <svg
-                            viewBox="0 0 64 56"
-                            className="h-14 w-16"
-                            fill="none"
-                            aria-hidden="true"
-                          >
-                            <path
-                              d="M32 4 L60 52 H4 Z"
-                              stroke="#88c43c"
-                              strokeWidth="2"
-                              strokeLinejoin="round"
-                              pathLength="1"
-                              className="contact-success-triangle"
-                            />
-                          </svg>
-                          <p className="max-w-xs text-lg font-extrabold leading-8 text-ink">
-                            {t(UI.formSuccessTitle, locale)}
-                          </p>
-                        </div>
-                      ) : (
-                      <form
-                        onSubmit={onSubmit}
-                        className="grid grid-cols-1 gap-6 sm:grid-cols-2"
-                      >
-                        <label className="block">
-                          <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
-                            {t(UI.firstName, locale)}
-                          </span>
-                    <input
-                      name="firstName"
-                      value={form.firstName}
-                      onChange={onChange}
-                      className={inputClass}
-                            required
-                    />
-                        </label>
-                        <label className="block">
-                          <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
-                            {t(UI.lastName, locale)}
-                          </span>
-                    <input
-                      name="lastName"
-                      value={form.lastName}
-                      onChange={onChange}
-                      className={inputClass}
-                            required
-                    />
-                        </label>
-                        <label className="block">
-                          <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
-                            {t(UI.phoneField, locale)}
-                          </span>
-                    <input
-                      name="phone"
-                      value={form.phone}
-                      onChange={onChange}
-                      className={inputClass}
-                      dir="ltr"
-                    />
-                        </label>
-                        <label className="block">
-                          <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
-                            {t(UI.emailField, locale)}
-                          </span>
-                    <input
-                      name="email"
-                      type="email"
-                      value={form.email}
-                      onChange={onChange}
-                      className={inputClass}
-                      dir="ltr"
-                            required
-                    />
-                        </label>
-                        <label className="block sm:col-span-2">
-                          <span className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-text-muted">
-                            {t(UI.message, locale)}
-                          </span>
-                    <textarea
-                      name="message"
-                      value={form.message}
-                      onChange={onChange}
-                            rows={4}
-                            className={`${inputClass} resize-none`}
-                            required
-                          />
-                        </label>
-
-                    {targetEmail ? (
-                        <button
-                          type="submit"
-                            className="min-h-12 w-full bg-brand-navy text-sm font-extrabold text-white transition-colors hover:bg-brand-lime hover:text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime sm:col-span-2"
-                        >
-                          {ctaLabel}
-                        </button>
-                    ) : (
-                          <p className="text-sm text-text-muted sm:col-span-2">
-                        {t(UI.noEmail, locale)}
-                      </p>
-                    )}
-                    {targetEmail ? (
-                          <p className="text-xs text-text-muted sm:col-span-2">
-                        {t(UI.contactFormHint, locale)}
-                      </p>
-                    ) : null}
-                  </form>
-                      )}
-                    </div>
-                </Reveal>
+              <div className="mx-auto max-w-[1320px] px-6">
+                <div className="grid grid-cols-1 border-y border-white/12 md:grid-cols-3">
+                  <FastLink
+                    label={t(UI.whatsapp, locale)}
+                    value={mainPhone}
+                    href={waHref}
+                    external
+                  />
+                  <FastLink
+                    label={t(UI.callUs, locale)}
+                    value={mainPhone}
+                    href={phoneHref}
+                  />
+                  <FastLink
+                    label={t(UI.sendEmail, locale)}
+                    value={targetEmail}
+                    href={targetEmail ? `mailto:${targetEmail}` : ""}
+                  />
                 </div>
               </div>
 
+              <section className="mx-auto grid max-w-[1320px] grid-cols-1 gap-12 px-6 py-20 md:grid-cols-[5fr_7fr] md:gap-16">
+                <motion.div
+                  initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.15 }}
+                  transition={{ duration: 0.5, ease: easeOut }}
+                >
+                  <div className="flex items-center gap-4 text-[14px] text-white/70">
+                    <span>{t(UI.contactDetails, locale)}</span>
+                    <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
+                    <span className="font-mono text-brand-lime" dir="ltr">
+                      § 01
+                    </span>
+                  </div>
+
+                  <div className="mt-3">
+                    {address ? (
+                      <div className="border-b border-white/12 py-5">
+                        <div className="text-[13px] text-white/60">
+                          {t(UI.address, locale)}
+                        </div>
+                        <div className="mt-1.5 text-[18px] leading-[1.6]">
+                          {address}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {otherPhones.length ? (
+                      <div className="border-b border-white/12 py-5">
+                        <div className="text-[13px] text-white/60">
+                          {t(UI.otherPhones, locale)}
+                        </div>
+                        <div className="mt-1.5 space-y-1 text-[18px] leading-[1.6]">
+                          {otherPhones.map((phone) => (
+                            <a
+                              key={phone}
+                              href={toTelHref(phone)}
+                              className="block transition-colors hover:text-brand-lime"
+                            >
+                              <bdi dir="ltr">{phone}</bdi>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {targetEmail ? (
+                      <div className="border-b border-white/12 py-5">
+                        <div className="text-[13px] text-white/60">
+                          {t(UI.email, locale)}
+                        </div>
+                        <a
+                          href={`mailto:${targetEmail}`}
+                          className="mt-1.5 block text-[18px] leading-[1.6] transition-colors hover:text-brand-lime"
+                          dir="ltr"
+                        >
+                          {targetEmail}
+                        </a>
+                      </div>
+                    ) : null}
+
+                    {hoursLine ? (
+                      <div className="border-b border-white/12 py-5">
+                        <div className="text-[13px] text-white/60">
+                          {t(UI.workingHours, locale)}
+                        </div>
+                        <div className="mt-1.5 text-[18px] leading-[1.6]">
+                          {hoursLine}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {socials.length ? (
+                    <div className="mt-6 flex flex-wrap gap-5 text-[15px]">
+                      {socials.map((item) => (
+                        <a
+                          key={item.id}
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-white transition-colors hover:text-brand-lime"
+                        >
+                          {item.label}
+                        </a>
+                      ))}
+                    </div>
+                  ) : null}
+                </motion.div>
+
+                <motion.div
+                  initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.12 }}
+                  transition={{ duration: 0.5, ease: easeOut }}
+                  className="rounded-2xl border border-white/10 bg-[#110E33] p-8 md:p-10"
+                >
+                  {submitted ? (
+                    <div className="flex min-h-[280px] flex-col items-center justify-center gap-6 text-center">
+                      <LogoTriangle className="h-14 w-16" />
+                      <p className="max-w-xs text-lg font-extrabold leading-8">
+                        {t(UI.formSuccessTitle, locale)}
+                      </p>
+                    </div>
+                  ) : (
+                    <form onSubmit={onSubmit} className="flex flex-col gap-[26px]">
+                      <div className="font-display text-[30px] font-extrabold">
+                        {t(UI.sendUsMessage, locale)}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <label className="flex flex-col gap-1.5 text-[13px] text-white/65">
+                          {t(UI.firstName, locale)}
+                          <input
+                            name="firstName"
+                            value={form.firstName}
+                            onChange={onChange}
+                            className={inputClass}
+                            required
+                          />
+                        </label>
+                        <label className="flex flex-col gap-1.5 text-[13px] text-white/65">
+                          {t(UI.lastName, locale)}
+                          <input
+                            name="lastName"
+                            value={form.lastName}
+                            onChange={onChange}
+                            className={inputClass}
+                            required
+                          />
+                        </label>
+                      </div>
+
+                      <label className="flex flex-col gap-1.5 text-[13px] text-white/65">
+                        {t(UI.phoneField, locale)}
+                        <input
+                          name="phone"
+                          value={form.phone}
+                          onChange={onChange}
+                          className={inputClass}
+                          dir="ltr"
+                          placeholder="01xxxxxxxxx"
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-[13px] text-white/65">
+                        {t(UI.emailField, locale)}
+                        <input
+                          name="email"
+                          type="email"
+                          value={form.email}
+                          onChange={onChange}
+                          className={inputClass}
+                          dir="ltr"
+                          required
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-[13px] text-white/65">
+                        {t(UI.message, locale)}
+                        <textarea
+                          name="message"
+                          value={form.message}
+                          onChange={onChange}
+                          rows={4}
+                          className={`${inputClass} resize-none`}
+                          required
+                        />
+                      </label>
+
+                      {targetEmail ? (
+                        <>
+                          <button
+                            type="submit"
+                            className="rounded-lg bg-white py-[17px] text-[17px] font-semibold text-[#0A0820] transition-colors hover:bg-brand-lime"
+                          >
+                            {ctaLabel}
+                          </button>
+                          <p className="text-[13px] text-white/55">
+                            {t(UI.contactFormHint, locale)}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-[14px] text-white/60">
+                          {t(UI.noEmail, locale)}
+                        </p>
+                      )}
+                    </form>
+                  )}
+                </motion.div>
+              </section>
+
               {mapSrc ? (
-                <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
-                  <Reveal>
-                    <div className="overflow-hidden rounded-lg">
+                <div className="mx-auto max-w-[1320px] px-6 pb-10">
+                  <div className="overflow-hidden rounded-2xl border border-white/8">
                     <iframe
                       title={heading}
                       src={mapSrc}
-                        className="h-[280px] w-full border-0 md:h-[420px]"
+                      className="h-[280px] w-full border-0 md:h-[400px]"
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
                     />
-                    </div>
-                    {mapLink ? (
-                      <SecondaryButton
+                  </div>
+                  {mapLink ? (
+                    <div className="mt-3.5">
+                      <a
                         href={mapLink}
-                        className="mt-4"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="border-b border-brand-lime pb-[3px] text-white transition-colors hover:text-brand-lime"
                       >
-                        {t(UI.openInMapsLink, locale)}
-                      </SecondaryButton>
-                    ) : null}
-                  </Reveal>
+                        {t(UI.openInMapsLink, locale)} ←
+                      </a>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
-              <Suspense fallback={null}>
-                <EgyptDistributorMap />
-              </Suspense>
+
+              <GrowTogetherBanner />
             </>
           )}
         </main>

@@ -1,16 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { IoSearchOutline } from "react-icons/io5";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
-import PageBanner from "@/components/ui/PageBanner";
-import Reveal from "@/components/ui/Reveal";
-import FilterTabs from "@/components/ui/FilterTabs";
-import ContentGrid, { cardLayoutForCount } from "@/components/ui/ContentGrid";
-import { SecondaryButton } from "@/components/ui/AppButton";
 import ProductCard from "@/components/products/ProductCard";
+import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
+import RevealHeading from "@/components/ui/RevealHeading";
+import LogoTriangle from "@/components/ui/LogoTriangle";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories, getProducts } from "@/services/cms/products";
 import { useHomepageSection } from "@/hooks/useHomepageSection";
@@ -21,6 +18,7 @@ import { toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
+import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 function productMatchesNeedle(item, needle, categoryMap) {
   if (!needle) return true;
@@ -54,58 +52,10 @@ function productMatchesNeedle(item, needle, categoryMap) {
   );
 }
 
-function ProductGroup({ group, locale, index }) {
-  const layout = cardLayoutForCount(group.items.length);
-  const number = String(index + 1).padStart(2, "0");
-
-  return (
-    <section className="mb-14 last:mb-0 lg:mb-16">
-      <div className="mb-8 flex items-end gap-4">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h2 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
-              {group.name}
-            </h2>
-            <span className="text-sm text-text-muted">
-              {group.items.length} {t(UI.productsCount, locale)}
-            </span>
-          </div>
-          <div className="mt-3 h-px w-full bg-brand-navy/15" aria-hidden="true" />
-        </div>
-        <span className="shrink-0 pb-1 text-[11px] font-bold tracking-[0.2em] text-ink/40">
-          {number}
-        </span>
-      </div>
-
-      <ContentGrid>
-        {group.items.map((item, itemIndex) => (
-          <motion.div
-            key={item.id}
-            layout
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, delay: itemIndex * 0.06, ease: easeOut }}
-          >
-            <ProductCard
-              to={`/products/${item.id}`}
-              imageUrl={item.imageUrl}
-              title={t(item.name, locale)}
-              subcategory={t(item._subName, locale)}
-              origin={t(item.originCountry, locale)}
-              layout={layout}
-            />
-          </motion.div>
-        ))}
-      </ContentGrid>
-    </section>
-  );
-}
-
 export default function Products() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
-  const reduceMotion = useReducedMotion();
+  const { reducedMotion } = useMotionPrefs();
   const sectionQuery = useHomepageSection("product_categories");
   const [params, setParams] = useSearchParams();
   const sectionId = params.get("section") || "";
@@ -217,25 +167,19 @@ export default function Products() {
     });
   };
 
+  const categoryNames = categories
+    .map((item) => t(item.name, locale))
+    .filter(Boolean)
+    .join("، ");
+
   const hero = resolvePageHero({
     section: sectionQuery.data,
     contact,
     locale,
     fallbackTitle: t(UI.nav.products, locale),
-    fallbackSubtitle: t(UI.productsIntro, locale),
+    fallbackSubtitle: categoryNames || t(UI.productsIntro, locale),
     fallbackImage: products.find((item) => item.imageUrl)?.imageUrl || "",
   });
-
-  const categoryTabs = useMemo(
-    () => [
-      { id: "", label: t(UI.filterAll, locale) },
-      ...categories.map((item) => ({
-        id: item.id,
-        label: t(item.name, locale),
-      })),
-    ],
-    [categories, locale],
-  );
 
   const phone = contact?.phones?.[0] || "";
   const askSearchHref = toWhatsAppHref(
@@ -246,10 +190,9 @@ export default function Products() {
     ),
   );
 
-  const flatLayout = cardLayoutForCount(filtered.length);
-  const showGrouped = !sectionId;
   const pending = productsQuery.isPending || categoriesQuery.isPending;
   const error = productsQuery.isError || categoriesQuery.isError;
+  const showGrouped = !sectionId;
 
   return (
     <>
@@ -265,49 +208,109 @@ export default function Products() {
         />
       ) : null}
       {!pending && !error ? (
-        <main className="min-h-screen bg-page">
-          <PageBanner
-            title={hero.title}
-            subtitle={hero.subtitle}
-            imageUrl={hero.imageUrl}
-            label={UI.pageLabel.products}
-            breadcrumbs={[
-              { label: t(UI.nav.home, locale), to: "/" },
-              { label: t(UI.nav.products, locale) },
-            ]}
-          />
+        <main className="min-h-screen bg-[#0A0820] text-white">
+          <header className="mx-auto max-w-[1320px] px-6 pb-14 pt-[calc(var(--navbar-height)+var(--ticker-height)+3.5rem)] md:pb-[56px] md:pt-[calc(var(--navbar-height)+var(--ticker-height)+4.5rem)]">
+            <div className="flex items-center gap-4 text-[14px] text-white/62">
+              <nav aria-label="Breadcrumb" className="shrink-0">
+                <ol className="flex flex-wrap items-center gap-x-2">
+                  <li>
+                    <Link to="/" className="transition-colors hover:text-brand-lime">
+                      {t(UI.nav.home, locale)}
+                    </Link>
+                  </li>
+                  <li aria-hidden="true">/</li>
+                  <li>{t(UI.nav.products, locale)}</li>
+                </ol>
+              </nav>
+              <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
+            </div>
 
-          <div className="sticky top-[var(--navbar-height)] z-20 border-b border-line/10 bg-page">
-            <div className="container mx-auto flex flex-col gap-5 px-4 py-4 lg:flex-row lg:items-end lg:justify-between lg:gap-10 lg:px-8">
+            <div className="mt-7 flex flex-wrap items-end justify-between gap-8">
               <div className="min-w-0 flex-1">
-                <FilterTabs
-                  items={categoryTabs}
-                  value={sectionId}
-                  onChange={setCategory}
-                  count={filtered.length}
-                  countLabel={t(UI.resultsCount, locale)}
+                <RevealHeading
+                  as="h1"
+                  text={hero.title}
+                  className="max-w-full break-words font-display text-[clamp(2.75rem,8.5vw,7.5rem)] font-black leading-[1.1] text-white"
                 />
+                {hero.subtitle ? (
+                  <p className="mt-[22px] max-w-[560px] text-[18px] leading-[1.7] text-white/72 md:text-[20px]">
+                    {hero.subtitle}
+                  </p>
+                ) : null}
               </div>
-              <label className="relative block w-full shrink-0 lg:max-w-sm">
+              <div
+                className="flex items-center gap-2.5 font-mono text-[13px] tracking-[3px] text-white/70"
+                dir="ltr"
+              >
+                <LogoTriangle className="h-3 w-3.5" />
+                {UI.pageLabel.products}
+              </div>
+            </div>
+          </header>
+
+          <div className="sticky top-[calc(var(--navbar-height)+var(--ticker-height))] z-20 border-b border-white/12 bg-[#0A0820]">
+            <div className="mx-auto flex max-w-[1320px] flex-col gap-4 px-6 md:flex-row md:items-center md:justify-between md:gap-6">
+              <div className="flex flex-wrap items-center gap-x-[30px] gap-y-1 text-[16px]">
+                <button
+                  type="button"
+                  onClick={() => setCategory("")}
+                  className={`border-b-2 py-4 transition-colors ${
+                    !sectionId
+                      ? "border-brand-lime font-semibold text-white"
+                      : "border-transparent font-normal text-white/65 hover:text-white"
+                  }`}
+                >
+                  {t(UI.filterAll, locale)}
+                </button>
+                {categories.map((item) => {
+                  const active = sectionId === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setCategory(item.id)}
+                      className={`border-b-2 py-4 transition-colors ${
+                        active
+                          ? "border-brand-lime font-semibold text-white"
+                          : "border-transparent font-normal text-white/65 hover:text-white"
+                      }`}
+                    >
+                      {t(item.name, locale)}
+                    </button>
+                  );
+                })}
+                <span className="py-4 text-[13px] text-white/55">
+                  {filtered.length} {t(UI.resultsCount, locale)}
+                </span>
+              </div>
+
+              <label className="flex min-w-0 items-center gap-2.5 border-b border-white/30 py-2 md:min-w-[280px]">
                 <span className="sr-only">{t(UI.search, locale)}</span>
-                <IoSearchOutline
-                  className="pointer-events-none absolute start-0 top-1/2 -translate-y-1/2 text-lg text-ink/40"
-                  aria-hidden="true"
-                />
+                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                  <circle
+                    cx="7"
+                    cy="7"
+                    r="5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.3"
+                  />
+                  <path d="M11 11 L15 15" stroke="currentColor" strokeWidth="1.3" />
+                </svg>
                 <input
                   type="search"
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                   placeholder={t(UI.searchProducts, locale)}
-                  className="w-full border-0 border-b border-line/20 bg-transparent py-2.5 ps-8 pe-2 text-sm text-ink outline-none transition-colors placeholder:text-text-muted/70 focus:border-brand-lime"
+                  className="min-w-0 flex-1 border-0 bg-transparent text-[15px] text-white outline-none placeholder:text-white/45"
                 />
               </label>
             </div>
           </div>
 
-          <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
+          <section className="mx-auto max-w-[1320px] px-6 pb-[100px] pt-16">
             {filtered.length === 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <EmptyState
                   message={
                     queryText
@@ -316,62 +319,87 @@ export default function Products() {
                   }
                 />
                 {queryText && askSearchHref ? (
-                  <SecondaryButton href={askSearchHref}>
+                  <a
+                    href={askSearchHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex rounded-lg bg-brand-lime px-6 py-3 font-semibold text-[#0A0820] transition-colors hover:bg-brand-lime-hover"
+                  >
                     {t(UI.askAgronomist, locale)}
-                  </SecondaryButton>
+                  </a>
                 ) : null}
               </div>
-            ) : (
-              <LayoutGroup>
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {showGrouped ? (
-                    groups.map((group, index) => (
-                      <motion.div
-                        key={group.id}
-                        layout={!reduceMotion}
-                        initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{
-                          duration: 0.3,
-                          delay: Math.min(index * 0.04, 0.16),
-                          ease: easeOut,
-                        }}
+            ) : showGrouped ? (
+              <div className="grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-6 lg:grid-cols-4 lg:gap-6">
+                {groups.map((group, index) => (
+                  <motion.div
+                    key={group.id}
+                    initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.12 }}
+                    transition={{
+                      duration: 0.45,
+                      delay: Math.min(index * 0.05, 0.2),
+                      ease: easeOut,
+                    }}
+                  >
+                    <div className="mb-[18px] flex flex-wrap items-baseline gap-3">
+                      <span
+                        className="font-mono text-[13px] text-brand-lime"
+                        dir="ltr"
                       >
-                        <ProductGroup group={group} locale={locale} index={index} />
-                      </motion.div>
-                    ))
-                  ) : (
-                    <ContentGrid>
-                      {filtered.map((item, index) => (
-                        <motion.div
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <span className="font-display text-[22px] font-extrabold">
+                        {group.name}
+                      </span>
+                      <span className="text-[13px] text-white/55">
+                        {group.items.length} {t(UI.productsCount, locale)}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-8">
+                      {group.items.map((item) => (
+                        <ProductCard
                           key={item.id}
-                          layout={!reduceMotion}
-                          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                          transition={{
-                            duration: 0.3,
-                            delay: Math.min(index * 0.06, 0.3),
-                            ease: easeOut,
-                          }}
-                        >
-                          <ProductCard
-                            to={`/products/${item.id}`}
-                            imageUrl={item.imageUrl}
-                            title={t(item.name, locale)}
-                            subcategory={t(item._subName, locale)}
-                            origin={t(item.originCountry, locale)}
-                            layout={flatLayout}
-                          />
-                        </motion.div>
+                          to={`/products/${item.id}`}
+                          imageUrl={item.imageUrl}
+                          title={t(item.name, locale)}
+                          subcategory={t(item._subName, locale)}
+                          origin={t(item.originCountry, locale)}
+                        />
                       ))}
-                    </ContentGrid>
-                  )}
-                </AnimatePresence>
-              </LayoutGroup>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {filtered.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.12 }}
+                    transition={{
+                      duration: 0.45,
+                      delay: Math.min(index * 0.04, 0.2),
+                      ease: easeOut,
+                    }}
+                  >
+                    <ProductCard
+                      to={`/products/${item.id}`}
+                      imageUrl={item.imageUrl}
+                      title={t(item.name, locale)}
+                      subcategory={t(item._subName, locale)}
+                      origin={t(item.originCountry, locale)}
+                    />
+                  </motion.div>
+                ))}
+              </div>
             )}
-          </div>
+          </section>
+
+          <GrowTogetherBanner />
         </main>
       ) : null}
     </>

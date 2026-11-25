@@ -55,7 +55,7 @@ export default function GrowTogetherBanner() {
         <AccentHeading
           as="h2"
           text={title}
-          className="mt-[22px] font-display text-[clamp(3.5rem,12vw,9.375rem)] font-black leading-none tracking-[-0.03em] text-white max-md:text-[64px]"
+          className="mt-[22px] max-w-full break-words font-display text-[clamp(2.75rem,9vw,7.5rem)] font-black leading-[1.1] text-white"
         />
 
         <div className="mt-12 flex flex-wrap items-center gap-4">

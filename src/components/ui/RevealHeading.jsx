@@ -47,7 +47,10 @@ export default function RevealHeading({
           return <span key={`s-${index}`}>{part}</span>;
         }
         return (
-          <span key={`w-${index}`} className="inline-block overflow-hidden align-bottom py-[0.08em]">
+          <span
+            key={`w-${index}`}
+            className="inline-block overflow-hidden align-bottom px-[0.04em] py-[0.12em]"
+          >
             <motion.span
               className="inline-block"
               initial={{ y: "110%", opacity: 0 }}

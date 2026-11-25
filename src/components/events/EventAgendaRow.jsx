@@ -1,13 +1,17 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
 import LtrText from "@/components/ui/LtrText";
 import { useLocale } from "@/context/LocaleContext";
+import { useSiteData } from "@/context/SiteDataContext";
+import { downloadEventIcs, hasEventTime } from "@/lib/ics";
+import { toWhatsAppHref } from "@/lib/phone";
 import { eventDayKey } from "@/lib/time";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
+import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 function daysUntil(date) {
   const key = eventDayKey(date);
@@ -16,8 +20,7 @@ function daysUntil(date) {
   const target = new Date(year, month - 1, day);
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const diff = Math.ceil((target - start) / (1000 * 60 * 60 * 24));
-  return diff;
+  return Math.ceil((target - start) / (1000 * 60 * 60 * 24));
 }
 
 export function getEventParts(date, locale) {
@@ -51,7 +54,8 @@ export default function EventAgendaRow({
   showImage = true,
 }) {
   const { locale } = useLocale();
-  const reduceMotion = useReducedMotion();
+  const { contact } = useSiteData();
+  const { reducedMotion } = useMotionPrefs();
   const title = t(item.title, locale);
   const details = t(item.details, locale);
   const location = t(item.location, locale);
@@ -67,169 +71,150 @@ export default function EventAgendaRow({
         : t(UI.daysLeft, locale).replace("{n}", String(remaining))
       : "";
 
-  return (
-    <Link
-      to={`/events/${item.id}`}
-      className="group relative block border-b border-line/15 py-7 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2 sm:py-8"
-    >
-      <span
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-brand-lime transition-transform duration-500 group-hover:scale-x-100 motion-reduce:transition-none"
-        aria-hidden="true"
-      />
+  const phone = contact?.phones?.[0] || "";
+  const dateLabel = parts.full;
+  const waHref =
+    upcoming &&
+    toWhatsAppHref(
+      phone,
+      t(UI.bookEventMessage, locale)
+        .replace("{title}", title || "")
+        .replace("{date}", dateLabel || ""),
+    );
+  const canAddToCalendar = upcoming && hasEventTime(time) && eventDayKey(item.date);
 
-      <div className="grid grid-cols-1 gap-5 md:hidden">
-        {showImage && !compact ? (
-          <div className="overflow-hidden rounded-md bg-surface-muted">
-            {item.imageUrl ? (
-              <SafeImage
-                src={item.imageUrl}
-                alt={title}
-                className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-              />
-            ) : (
-              <div className="flex aspect-[4/3] items-center justify-center text-sm font-bold text-ink/40">
-                {title}
-              </div>
-            )}
+  const onAddToCalendar = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    downloadEventIcs(
+      {
+        title,
+        date: item.date,
+        time,
+        location,
+        description: details,
+        url:
+          typeof window !== "undefined"
+            ? `${window.location.origin}/events/${item.id}`
+            : "",
+      },
+      `${eventDayKey(item.date) || "event"}.ics`,
+    );
+  };
+
+  if (compact) {
+    return (
+      <Link
+        to={`/events/${item.id}`}
+        className="group flex items-baseline gap-6 border-b border-white/12 py-6 text-white"
+      >
+        {parts.day ? (
+          <span className="w-16 shrink-0 font-display text-[2.5rem] font-black leading-none">
+            <LtrText>{parts.day}</LtrText>
+          </span>
+        ) : null}
+        <span className="min-w-0 flex-1 font-display text-[22px] font-extrabold transition-colors group-hover:text-brand-lime">
+          {title}
+        </span>
+      </Link>
+    );
+  }
+
+  return (
+    <motion.article
+      className="grid grid-cols-1 items-center gap-8 border-b border-white/12 py-10 text-white md:grid-cols-[2fr_5fr_5fr] md:gap-10"
+      initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{ duration: 0.5, ease: easeOut }}
+    >
+      <div>
+        <span
+          className={`inline-block rounded-full px-2.5 py-1 text-[12px] font-semibold ${
+            upcoming
+              ? "bg-brand-lime text-[#0A0820]"
+              : "border border-white/25 text-white/70"
+          }`}
+        >
+          {upcoming ? t(UI.upcoming, locale) : t(UI.eventEnded, locale)}
+        </span>
+        {parts.day ? (
+          <div className="mt-3 font-display text-[clamp(4rem,12vw,7.5rem)] font-black leading-none">
+            <LtrText>{parts.day}</LtrText>
           </div>
         ) : null}
-        <div>
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            {upcoming ? (
-              <span className="text-[11px] font-bold tracking-[0.14em] text-brand-lime">
-                {t(UI.upcoming, locale)}
-              </span>
-            ) : (
-              <span className="text-[11px] font-bold tracking-[0.14em] text-text-muted">
-                {t(UI.eventEnded, locale)}
-              </span>
-            )}
-            {parts.full ? (
-              <p className="text-sm text-text-muted">{parts.full}</p>
-            ) : null}
-          </div>
-          <h3
-            className={`font-extrabold tracking-tight text-ink ${
-              compact ? "text-lg" : "text-xl"
-            }`}
-          >
+        {parts.monthYear ? (
+          <div className="mt-2 text-[16px] text-white/70">{parts.monthYear}</div>
+        ) : null}
+        {countdownLabel ? (
+          <div className="mt-2.5 text-[14px] text-brand-lime">{countdownLabel}</div>
+        ) : null}
+      </div>
+
+      <div>
+        <Link to={`/events/${item.id}`}>
+          <h3 className="font-display text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold leading-[1.2] transition-colors hover:text-brand-lime">
             {title}
           </h3>
-          {!compact && meta ? (
-            <p className="mt-2 text-sm text-text-muted">{meta}</p>
+        </Link>
+        {meta ? (
+          <div className="mt-3 text-[14px] text-white/60">{meta}</div>
+        ) : null}
+        {details ? (
+          <p className="mt-4 line-clamp-3 text-[18px] leading-[1.7] text-white/75">
+            {details}
+          </p>
+        ) : null}
+        <div className="mt-6 flex flex-wrap items-center gap-[18px]">
+          {waHref ? (
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg bg-brand-lime px-7 py-4 text-[16px] font-semibold text-[#0A0820] transition-colors hover:bg-brand-lime-hover"
+              onClick={(event) => event.stopPropagation()}
+            >
+              {t(UI.bookEventWa, locale)}
+            </a>
           ) : null}
-          {!compact && details ? (
-            <p className="mt-2 line-clamp-2 text-sm leading-7 text-text-muted">
-              {details}
-            </p>
-          ) : null}
-          {!compact ? (
-            <span className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-ink underline decoration-brand-lime decoration-2 underline-offset-6">
-              {t(UI.eventDetailsLink, locale)}
-              <span
-                className="transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1 motion-reduce:transition-none"
-                aria-hidden="true"
-              >
-                →
-              </span>
-            </span>
-          ) : null}
+          {canAddToCalendar ? (
+            <button
+              type="button"
+              onClick={onAddToCalendar}
+              className="border-b border-brand-lime pb-[3px] text-white transition-colors hover:text-brand-lime"
+            >
+              {t(UI.addToCalendar, locale)}
+            </button>
+          ) : (
+            <Link
+              to={`/events/${item.id}`}
+              className="border-b border-brand-lime pb-[3px] text-white transition-colors hover:text-brand-lime"
+            >
+              {t(UI.eventDetailsLink, locale)} ←
+            </Link>
+          )}
         </div>
       </div>
 
-      {!compact ? (
-        <div className="hidden items-start gap-6 md:grid md:grid-cols-12">
-          <div className="md:col-span-2">
-            {upcoming ? (
-              <p className="mb-2 text-[11px] font-bold tracking-[0.14em] text-brand-lime">
-                {t(UI.upcoming, locale)}
-              </p>
-            ) : null}
-            {parts.day ? (
-              <motion.p
-                className={`overflow-hidden text-[4.5rem] font-extrabold leading-none tracking-tight ${
-                  upcoming ? "text-ink" : "text-text-muted"
-                }`}
-                initial={reduceMotion ? false : { y: "100%", opacity: 0 }}
-                whileInView={{ y: "0%", opacity: 1 }}
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.45, ease: easeOut }}
-              >
-                <LtrText>{parts.day}</LtrText>
-              </motion.p>
-            ) : null}
-            {parts.monthYear ? (
-              <p className="mt-2 text-sm text-text-muted">{parts.monthYear}</p>
-            ) : null}
-            {countdownLabel ? (
-              <p className="mt-3 text-xs font-bold tracking-wide text-brand-lime">
-                {countdownLabel}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="md:col-span-6">
-            <h3 className="mb-3 text-[1.75rem] font-extrabold leading-snug tracking-tight text-ink">
+      {showImage ? (
+        <Link
+          to={`/events/${item.id}`}
+          className="group relative block h-[240px] overflow-hidden rounded-[20px] border border-white/8 bg-[#110E33] sm:h-[380px]"
+        >
+          {item.imageUrl ? (
+            <SafeImage
+              src={item.imageUrl}
+              alt={title}
+              width={900}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center px-6 text-center text-white/40">
               {title}
-            </h3>
-            {meta ? <p className="mb-3 text-sm text-text-muted">{meta}</p> : null}
-            {details ? (
-              <p className="mb-4 line-clamp-2 text-base leading-8 text-text-muted">
-                {details}
-              </p>
-            ) : null}
-            <span className="inline-flex items-center gap-2 text-sm font-bold text-ink underline decoration-brand-lime decoration-2 underline-offset-6">
-              {t(UI.eventDetailsLink, locale)}
-              <span
-                className="transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1 motion-reduce:transition-none"
-                aria-hidden="true"
-              >
-                →
-              </span>
-            </span>
-          </div>
-
-          {showImage ? (
-            <div className="md:col-span-4">
-              <div className="overflow-hidden rounded-md bg-surface-muted">
-                {item.imageUrl ? (
-                  <SafeImage
-                    src={item.imageUrl}
-                    alt={title}
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-                  />
-                ) : (
-                  <div className="flex aspect-[4/3] items-center justify-center text-sm font-bold text-ink/40">
-                    {title}
-                  </div>
-                )}
-              </div>
             </div>
-          ) : null}
-        </div>
-      ) : (
-        <div className="hidden items-center gap-6 md:grid md:grid-cols-12">
-          <div className="md:col-span-2">
-            {parts.day ? (
-              <p
-                className={`text-4xl font-extrabold leading-none tracking-tight ${
-                  upcoming ? "text-ink" : "text-text-muted"
-                }`}
-              >
-                {parts.day}
-              </p>
-            ) : null}
-            {parts.monthYear ? (
-              <p className="mt-1 text-xs text-text-muted">{parts.monthYear}</p>
-            ) : null}
-          </div>
-          <div className="md:col-span-10">
-            <h3 className="text-xl font-extrabold tracking-tight text-ink">
-              {title}
-            </h3>
-          </div>
-        </div>
-      )}
-    </Link>
+          )}
+        </Link>
+      ) : null}
+    </motion.article>
   );
 }

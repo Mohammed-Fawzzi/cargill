@@ -1,41 +1,93 @@
-import React, { useMemo, useRef } from "react";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useScroll } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
-import PageBanner from "@/components/ui/PageBanner";
-import Reveal from "@/components/ui/Reveal";
-import SectionRule from "@/components/ui/SectionRule";
-import PlantStroke from "@/components/ui/PlantStroke";
+import SafeImage from "@/components/ui/SafeImage";
+import AccentHeading from "@/components/ui/AccentHeading";
+import LogoTriangle from "@/components/ui/LogoTriangle";
 import ScrollWords from "@/components/ui/ScrollWords";
 import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
+import useCountUp from "@/hooks/useCountUp";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories } from "@/services/cms/products";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
+import { easeOut } from "@/lib/motion";
 
-function splitLead(text) {
-  const value = String(text || "").trim();
-  if (!value) return { lead: "", rest: "" };
-  const match = value.match(/^([\s\S]+?[.!?؟。])\s+([\s\S]*)$/);
-  if (!match) return { lead: value, rest: "" };
-  return { lead: match[1], rest: match[2] };
+const BrandTriangle3D = lazy(() => import("@/components/ui/BrandTriangle3D"));
+
+function useIsMobile(breakpoint = 768) {
+  const [mobile, setMobile] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
+    const sync = () => setMobile(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, [breakpoint]);
+
+  return mobile;
 }
 
-function SectionLabel({ number, label }) {
+function ExperienceCard({ locale, reducedMotion, isMobile }) {
+  const cardRef = useRef(null);
+  const [active, setActive] = useState(false);
+  const counted = useCountUp(20, active, 900);
+  const value = reducedMotion ? 20 : counted;
+
+  useEffect(() => {
+    const node = cardRef.current;
+    if (!node) return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setActive(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <SectionRule
-      className="mb-8 flex items-center gap-4"
-      label={label}
-      number={number}
-      labelClassName="text-ink"
-      numberClassName="text-ink/45"
-      lineClassName="bg-brand-navy/15"
-    />
+    <div
+      ref={cardRef}
+      className="relative flex h-[360px] items-center justify-center overflow-hidden rounded-[24px] border border-white/8 bg-[#110E33] sm:h-[440px]"
+    >
+      <div className="absolute inset-0 flex items-center justify-center">
+        {reducedMotion ? (
+          <LogoTriangle className="w-[280px]" />
+        ) : (
+          <Suspense fallback={<LogoTriangle className="w-[280px]" />}>
+            <BrandTriangle3D
+              className="h-[70%] w-[75%] max-w-[280px]"
+              softLight
+              spin={0.16}
+              followMouse={!isMobile}
+            />
+          </Suspense>
+        )}
+      </div>
+      <div className="absolute inset-x-6 bottom-6 z-10 rounded-[14px] border border-white/12 bg-[rgba(10,8,32,0.75)] px-5 py-5">
+        <p
+          className="font-display text-[64px] font-black leading-none text-brand-lime"
+          dir="ltr"
+        >
+          +{value}
+        </p>
+        <p className="mt-1.5 text-[15px] text-white/78">
+          {t(UI.experienceBody, locale)}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -43,7 +95,9 @@ export default function About() {
   const { locale } = useLocale();
   const { reducedMotion } = useMotionPrefs();
   const { contact, isPending, isError } = useSiteData();
+  const isMobile = useIsMobile();
   const aboutRef = useRef(null);
+
   const { scrollYProgress } = useScroll({
     target: aboutRef,
     offset: ["start 0.85", "end 0.35"],
@@ -55,231 +109,238 @@ export default function About() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const name = t(contact?.companyName, locale);
   const aboutHeading = t(contact?.aboutHeading, locale);
   const about = t(contact?.about, locale);
   const vision = t(contact?.vision, locale);
   const mission = t(contact?.mission, locale);
+  const bannerUrl = contact?.bannerUrl || "";
   const categories = categoriesQuery.data || [];
-  const { lead, rest } = splitLead(about);
 
-  const bannerTitle =
-    aboutHeading || t(UI.aboutPageTitle, locale) || name || t(UI.nav.about, locale);
-
-  const pillars = useMemo(
-    () =>
-      [
-        {
-          title: t(UI.valuesTagField, locale),
-          body: t(UI.commitField, locale),
-        },
-        {
-          title: t(UI.valuesTagVision, locale),
-          body: t(UI.commitQuality, locale),
-        },
-        {
-          title: t(UI.valuesTagMission, locale),
-          body: t(UI.commitSupport, locale),
-        },
-      ].filter((item) => item.title && item.body),
-    [locale],
-  );
+  const titleText =
+    aboutHeading || t(UI.aboutPageTitle, locale) || t(UI.nav.about, locale);
 
   const hasContent = Boolean(about || vision || mission || categories.length);
 
   return (
     <>
       <Seo
-        title={bannerTitle}
+        title={titleText}
         description={about || vision || mission}
         path="/about"
       />
       {isPending ? <Loading /> : null}
       {!isPending && isError ? <ErrorState /> : null}
       {!isPending && !isError ? (
-        <main className="min-h-screen bg-page">
-          <PageBanner
-            title={bannerTitle}
-            subtitle={t(UI.aboutIntro, locale)}
-            imageUrl={contact?.bannerUrl || ""}
-            label={UI.pageLabel.about}
-            breadcrumbs={[
-              { label: t(UI.nav.home, locale), to: "/" },
-              { label: t(UI.nav.about, locale) },
-            ]}
-          />
+        <main className="min-h-screen bg-[#0A0820] text-white">
+          <header className="mx-auto max-w-[1320px] px-6 pb-14 pt-[calc(var(--navbar-height)+var(--ticker-height)+3.5rem)] md:pb-[56px] md:pt-[calc(var(--navbar-height)+var(--ticker-height)+4.5rem)]">
+            <div className="flex items-center gap-4 text-[14px] text-white/62">
+              <nav aria-label="Breadcrumb" className="shrink-0">
+                <ol className="flex flex-wrap items-center gap-x-2">
+                  <li>
+                    <Link to="/" className="transition-colors hover:text-brand-lime">
+                      {t(UI.nav.home, locale)}
+                    </Link>
+                  </li>
+                  <li aria-hidden="true">/</li>
+                  <li>{t(UI.nav.about, locale)}</li>
+                </ol>
+              </nav>
+              <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
+            </div>
+
+            <div className="mt-7 flex flex-wrap items-end justify-between gap-8">
+              <div className="min-w-0 flex-1">
+                <div className="overflow-hidden py-[0.1em]">
+                  <motion.div
+                    initial={reducedMotion ? false : { y: "110%" }}
+                    animate={{ y: "0%" }}
+                    transition={{ duration: 0.65, ease: easeOut }}
+                  >
+                    <AccentHeading
+                      as="h1"
+                      text={titleText}
+                      className="max-w-full break-words font-display text-[clamp(2.75rem,8.5vw,7.5rem)] font-black leading-[1.1] text-white"
+                    />
+                  </motion.div>
+                </div>
+                <p className="mt-[22px] max-w-[560px] text-[18px] leading-[1.7] text-white/72 md:text-[20px]">
+                  {t(UI.aboutIntro, locale)}
+                </p>
+              </div>
+              <div
+                className="flex items-center gap-2.5 font-mono text-[13px] tracking-[3px] text-white/70"
+                dir="ltr"
+              >
+                <LogoTriangle className="h-3 w-3.5" />
+                {UI.pageLabel.about}
+              </div>
+            </div>
+          </header>
+
+          {bannerUrl ? (
+            <div className="mx-auto max-w-[1320px] px-6">
+              <div className="relative h-[280px] overflow-hidden rounded-[20px] border border-white/8 bg-[#110E33] sm:h-[420px]">
+                <SafeImage
+                  src={bannerUrl}
+                  alt=""
+                  width={1400}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            </div>
+          ) : null}
 
           {!hasContent ? (
             <EmptyState />
           ) : (
             <>
               {about ? (
-                <section className="py-14 lg:py-20">
-                  <div className="container mx-auto px-4 lg:px-8">
-                    <Reveal>
-                      <SectionLabel
-                        number="01"
-                        label={t(UI.whoWeAre, locale)}
+                <motion.section
+                  className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-12 px-6 pb-[60px] pt-[100px] md:grid-cols-[7fr_5fr] md:gap-16"
+                  initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.15 }}
+                  transition={{ duration: 0.5, ease: easeOut }}
+                >
+                  <div>
+                    <div className="flex items-center gap-4 text-[14px] text-white/70">
+                      <span>{t(UI.whoWeAre, locale)}</span>
+                      <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
+                      <span className="font-mono text-brand-lime" dir="ltr">
+                        § 01
+                      </span>
+                    </div>
+                    <div ref={aboutRef} className="mt-[30px]">
+                      <ScrollWords
+                        text={about}
+                        progress={scrollYProgress}
+                        reducedMotion={reducedMotion}
+                        mobile={isMobile}
+                        accentPhrase
+                        className="text-[clamp(1.25rem,2.6vw,1.6875rem)] font-medium leading-[1.8] text-white/62"
                       />
-                      <div
-                        ref={aboutRef}
-                        className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8"
-                      >
-                        <div className="lg:col-span-7">
-                          {lead ? (
-                            <p className="mb-5 text-[1.35rem] font-extrabold leading-[1.7] text-ink sm:text-[1.5rem]">
-                              {lead}
-                            </p>
-                          ) : null}
-                          {rest || about ? (
-                            <ScrollWords
-                              text={rest || about}
-                              progress={scrollYProgress}
-                              reducedMotion={reducedMotion}
-                              mobile={false}
-                              className="whitespace-pre-wrap text-[1.3125rem] font-medium leading-[1.9] text-ink sm:text-[1.4rem]"
-                            />
-                          ) : null}
-                        </div>
-                        <div className="lg:col-span-4 lg:col-start-9">
-                          <div className="flex items-end gap-4 border-t border-brand-lime pt-4">
-                            <div className="min-w-0 flex-1">
-                              <p className="text-5xl font-extrabold tracking-tight text-ink sm:text-6xl lg:text-7xl">
-                                {t(UI.experienceYears, locale)}
-                              </p>
-                              <p className="mt-3 max-w-[14rem] text-sm leading-6 text-text-muted">
-                                {t(UI.experienceBody, locale)}
-                              </p>
-                            </div>
-                            <PlantStroke className="mb-1 h-28 w-14 shrink-0 sm:h-32 sm:w-16" />
-                          </div>
-                        </div>
-                      </div>
-                    </Reveal>
+                    </div>
                   </div>
-                </section>
+                  <ExperienceCard
+                    locale={locale}
+                    reducedMotion={reducedMotion}
+                    isMobile={isMobile}
+                  />
+                </motion.section>
               ) : null}
 
               {(vision || mission) && (
-                <section className="border-t border-line/10 py-14 lg:py-20">
-                  <div className="container mx-auto px-4 lg:px-8">
-                    {vision ? (
-                      <Reveal>
-                        <div className="grid grid-cols-1 gap-6 border-b border-line/15 py-10 lg:grid-cols-12 lg:gap-8 lg:py-12">
-                          <div className="lg:col-span-3">
-                            <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
-                              02
-                            </p>
-                            <h2 className="text-[2.5rem] font-extrabold leading-none tracking-tight text-ink">
-                              {t(UI.ourVision, locale)}
-                            </h2>
-                          </div>
-                          <div className="lg:col-span-9">
-                            <p className="whitespace-pre-wrap text-[1.5rem] font-semibold leading-[1.7] text-ink sm:text-[1.625rem]">
-                              {vision}
-                            </p>
-                          </div>
-                        </div>
-                      </Reveal>
-                    ) : null}
-                    {mission ? (
-                      <Reveal delay={0.05}>
-                        <div className="grid grid-cols-1 gap-6 py-10 lg:grid-cols-12 lg:gap-8 lg:py-12">
-                          <div className="lg:col-span-3">
-                            <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
-                              03
-                            </p>
-                            <h2 className="text-[2.5rem] font-extrabold leading-none tracking-tight text-ink">
-                              {t(UI.ourMission, locale)}
-                            </h2>
-                          </div>
-                          <div className="lg:col-span-9">
-                            <p className="whitespace-pre-wrap text-[1.5rem] font-semibold leading-[1.7] text-ink sm:text-[1.625rem]">
-                              {mission}
-                            </p>
-                          </div>
-                        </div>
-                      </Reveal>
-                    ) : null}
-                  </div>
+                <section className="mx-auto max-w-[1320px] px-6 py-10">
+                  {vision ? (
+                    <motion.div
+                      className="grid grid-cols-1 items-start gap-6 border-b border-white/12 py-11 md:grid-cols-[2fr_7fr_2fr] md:gap-8"
+                      initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.2 }}
+                      transition={{ duration: 0.5, ease: easeOut }}
+                    >
+                      <div>
+                        <span
+                          className="font-mono text-[13px] text-brand-lime"
+                          dir="ltr"
+                        >
+                          02
+                        </span>
+                        <h2 className="mt-2 font-display text-[clamp(2rem,5vw,2.75rem)] font-black leading-none">
+                          {t(UI.ourVision, locale)}
+                        </h2>
+                      </div>
+                      <p className="whitespace-pre-wrap text-[20px] leading-[1.7] text-white/85 md:text-[24px]">
+                        {vision}
+                      </p>
+                      <div>
+                        <span className="inline-block rounded-full border border-white/30 px-3.5 py-1.5 text-[13px]">
+                          {t(UI.valuesTagVision, locale)}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ) : null}
+
+                  {mission ? (
+                    <motion.div
+                      className="grid grid-cols-1 items-start gap-6 border-b border-white/12 py-11 md:grid-cols-[2fr_7fr_2fr] md:gap-8"
+                      initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.2 }}
+                      transition={{ duration: 0.5, ease: easeOut }}
+                    >
+                      <div>
+                        <span
+                          className="font-mono text-[13px] text-brand-lime"
+                          dir="ltr"
+                        >
+                          03
+                        </span>
+                        <h2 className="mt-2 font-display text-[clamp(2rem,5vw,2.75rem)] font-black leading-none">
+                          {t(UI.ourMission, locale)}
+                        </h2>
+                      </div>
+                      <p className="whitespace-pre-wrap text-[20px] leading-[1.7] text-white/85 md:text-[24px]">
+                        {mission}
+                      </p>
+                      <div>
+                        <span className="inline-block rounded-full border border-white/30 px-3.5 py-1.5 text-[13px]">
+                          {t(UI.valuesTagMission, locale)}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ) : null}
                 </section>
               )}
 
-              {pillars.length === 3 ? (
-                <section className="border-t border-line/10 py-14 lg:py-20">
-                  <div className="container mx-auto px-4 lg:px-8">
-                    <Reveal>
-                      <SectionLabel
-                        number="04"
-                        label={t(UI.howWeWork, locale)}
-                      />
-                      <div className="grid grid-cols-1 md:grid-cols-3">
-                        {pillars.map((item, index) => (
-                          <div
-                            key={item.title}
-                            className={`py-6 md:px-6 md:py-2 ${
-                              index > 0
-                                ? "border-t border-line/15 md:border-t-0 md:border-s"
-                                : ""
-                            }`}
-                          >
-                            <p className="mb-3 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
-                              {String(index + 1).padStart(2, "0")}
-                            </p>
-                            <h3 className="mb-3 text-xl font-extrabold text-ink">
-                              {item.title}
-                            </h3>
-                            <p className="text-sm leading-7 text-text-muted">
-                              {item.body}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </Reveal>
-                  </div>
-                </section>
-              ) : null}
-
               {categories.length > 0 ? (
-                <section className="border-t border-line/10 py-14 lg:py-20">
-                  <div className="container mx-auto px-4 lg:px-8">
-                    <Reveal>
-                      <SectionLabel
-                        number="05"
-                        label={t(UI.whatWeOffer, locale)}
-                      />
-                      <div className="flex flex-col gap-0 border-t border-line/15 sm:flex-row sm:flex-wrap">
-                        {categories.map((item, index) => (
-                          <Link
-                            key={item.id}
-                            to={`/products?section=${item.id}`}
-                            className={`group flex flex-1 items-center justify-between gap-4 border-b border-line/15 py-6 sm:border-b-0 sm:border-e sm:px-5 sm:py-8 sm:last:border-e-0 ${
-                              index === 0 ? "sm:ps-0" : ""
-                            }`}
-                          >
-                            <span className="flex min-w-0 flex-col gap-2">
-                              <span className="text-[11px] font-bold tracking-[0.18em] text-brand-lime">
-                                {String(index + 1).padStart(2, "0")}
-                              </span>
-                              <span className="text-2xl font-extrabold tracking-tight text-ink transition-colors group-hover:text-brand-lime sm:text-3xl">
-                                {t(item.name, locale)}
-                              </span>
-                            </span>
-                            <span
-                              className="shrink-0 text-ink transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1 motion-reduce:transition-none"
-                              aria-hidden="true"
-                            >
-                              →
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-                    </Reveal>
+                <motion.section
+                  className="mx-auto max-w-[1320px] px-6 pb-10 pt-[60px]"
+                  initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.12 }}
+                  transition={{ duration: 0.5, ease: easeOut }}
+                >
+                  <div className="flex items-center gap-4 text-[14px] text-white/70">
+                    <span>{t(UI.whatWeOffer, locale)}</span>
+                    <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
+                    <span className="font-mono text-brand-lime" dir="ltr">
+                      § 04
+                    </span>
                   </div>
-                </section>
+                  <div className="mt-4">
+                    {categories.map((item, index) => (
+                      <Link
+                        key={item.id}
+                        to={`/products?section=${encodeURIComponent(item.id)}`}
+                        className="group flex items-center justify-between gap-4 border-b border-white/12 py-[26px] text-white"
+                      >
+                        <span className="flex items-baseline gap-5">
+                          <span
+                            className="font-mono text-[13px] text-brand-lime"
+                            dir="ltr"
+                          >
+                            {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <span className="font-display text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold transition-colors group-hover:text-brand-lime">
+                            {t(item.name, locale)}
+                          </span>
+                        </span>
+                        <span
+                          className="text-[22px] transition-transform duration-300 group-hover:-translate-x-1 rtl:group-hover:translate-x-1"
+                          aria-hidden="true"
+                        >
+                          ←
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </motion.section>
               ) : null}
 
-              <GrowTogetherBanner />
+              <div className="mt-10">
+                <GrowTogetherBanner />
+              </div>
             </>
           )}
         </main>

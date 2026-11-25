@@ -2,7 +2,7 @@ import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Center } from "@react-three/drei";
 import { ExtrudeGeometry, Shape } from "three";
-import { TriangleAccent } from "@/components/ui/TriangleMask";
+import LogoTriangle from "@/components/ui/LogoTriangle";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 function TrianglePrism({ followMouse, mouse, scrollTwist = 0, spin = 0.22 }) {
@@ -81,6 +81,7 @@ export default function BrandTriangle3D({
   const { reducedMotion, canTilt } = useMotionPrefs();
   const [webgl, setWebgl] = useState(true);
   const [visible, setVisible] = useState(false);
+  const [ready, setReady] = useState(false);
   const hostRef = useRef(null);
   const mouse = useRef({ x: 0, y: 0 });
   const followMouse =
@@ -103,8 +104,10 @@ export default function BrandTriangle3D({
     const node = hostRef.current;
     if (!node) return undefined;
     const observer = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
-      { rootMargin: "80px", threshold: 0.05 },
+      ([entry]) => {
+        if (entry.isIntersecting) setVisible(true);
+      },
+      { rootMargin: "200px", threshold: 0 },
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -127,19 +130,26 @@ export default function BrandTriangle3D({
     return () => window.removeEventListener("mousemove", onMove);
   }, [use3d, visible, followMouse]);
 
-  const fallback = <TriangleAccent className="h-full w-full opacity-30" />;
-
   return (
-    <div ref={hostRef} className={className} aria-hidden="true">
-      {!use3d ? (
-        fallback
-      ) : visible ? (
-        <Suspense fallback={fallback}>
+    <div ref={hostRef} className={`relative ${className}`} aria-hidden="true">
+      <LogoTriangle
+        className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${
+          ready ? "opacity-0" : "opacity-100"
+        }`}
+      />
+      {use3d && visible ? (
+        <Suspense fallback={null}>
           <Canvas
             dpr={[1, 1.5]}
             gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
             camera={{ position: [0, 0.2, 3.2], fov: 35 }}
-            style={{ width: "100%", height: "100%", background: "transparent" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              background: "transparent",
+              opacity: ready ? 1 : 0,
+            }}
+            onCreated={() => setReady(true)}
           >
             <Scene
               followMouse={followMouse && canTilt}

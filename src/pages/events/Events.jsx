@@ -1,12 +1,13 @@
 import React, { useCallback, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
-import PageBanner from "@/components/ui/PageBanner";
-import Reveal from "@/components/ui/Reveal";
-import FilterTabs from "@/components/ui/FilterTabs";
+import AccentHeading from "@/components/ui/AccentHeading";
+import LogoTriangle from "@/components/ui/LogoTriangle";
 import EventAgendaRow from "@/components/events/EventAgendaRow";
+import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getEvents } from "@/services/cms/events";
 import { useHomepageSection } from "@/hooks/useHomepageSection";
@@ -17,6 +18,8 @@ import { eventDayKey } from "@/lib/time";
 import { resolveCompanySocial } from "@/utils/social";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
+import { easeOut } from "@/lib/motion";
+import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 const FILTERS = [
   ["all", UI.allEvents],
@@ -41,6 +44,7 @@ function sortPast(list) {
 export default function Events() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
+  const { reducedMotion } = useMotionPrefs();
   const sectionQuery = useHomepageSection("events");
   const [params, setParams] = useSearchParams();
   const filter = params.get("status") || "all";
@@ -93,15 +97,6 @@ export default function Events() {
     fallbackImage: events.find((item) => item.imageUrl)?.imageUrl || "",
   });
 
-  const filterTabs = useMemo(
-    () =>
-      FILTERS.map(([key, label]) => ({
-        id: key,
-        label: t(label, locale),
-      })),
-    [locale],
-  );
-
   const facebook = resolveCompanySocial(contact?.social).find(
     (item) => item.id === "facebook",
   );
@@ -130,84 +125,136 @@ export default function Events() {
         />
       ) : null}
       {!pending && !error ? (
-        <main className="min-h-screen bg-page">
-          <PageBanner
-            title={hero.title}
-            subtitle={hero.subtitle}
-            imageUrl={hero.imageUrl}
-            label={UI.pageLabel.events}
-            breadcrumbs={[
-              { label: t(UI.nav.home, locale), to: "/" },
-              { label: t(UI.nav.events, locale) },
-            ]}
-          />
+        <main className="min-h-screen bg-[#0A0820] text-white">
+          <header className="mx-auto max-w-[1320px] px-6 pb-14 pt-[calc(var(--navbar-height)+var(--ticker-height)+3.5rem)] md:pb-[56px] md:pt-[calc(var(--navbar-height)+var(--ticker-height)+4.5rem)]">
+            <div className="flex items-center gap-4 text-[14px] text-white/62">
+              <nav aria-label="Breadcrumb" className="shrink-0">
+                <ol className="flex flex-wrap items-center gap-x-2">
+                  <li>
+                    <Link to="/" className="transition-colors hover:text-brand-lime">
+                      {t(UI.nav.home, locale)}
+                    </Link>
+                  </li>
+                  <li aria-hidden="true">/</li>
+                  <li>{t(UI.nav.events, locale)}</li>
+                </ol>
+              </nav>
+              <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
+            </div>
 
-          <div className="container mx-auto px-4 pb-16 lg:px-8 lg:pb-20">
-            <Reveal className="mb-10">
-              <FilterTabs
-                items={filterTabs}
-                value={filter}
-                onChange={setFilter}
-                count={filtered.length}
-                countLabel={t(UI.resultsCount, locale)}
-              />
-            </Reveal>
+            <div className="mt-7 flex flex-wrap items-end justify-between gap-8">
+              <div className="min-w-0 flex-1">
+                <div className="overflow-hidden py-[0.1em]">
+                  <motion.div
+                    initial={reducedMotion ? false : { y: "110%" }}
+                    animate={{ y: "0%" }}
+                    transition={{ duration: 0.65, ease: easeOut }}
+                  >
+                    <AccentHeading
+                      as="h1"
+                      text={hero.title}
+                      className="max-w-full break-words font-display text-[clamp(2.75rem,8.5vw,7.5rem)] font-black leading-[1.1] text-white"
+                    />
+                  </motion.div>
+                </div>
+                {hero.subtitle ? (
+                  <p className="mt-[22px] max-w-[560px] text-[18px] leading-[1.7] text-white/72 md:text-[20px]">
+                    {hero.subtitle}
+                  </p>
+                ) : null}
+              </div>
+              <div
+                className="flex items-center gap-2.5 font-mono text-[13px] tracking-[3px] text-white/70"
+                dir="ltr"
+              >
+                <LogoTriangle className="h-3 w-3.5" />
+                {UI.pageLabel.events}
+              </div>
+            </div>
+          </header>
 
+          <div className="border-b border-white/12">
+            <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-[30px] gap-y-1 px-6 text-[16px]">
+              {FILTERS.map(([key, label]) => {
+                const active = filter === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setFilter(key)}
+                    className={`border-b-2 py-4 transition-colors ${
+                      active
+                        ? "border-brand-lime font-semibold text-white"
+                        : "border-transparent font-normal text-white/65 hover:text-white"
+                    }`}
+                  >
+                    {t(label, locale)}
+                  </button>
+                );
+              })}
+              <span className="py-4 text-[13px] text-white/55">
+                {filtered.length} {t(UI.resultsCount, locale)}
+              </span>
+            </div>
+          </div>
+
+          <section className="mx-auto max-w-[1320px] px-6 pb-[100px] pt-14">
             {filtered.length === 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <EmptyState message={emptyMessage} />
                 {filter === "upcoming" && facebook?.url ? (
                   <a
                     href={facebook.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex text-sm font-bold text-ink underline decoration-brand-lime decoration-2 underline-offset-6"
+                    className="inline-flex border-b border-brand-lime pb-0.5 text-white transition-colors hover:text-brand-lime"
                   >
                     {t(UI.followFacebook, locale)}
                   </a>
                 ) : null}
               </div>
             ) : showSplit ? (
-              <div className="border-t border-line/15">
-                {upcomingItems.map((item, index) => (
-                  <Reveal key={item.id} delay={Math.min(index * 0.03, 0.15)}>
-                    <EventAgendaRow item={item} />
-                  </Reveal>
+              <>
+                {upcomingItems.map((item) => (
+                  <EventAgendaRow key={item.id} item={item} />
                 ))}
+
+                <div className="mt-10 flex items-center gap-4 text-[14px] text-white/55">
+                  <span>{t(UI.pastEventsLabel, locale)}</span>
+                  <span className="h-px flex-1 bg-white/12" aria-hidden="true" />
+                </div>
+
                 {pastItems.length > 0 ? (
-                  <>
-                    <div className="flex items-center gap-4 py-8">
-                      <p className="shrink-0 text-xs font-bold tracking-[0.16em] text-text-muted">
-                        {t(UI.pastEventsLabel, locale)}
-                      </p>
-                      <span
-                        className="h-px flex-1 bg-brand-navy/15"
-                        aria-hidden="true"
-                      />
-                    </div>
-                    {pastItems.map((item, index) => (
-                      <Reveal
-                        key={item.id}
-                        delay={Math.min(index * 0.03, 0.15)}
-                      >
-                        <EventAgendaRow item={item} />
-                      </Reveal>
-                    ))}
-                  </>
-                ) : null}
-              </div>
-            ) : (
-              <div className="border-t border-line/15">
-                {(filter === "upcoming" ? upcomingItems : pastItems).map(
-                  (item, index) => (
-                    <Reveal key={item.id} delay={Math.min(index * 0.03, 0.15)}>
-                      <EventAgendaRow item={item} />
-                    </Reveal>
-                  ),
+                  pastItems.map((item) => (
+                    <EventAgendaRow key={item.id} item={item} />
+                  ))
+                ) : (
+                  <p className="mt-6 text-[17px] text-white/60">
+                    {t(UI.noPastEvents, locale)}
+                    {facebook?.url ? (
+                      <>
+                        {" "}
+                        <a
+                          href={facebook.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-brand-lime"
+                        >
+                          {t(UI.followFacebook, locale)}
+                        </a>
+                      </>
+                    ) : null}
+                  </p>
                 )}
-              </div>
+              </>
+            ) : (
+              (filter === "upcoming" ? upcomingItems : pastItems).map((item) => (
+                <EventAgendaRow key={item.id} item={item} />
+              ))
             )}
-          </div>
+          </section>
+
+          <GrowTogetherBanner />
         </main>
       ) : null}
     </>

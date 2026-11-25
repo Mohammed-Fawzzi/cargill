@@ -17,7 +17,7 @@ export default function Layout() {
         <div className="App">
           <ScrollToTop />
           <ScrollProgress />
-          <div className="fixed inset-x-0 top-0 z-50">
+          <div className="site-chrome fixed inset-x-0 top-0 z-50">
             <TickerBar />
             <Navbar />
           </div>

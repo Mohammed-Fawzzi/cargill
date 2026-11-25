@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
-import Reveal from "@/components/ui/Reveal";
 import SafeImage from "@/components/ui/SafeImage";
-import { PrimaryButton, SecondaryButton } from "@/components/ui/AppButton";
-import EventAgendaRow from "@/components/events/EventAgendaRow";
+import RevealHeading from "@/components/ui/RevealHeading";
+import LtrText from "@/components/ui/LtrText";
+import EventAgendaRow, { getEventParts } from "@/components/events/EventAgendaRow";
+import GrowTogetherBanner from "@/components/home/GrowTogetherBanner";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getEvent, getEvents } from "@/services/cms/events";
 import { useLocale } from "@/context/LocaleContext";
@@ -19,9 +20,20 @@ import { eventDayKey, formatDay } from "@/lib/time";
 import { easeOut } from "@/lib/motion";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
+import useMotionPrefs from "@/hooks/useMotionPrefs";
+
+function daysUntil(date) {
+  const key = eventDayKey(date);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return null;
+  const [year, month, day] = key.split("-").map(Number);
+  const target = new Date(year, month - 1, day);
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.ceil((target - start) / (1000 * 60 * 60 * 24));
+}
 
 function EventLightbox({ images, index, onClose, onPrev, onNext, title }) {
-  const reduceMotion = useReducedMotion();
+  const { reducedMotion } = useMotionPrefs();
 
   useEffect(() => {
     const onKey = (event) => {
@@ -40,8 +52,8 @@ function EventLightbox({ images, index, onClose, onPrev, onNext, title }) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-brand-navy/95 p-4"
-      initial={reduceMotion ? false : { opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0820]/95 p-4"
+      initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
@@ -97,7 +109,7 @@ export default function EventDetails() {
   const { id } = useParams();
   const { locale } = useLocale();
   const { contact } = useSiteData();
-  const reduceMotion = useReducedMotion();
+  const { reducedMotion } = useMotionPrefs();
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
   const eventQuery = useQuery({
@@ -119,6 +131,14 @@ export default function EventDetails() {
   const time = String(event?.time || "").trim();
   const isEnded = event?.status === "ended";
   const dateLabel = formatDay(event?.date, locale);
+  const parts = getEventParts(event?.date, locale);
+  const remaining = daysUntil(event?.date);
+  const countdownLabel =
+    !isEnded && remaining != null && remaining > 0
+      ? remaining === 1
+        ? t(UI.dayLeft, locale)
+        : t(UI.daysLeft, locale).replace("{n}", String(remaining))
+      : "";
   const statusLabel = isEnded
     ? t(UI.eventEnded, locale)
     : t(UI.upcoming, locale);
@@ -147,12 +167,6 @@ export default function EventDetails() {
     return [...upcoming, ...past].slice(0, 3);
   }, [eventsQuery.data, id]);
 
-  const facts = [
-    dateLabel ? { label: t(UI.eventDate, locale), value: dateLabel } : null,
-    time ? { label: t(UI.eventTime, locale), value: time } : null,
-    location ? { label: t(UI.eventPlace, locale), value: location } : null,
-  ].filter(Boolean);
-
   const phone = contact?.phones?.[0] || "";
   const waHref = toWhatsAppHref(
     phone,
@@ -175,6 +189,8 @@ export default function EventDetails() {
     );
   };
 
+  const meta = [location, time].filter(Boolean).join(" · ");
+
   return (
     <>
       <Seo title={title || t(UI.nav.events, locale)} path={`/events/${id}`} />
@@ -183,119 +199,164 @@ export default function EventDetails() {
         <ErrorState onRetry={eventQuery.refetch} />
       ) : null}
       {!eventQuery.isPending && !eventQuery.isError && !event ? (
-        <main className="pt-navbar min-h-screen bg-page">
+        <main className="pt-navbar min-h-screen bg-[#0A0820]">
           <EmptyState message={t(UI.missingEvent, locale)} />
         </main>
       ) : null}
       {!eventQuery.isPending && event ? (
-        <main className={`min-h-screen bg-page ${!isEnded ? "pb-28 md:pb-0" : ""}`}>
-          <header className="pt-[140px]">
+        <main
+          className={`min-h-screen bg-[#0A0820] text-white ${
+            !isEnded ? "pb-28 md:pb-0" : ""
+          }`}
+        >
+          <section className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-10 px-6 pb-16 pt-[calc(var(--navbar-height)+var(--ticker-height)+3.5rem)] md:grid-cols-[2fr_5fr_5fr] md:gap-10">
             <motion.div
-              className="container mx-auto px-4 lg:px-8"
-              initial={reduceMotion ? false : { opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.45, ease: easeOut }}
+              initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: easeOut }}
             >
-              <SecondaryButton to="/events" className="mb-8">
-                {t(UI.backToEvents, locale)}
-              </SecondaryButton>
-
-              <p
-                className={`mb-4 text-xs font-bold tracking-[0.16em] ${
-                  isEnded ? "text-text-muted" : "text-brand-lime"
+              <Link
+                to="/events"
+                className="text-[14px] text-brand-lime transition-colors hover:text-[#B5E06E]"
+              >
+                ← {t(UI.backToEvents, locale)}
+              </Link>
+              <span
+                className={`mt-5 inline-block rounded-full px-2.5 py-1 text-[12px] font-semibold ${
+                  isEnded
+                    ? "border border-white/25 text-white/70"
+                    : "bg-brand-lime text-[#0A0820]"
                 }`}
               >
                 {statusLabel}
-              </p>
-
-              {title ? (
-                <h1 className="max-w-[900px] text-[clamp(2.25rem,5vw,4.25rem)] font-extrabold leading-[1.12] tracking-tight text-ink">
-                  {title}
-                </h1>
-              ) : null}
-
-              {facts.length ? (
-                <dl className="mt-8 grid gap-0 border-y border-line/15 sm:grid-cols-3">
-                  {facts.map((fact) => (
-                    <div
-                      key={fact.label}
-                      className="border-b border-line/10 px-0 py-4 last:border-b-0 sm:border-b-0 sm:border-e sm:px-5 sm:first:ps-0 sm:last:border-e-0 sm:last:pe-0"
-                    >
-                      <dt className="mb-1 text-xs text-text-muted">
-                        {fact.label}
-                      </dt>
-                      <dd className="text-base font-bold text-ink">
-                        {fact.value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              ) : null}
-
-              {images[0] ? (
-                <div className="mt-10 overflow-hidden rounded-lg bg-surface-muted">
-                  <SafeImage
-                    src={images[0]}
-                    alt={title}
-                    className="aspect-[16/9] w-full object-cover"
-                  />
+              </span>
+              {parts.day ? (
+                <div className="mt-3 font-display text-[clamp(4rem,12vw,7.5rem)] font-black leading-none">
+                  <LtrText>{parts.day}</LtrText>
                 </div>
               ) : null}
+              {parts.monthYear ? (
+                <div className="mt-2 text-[16px] text-white/70">{parts.monthYear}</div>
+              ) : null}
+              {countdownLabel ? (
+                <div className="mt-2.5 text-[14px] text-brand-lime">
+                  {countdownLabel}
+                </div>
+              ) : null}
+            </motion.div>
 
+            <motion.div
+              initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: reducedMotion ? 0 : 0.06, ease: easeOut }}
+            >
+              {title ? (
+                <RevealHeading
+                  as="h1"
+                  text={title}
+                  className="max-w-full break-words font-display text-[clamp(2.25rem,5.5vw,4rem)] font-extrabold leading-[1.2] text-white"
+                />
+              ) : null}
+              {meta ? (
+                <div className="mt-3 text-[14px] text-white/60">{meta}</div>
+              ) : null}
+              {details ? (
+                <p className="mt-4 line-clamp-4 text-[18px] leading-[1.7] text-white/75">
+                  {details}
+                </p>
+              ) : null}
               {!isEnded ? (
-                <div className="mt-8 hidden flex-wrap items-center gap-5 md:flex">
+                <div className="mt-6 hidden flex-wrap items-center gap-[18px] md:flex">
                   {waHref ? (
-                    <PrimaryButton href={waHref}>
+                    <a
+                      href={waHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg bg-brand-lime px-7 py-4 text-[16px] font-semibold text-[#0A0820] transition-colors hover:bg-brand-lime-hover"
+                    >
                       {t(UI.bookEventWa, locale)}
-                    </PrimaryButton>
+                    </a>
                   ) : null}
                   {canAddToCalendar ? (
-                    <SecondaryButton onClick={onAddToCalendar}>
+                    <button
+                      type="button"
+                      onClick={onAddToCalendar}
+                      className="border-b border-brand-lime pb-[3px] text-white transition-colors hover:text-brand-lime"
+                    >
                       {t(UI.addToCalendar, locale)}
-                    </SecondaryButton>
+                    </button>
                   ) : null}
                 </div>
               ) : null}
             </motion.div>
-          </header>
 
-          <div className="container mx-auto px-4 py-12 lg:px-8 lg:py-16">
-            <Reveal>
-              {details ? (
-                <div className="article-body mx-auto max-w-[720px] whitespace-pre-wrap">
-                  {details}
-                </div>
-              ) : (
-                <EmptyState message={t(UI.empty, locale)} />
-              )}
-            </Reveal>
+            {images[0] ? (
+              <motion.div
+                className="overflow-hidden rounded-[20px] border border-white/8 bg-[#110E33]"
+                initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: reducedMotion ? 0 : 0.1, ease: easeOut }}
+              >
+                <SafeImage
+                  src={images[0]}
+                  alt={title}
+                  width={1000}
+                  className="h-[280px] w-full object-cover sm:h-[380px]"
+                />
+              </motion.div>
+            ) : null}
+          </section>
+
+          <div className="mx-auto max-w-[1320px] px-6 pb-16">
+            {details ? (
+              <motion.div
+                className="mx-auto max-w-[720px] whitespace-pre-wrap text-[20px] leading-[1.95] text-white/85"
+                initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.12 }}
+                transition={{ duration: 0.5, ease: easeOut }}
+              >
+                {details}
+              </motion.div>
+            ) : null}
 
             {location && mapSrc ? (
-              <Reveal className="mx-auto mt-12 max-w-[720px]">
+              <motion.div
+                className="mx-auto mt-12 max-w-[720px]"
+                initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.5, ease: easeOut }}
+              >
                 <iframe
                   title={location}
                   src={mapSrc}
-                  className="h-[320px] w-full rounded-lg border-0"
+                  className="h-[320px] w-full rounded-[14px] border-0 grayscale"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />
                 {mapLink ? (
-                  <SecondaryButton href={mapLink} className="mt-4">
+                  <a
+                    href={mapLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex border-b border-brand-lime pb-0.5 text-white transition-colors hover:text-brand-lime"
+                  >
                     {t(UI.openInMapsLink, locale)}
-                  </SecondaryButton>
+                  </a>
                 ) : null}
-              </Reveal>
+              </motion.div>
             ) : null}
 
             {isEnded && images.length > 1 ? (
-              <Reveal className="mx-auto mt-14 max-w-5xl">
+              <div className="mx-auto mt-14 max-w-5xl">
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
                   {images.map((src, index) => (
                     <button
                       key={`${src}-${index}`}
                       type="button"
                       onClick={() => setLightboxIndex(index)}
-                      className={`overflow-hidden rounded-md bg-surface-muted ${
+                      className={`overflow-hidden rounded-[14px] border border-white/8 bg-[#110E33] ${
                         index === 0 ? "col-span-2 row-span-2 md:col-span-2" : ""
                       }`}
                     >
@@ -309,37 +370,44 @@ export default function EventDetails() {
                     </button>
                   ))}
                 </div>
-              </Reveal>
+              </div>
             ) : null}
           </div>
 
           {related.length > 0 ? (
-            <section className="border-t border-line/10 py-14 lg:py-16">
-              <div className="container mx-auto px-4 lg:px-8">
-                <Reveal className="mb-6">
-                  <h2 className="text-2xl font-extrabold text-ink sm:text-3xl">
-                    {t(UI.relatedEvents, locale)}
-                  </h2>
-                </Reveal>
-                <div className="border-t border-line/15">
-                  {related.map((item) => (
-                    <EventAgendaRow
-                      key={item.id}
-                      item={item}
-                      compact
-                      showImage={false}
-                    />
-                  ))}
-                </div>
+            <section className="mx-auto max-w-[1320px] px-6 pb-10">
+              <div className="mb-4 flex items-center gap-4 text-[14px] text-white/70">
+                <span>{t(UI.relatedEvents, locale)}</span>
+                <span className="h-px flex-1 bg-white/14" aria-hidden="true" />
+                <span className="font-mono text-brand-lime" dir="ltr">
+                  § MORE
+                </span>
+              </div>
+              <div className="border-t border-white/12">
+                {related.map((item) => (
+                  <EventAgendaRow
+                    key={item.id}
+                    item={item}
+                    compact
+                    showImage={false}
+                  />
+                ))}
               </div>
             </section>
           ) : null}
 
+          <GrowTogetherBanner />
+
           {!isEnded && waHref ? (
-            <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line/15 bg-page p-3 md:hidden">
-              <PrimaryButton href={waHref} className="w-full">
+            <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#0A0820] p-3 md:hidden">
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex w-full items-center justify-center rounded-lg bg-brand-lime px-6 py-3.5 text-[16px] font-semibold text-[#0A0820]"
+              >
                 {t(UI.bookEventWa, locale)}
-              </PrimaryButton>
+              </a>
             </div>
           ) : null}
 
