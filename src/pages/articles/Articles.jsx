@@ -7,6 +7,7 @@ import Loading from "@/components/loading/Loading";
 import SafeImage from "@/components/ui/SafeImage";
 import PageHero from "@/components/ui/PageHero";
 import ArticleCard from "@/components/articles/ArticleCard";
+import DragRail from "@/components/ui/DragRail";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import SplitArrowButton from "@/components/ui/SplitArrowButton";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
@@ -247,33 +248,38 @@ export default function Articles() {
                 ) : null}
 
                 {visibleRest.length > 0 ? (
-                  <div className="mt-10 grid grid-cols-1 items-start gap-6 md:mt-14 md:grid-cols-2">
-                    {visibleRest.map((item, index) => (
-                      <motion.div
-                        key={item.id}
-                        className="self-start"
-                        initial={reducedMotion ? false : { opacity: 0, y: 22 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.15 }}
-                        transition={{
-                          duration: 0.45,
-                          delay: reducedMotion
-                            ? 0
-                            : Math.min(index * 0.08, 0.4),
-                          ease: easeOut,
-                        }}
-                      >
-                        <ArticleCard
-                          to={`/articles/${item.id}`}
-                          imageUrl={item.imageUrl}
-                          title={t(item.title, locale)}
-                          body={t(item.excerpt, locale)}
-                          meta={formatMillis(item.createdAt, locale)}
-                          category={categoryKey(item, locale)}
-                          index={index}
-                        />
-                      </motion.div>
-                    ))}
+                  <div className="relative left-1/2 mt-10 w-screen max-w-[100vw] -translate-x-1/2 md:mt-14">
+                    <DragRail
+                      dots
+                      trackClassName="ps-4 sm:ps-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))]"
+                    >
+                      {visibleRest.map((item, index) => (
+                        <motion.div
+                          key={item.id}
+                            className="w-[min(82vw,21rem)] shrink-0 snap-start self-start md:w-[22rem]"
+                          initial={reducedMotion ? false : { opacity: 0, y: 22 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true, amount: 0.15 }}
+                          transition={{
+                            duration: 0.45,
+                            delay: reducedMotion
+                              ? 0
+                              : Math.min(index * 0.08, 0.4),
+                            ease: easeOut,
+                          }}
+                        >
+                          <ArticleCard
+                            to={`/articles/${item.id}`}
+                            imageUrl={item.imageUrl}
+                            title={t(item.title, locale)}
+                            body={t(item.excerpt, locale)}
+                            meta={formatMillis(item.createdAt, locale)}
+                            category={categoryKey(item, locale)}
+                            index={index}
+                          />
+                        </motion.div>
+                      ))}
+                    </DragRail>
                   </div>
                 ) : null}
 

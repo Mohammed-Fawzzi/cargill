@@ -159,8 +159,12 @@ export default function FeaturedProductsSection({ section }) {
             </Link>
           }
         />
+      </div>
 
-        <DragRail dots>
+      <DragRail
+        dots
+        trackClassName="ps-4 sm:ps-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))]"
+      >
           {items.map((item, index) => (
             <ProductStageCard
               key={item.id}
@@ -172,8 +176,7 @@ export default function FeaturedProductsSection({ section }) {
               index={index}
             />
           ))}
-        </DragRail>
-      </div>
+      </DragRail>
     </motion.section>
   );
 }

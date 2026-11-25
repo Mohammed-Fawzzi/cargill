@@ -2,7 +2,12 @@ import React, { useEffect, useState } from "react";
 import useDragRail from "@/hooks/useDragRail";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
-export default function DragRail({ children, className = "", dots = false }) {
+export default function DragRail({
+  children,
+  className = "",
+  trackClassName = "",
+  dots = false,
+}) {
   const { railRef, cursorRef, cursorOn, enabled } = useDragRail();
   const { reducedMotion } = useMotionPrefs();
   const [active, setActive] = useState(0);
@@ -65,7 +70,7 @@ export default function DragRail({ children, className = "", dots = false }) {
         ref={railRef}
         className={`drag-rail__track flex items-start gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
           enabled ? "drag-rail__track--active" : ""
-        }`}
+        } ${trackClassName}`.trim()}
       >
         {children}
       </div>

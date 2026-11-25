@@ -1536,18 +1536,19 @@ html[dir="ltr"] .ix-link::before,
   line-height: 1.25;
 }
 
-.curtain-card .curtain-card__desc,
-.curtain-card:hover .curtain-card__desc,
-.curtain-card:focus-visible .curtain-card__desc {
-  height: auto;
-  margin-top: 0.45rem;
+.curtain-card__desc {
+  max-height: 0;
+  margin-top: 0;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   color: #fff;
-  opacity: 0.6;
-  transition: opacity 300ms linear;
+  opacity: 0;
+  transition:
+    max-height 500ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    margin-top 500ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 500ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .curtain-frame {
@@ -1580,7 +1581,11 @@ html[dir="ltr"] .ix-link::before,
 
   .curtain-card:hover .curtain-card__desc,
   .curtain-card:focus-visible .curtain-card__desc,
-  .curtain-card:focus-within .curtain-card__desc {
+  .curtain-card:focus-within .curtain-card__desc,
+  .group:hover .curtain-card__desc,
+  .group:focus-visible .curtain-card__desc {
+    max-height: 5.25em;
+    margin-top: 0.45rem;
     opacity: 0.9;
   }
 
@@ -1620,6 +1625,21 @@ html[dir="ltr"] .ix-link::before,
   .curtain-frame:hover .curtain-card__photo,
   .group:hover .curtain-frame .curtain-card__photo {
     transform: none;
+  }
+
+  .curtain-card__desc {
+    max-height: 5.25em;
+    margin-top: 0.45rem;
+    opacity: 0.6;
+    transition: none;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .curtain-card__desc {
+    max-height: 5.25em;
+    margin-top: 0.45rem;
+    opacity: 0.6;
   }
 }
 

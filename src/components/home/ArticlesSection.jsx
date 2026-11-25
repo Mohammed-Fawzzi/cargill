@@ -109,7 +109,7 @@ function FieldCard({ item, locale, large, index, reducedMotion }) {
           ) : null}
           <h3 className={titleClass}>{title}</h3>
           {showExcerpt ? (
-            <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-white/60">
+            <p className="curtain-card__desc text-sm leading-relaxed">
               {excerpt}
             </p>
           ) : null}
