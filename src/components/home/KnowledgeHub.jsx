@@ -1,158 +1,323 @@
-import React from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import Reveal from "@/components/ui/Reveal";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import SafeImage from "@/components/ui/SafeImage";
-import MagneticButton from "@/components/ui/MagneticButton";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 
-export default function KnowledgeHub({ items = [] }) {
-  const { locale } = useLocale();
-  const cards = items.slice(0, 4);
-  if (!cards.length) return null;
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
 
-  const featured = cards[0];
-  const side = cards.slice(1);
-  const featuredTitle = t(featured.title, locale);
-  const featuredExcerpt = t(featured.excerpt, locale);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  return reduced;
+}
+
+function formatArticleDate(value, locale) {
+  if (!value) return "";
+  try {
+    return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-GB", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }).format(new Date(value));
+  } catch {
+    return "";
+  }
+}
+
+function readingMinutesFromText(text) {
+  const words = String(text || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+  if (words < 40) return 0;
+  return Math.max(1, Math.round(words / 200));
+}
+
+function ArticleRailCard({ item, locale, featured }) {
+  const title = t(item.title, locale);
+  const excerpt = t(item.excerpt, locale);
+  const content = t(item.content, locale);
+  const dateLabel = formatArticleDate(item.createdAt, locale);
+  const minutes = readingMinutesFromText(content || excerpt);
 
   return (
-    <section className="relative overflow-hidden bg-brand-forest-deep py-16 text-white lg:py-24">
-      <div
-        className="pointer-events-none absolute -start-24 top-10 h-72 w-72 rounded-full bg-brand-lime/20 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute -end-16 bottom-0 h-80 w-80 rounded-full bg-brand-moss/20 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-lime/40 to-transparent"
-        aria-hidden="true"
-      />
+    <article
+      className={`group relative w-[80vw] shrink-0 snap-start md:w-[380px] ${
+        featured ? "md:w-[560px]" : ""
+      }`}
+    >
+      <Link
+        to={`/articles/${item.id}`}
+        className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2 focus-visible:ring-offset-brand-forest-deep"
+      >
+        <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-md bg-brand-ink">
+          {item.imageUrl ? (
+            <SafeImage
+              src={item.imageUrl}
+              alt={title}
+              width={featured ? 900 : 640}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center px-4 text-center text-sm font-bold text-white/40">
+              {title}
+            </div>
+          )}
+        </div>
 
-      <div className="relative container mx-auto px-4 lg:px-8">
-        <Reveal className="mb-10 flex flex-col items-start justify-between gap-5 lg:mb-14 lg:flex-row lg:items-end">
-          <div className="max-w-2xl">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-brand-lime">
-              {t(UI.nav.articles, locale)}
-            </p>
-            <h2 className="mb-3 text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-[2.85rem]">
-              {t(UI.knowledgeTitle, locale)}
+        <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-bold tracking-wide">
+          <span className="text-brand-lime">{t(UI.nav.articles, locale)}</span>
+          {dateLabel ? (
+            <>
+              <span className="text-white/35" aria-hidden="true">
+                ·
+              </span>
+              <span className="font-medium text-white/50">{dateLabel}</span>
+            </>
+          ) : null}
+          {minutes > 0 ? (
+            <>
+              <span className="text-white/35" aria-hidden="true">
+                ·
+              </span>
+              <span className="font-medium text-white/50">
+                {minutes} {locale === "ar" ? "د" : "min"}
+              </span>
+            </>
+          ) : null}
+        </div>
+
+        <h3
+          className={`mb-2 line-clamp-3 font-extrabold leading-snug tracking-tight text-white ${
+            featured ? "text-[1.4rem] sm:text-[1.625rem]" : "text-[1.25rem] sm:text-[1.375rem]"
+          }`}
+        >
+          {title}
+        </h3>
+
+        {featured && excerpt ? (
+          <p className="mb-4 line-clamp-2 text-sm leading-7 text-white/70">
+            {excerpt}
+          </p>
+        ) : (
+          <div className="mb-4" />
+        )}
+
+        <span
+          className="block h-px w-full origin-right bg-white/15 transition-colors duration-300 group-hover:bg-brand-lime"
+          aria-hidden="true"
+        />
+      </Link>
+    </article>
+  );
+}
+
+export default function KnowledgeHub({ items = [], section }) {
+  const { locale } = useLocale();
+  const reducedMotion = usePrefersReducedMotion();
+  const railRef = useRef(null);
+  const dragRef = useRef({ active: false, startX: 0, scroll: 0 });
+  const [progress, setProgress] = useState(0);
+
+  const cards = useMemo(() => (items || []).filter(Boolean), [items]);
+  const dashboardTitle = t(section?.data?.title, locale);
+  const dashboardBody = t(section?.data?.body, locale);
+  const heading = dashboardTitle || t(UI.knowledgeBody, locale);
+  const subtitle = dashboardTitle ? dashboardBody : "";
+
+  const updateProgress = useCallback(() => {
+    const node = railRef.current;
+    if (!node) return;
+    const max = node.scrollWidth - node.clientWidth;
+    if (max <= 0) {
+      setProgress(1);
+      return;
+    }
+    setProgress(Math.min(1, Math.abs(node.scrollLeft) / max));
+  }, []);
+
+  useEffect(() => {
+    const node = railRef.current;
+    if (!node) return undefined;
+    updateProgress();
+    node.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+    return () => {
+      node.removeEventListener("scroll", updateProgress);
+      window.removeEventListener("resize", updateProgress);
+    };
+  }, [cards.length, updateProgress]);
+
+  const scrollByCard = (direction) => {
+    const node = railRef.current;
+    if (!node) return;
+    const amount = Math.min(420, node.clientWidth * 0.75) * direction;
+    node.scrollBy({
+      left: amount,
+      behavior: reducedMotion ? "auto" : "smooth",
+    });
+  };
+
+  const onPointerDown = (event) => {
+    if (event.pointerType === "touch") return;
+    const node = railRef.current;
+    if (!node) return;
+    dragRef.current = {
+      active: true,
+      startX: event.clientX,
+      scroll: node.scrollLeft,
+    };
+    node.setPointerCapture?.(event.pointerId);
+  };
+
+  const onPointerMove = (event) => {
+    if (!dragRef.current.active) return;
+    const node = railRef.current;
+    if (!node) return;
+    const delta = event.clientX - dragRef.current.startX;
+    node.scrollLeft = dragRef.current.scroll - delta;
+  };
+
+  const onPointerUp = (event) => {
+    if (!dragRef.current.active) return;
+    dragRef.current.active = false;
+    railRef.current?.releasePointerCapture?.(event.pointerId);
+  };
+
+  if (!cards.length) return null;
+
+  const useSimpleGrid = cards.length < 2;
+
+  return (
+    <section className="bg-brand-forest-deep py-[4.5rem] text-white sm:py-24 lg:py-[7.5rem]">
+      <motion.div
+        className="container mx-auto px-4 lg:px-8"
+        initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.12 }}
+        transition={{ duration: 0.35, ease: easeOut }}
+      >
+        <div className="mb-6 flex items-center gap-4">
+          <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-lime">
+            {t(UI.knowledgeTitle, locale)}
+          </p>
+          <span className="h-px flex-1 bg-white/20" aria-hidden="true" />
+          <p className="shrink-0 text-[11px] font-bold tracking-[0.2em] text-white/45">
+            05
+          </p>
+        </div>
+
+        <div className="mb-10 flex flex-col gap-5 lg:mb-14 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-[2.75rem]">
+              {heading}
             </h2>
-            <p className="text-sm leading-8 text-white/70 sm:text-base">
-              {t(UI.knowledgeBody, locale)}
-            </p>
+            {subtitle ? (
+              <p className="mt-3 text-sm leading-7 text-white/70 sm:text-base sm:leading-8">
+                {subtitle}
+              </p>
+            ) : null}
           </div>
-          <MagneticButton>
+
+          <div className="hidden items-center gap-4 md:flex">
+            {!useSimpleGrid ? (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => scrollByCard(1)}
+                  aria-label={t(UI.prevSlide, locale)}
+                  className="inline-flex h-10 w-10 items-center justify-center border border-white/40 text-white transition-colors hover:border-brand-lime hover:text-brand-lime focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
+                >
+                  <IoChevronForward className="text-lg rtl:rotate-180" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollByCard(-1)}
+                  aria-label={t(UI.nextSlide, locale)}
+                  className="inline-flex h-10 w-10 items-center justify-center border border-white/40 text-white transition-colors hover:border-brand-lime hover:text-brand-lime focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
+                >
+                  <IoChevronBack className="text-lg rtl:rotate-180" aria-hidden="true" />
+                </button>
+              </div>
+            ) : null}
             <Link
               to="/articles"
-              className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-md border border-white/25 px-6 text-sm font-bold text-white transition-all duration-300 hover:border-brand-lime hover:bg-brand-lime hover:text-brand-ink"
+              className="inline-flex items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-white transition-[border-width] hover:border-b-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
             >
-              {t(UI.viewAll, locale)}
+              <span>{t(UI.allMedia, locale)}</span>
+              <span aria-hidden="true">←</span>
             </Link>
-          </MagneticButton>
-        </Reveal>
-
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.35fr_0.9fr] lg:gap-5">
-          <motion.article
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.15 }}
-            transition={{ duration: 0.35, ease: easeOut }}
-            className="group relative min-h-[300px] overflow-hidden rounded-[1.75rem] bg-brand-black shadow-[0_24px_60px_rgba(0,0,0,0.28)] sm:min-h-[420px] lg:min-h-[520px]"
-          >
-            <Link to={`/articles/${featured.id}`} className="absolute inset-0 block cursor-pointer">
-              {featured.imageUrl ? (
-                <SafeImage
-                  src={featured.imageUrl}
-                  alt={featuredTitle}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                />
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-moss to-brand-black" />
-              )}
-              <div
-                className="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-forest-deep/55 to-transparent"
-                aria-hidden="true"
-              />
-              <div
-                className="absolute inset-x-0 top-0 h-1 origin-start scale-x-0 bg-brand-lime transition-transform duration-500 group-hover:scale-x-100"
-                aria-hidden="true"
-              />
-              <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 lg:p-10">
-                <span className="mb-4 inline-flex rounded-full bg-brand-lime px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.16em] text-brand-ink">
-                  {t(UI.featuredBadge, locale)}
-                </span>
-                <h3 className="mb-3 max-w-xl text-2xl font-extrabold leading-tight sm:text-3xl lg:text-4xl">
-                  {featuredTitle}
-                </h3>
-                {featuredExcerpt ? (
-                  <p className="mb-5 line-clamp-2 max-w-xl text-sm leading-7 text-white/75 sm:text-base">
-                    {featuredExcerpt}
-                  </p>
-                ) : null}
-                <span className="inline-flex items-center gap-2 text-sm font-extrabold text-brand-lime transition-all group-hover:gap-3">
-                  {t(UI.findOutMore, locale)}
-                  <span aria-hidden="true">→</span>
-                </span>
-              </div>
-            </Link>
-          </motion.article>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 lg:gap-5">
-            {side.map((item, index) => {
-              const title = t(item.title, locale);
-              const excerpt = t(item.excerpt, locale);
-              return (
-                <motion.article
-                  key={item.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.15 }}
-                  transition={{ duration: 0.3, ease: easeOut, delay: 0.06 + index * 0.04 }}
-                  className="group relative min-h-[180px] overflow-hidden rounded-[1.5rem] bg-brand-black shadow-[0_16px_40px_rgba(0,0,0,0.22)] lg:min-h-[160px]"
-                >
-                  <Link to={`/articles/${item.id}`} className="absolute inset-0 block cursor-pointer">
-                    {item.imageUrl ? (
-                      <SafeImage
-                        src={item.imageUrl}
-                        alt={title}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-brand-moss/80 to-brand-forest-deep" />
-                    )}
-                    <div
-                      className="absolute inset-0 bg-gradient-to-t from-brand-black/90 via-brand-forest-deep/45 to-brand-black/10"
-                      aria-hidden="true"
-                    />
-                    <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-                      <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-lime">
-                        {t(UI.nav.articles, locale)}
-                      </p>
-                      <h3 className="mb-2 text-lg font-extrabold leading-7 sm:text-xl">
-                        {title}
-                      </h3>
-                      {excerpt ? (
-                        <p className="mb-3 line-clamp-2 text-sm leading-6 text-white/70">
-                          {excerpt}
-                        </p>
-                      ) : null}
-                      <span className="text-sm font-bold text-white transition-colors group-hover:text-brand-lime">
-                        {t(UI.readMore, locale)} →
-                      </span>
-                    </div>
-                  </Link>
-                </motion.article>
-              );
-            })}
           </div>
         </div>
-      </div>
+      </motion.div>
+
+      {useSimpleGrid ? (
+        <div className="container mx-auto grid grid-cols-1 gap-6 px-4 sm:grid-cols-2 lg:px-8">
+          {cards.map((item, index) => (
+            <ArticleRailCard
+              key={item.id}
+              item={item}
+              locale={locale}
+              featured={index === 0}
+            />
+          ))}
+        </div>
+      ) : (
+        <>
+          <div
+            ref={railRef}
+            className="flex cursor-grab gap-4 overflow-x-auto px-4 pb-2 active:cursor-grabbing lg:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+          >
+            {cards.map((item, index) => (
+              <ArticleRailCard
+                key={item.id}
+                item={item}
+                locale={locale}
+                featured={index === 0}
+              />
+            ))}
+            <div className="w-[12vw] shrink-0 md:w-[18vw]" aria-hidden="true" />
+          </div>
+
+          <div className="container mx-auto mt-8 px-4 lg:px-8">
+            <div className="relative h-px w-full bg-white/20">
+              <span
+                className="absolute inset-y-0 start-0 bg-brand-lime"
+                style={{
+                  width: `${Math.max(8, Math.min(100, Math.abs(progress) * 100))}%`,
+                }}
+                aria-hidden="true"
+              />
+            </div>
+
+            <div className="mt-6 md:hidden">
+              <Link
+                to="/articles"
+                className="inline-flex items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-white"
+              >
+                <span>{t(UI.allMedia, locale)}</span>
+                <span aria-hidden="true">←</span>
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
     </section>
   );
 }

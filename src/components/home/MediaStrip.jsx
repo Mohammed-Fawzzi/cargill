@@ -1,85 +1,121 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Reveal from "@/components/ui/Reveal";
+import { motion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
-import MagneticButton from "@/components/ui/MagneticButton";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { formatMillis } from "@/lib/time";
+import { easeOut } from "@/lib/motion";
 
-const MEDIA_TAGS = [UI.mediaTagField, UI.mediaTagUpdate, UI.mediaTagInsight];
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  return reduced;
+}
 
 export default function MediaStrip({ items = [] }) {
   const { locale } = useLocale();
+  const reducedMotion = usePrefersReducedMotion();
   const rows = items.slice(0, 4);
   if (!rows.length) return null;
 
   return (
-    <section className="relative overflow-hidden border-y border-brand-ink/5 bg-white py-14 lg:py-16">
-      <div className="container mx-auto px-4 lg:px-8">
-        <Reveal className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
-          <h2 className="text-2xl font-extrabold uppercase tracking-tight text-brand-ink sm:text-3xl">
+    <section className="bg-white py-[4.5rem] sm:py-24 lg:py-[7.5rem]">
+      <motion.div
+        className="container mx-auto px-4 lg:px-8"
+        initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.12 }}
+        transition={{ duration: 0.35, ease: easeOut }}
+      >
+        <div className="mb-6 flex items-center gap-4">
+          <p className="shrink-0 text-[11px] font-bold tracking-[0.18em] text-brand-ink">
+            {t(UI.mediaReleases, locale)}
+          </p>
+          <span className="h-px flex-1 bg-brand-ink" aria-hidden="true" />
+          <p className="shrink-0 text-[11px] font-bold tracking-[0.2em] text-brand-ink/55">
+            06
+          </p>
+        </div>
+
+        <div className="mb-10 flex flex-col gap-4 sm:mb-12 lg:flex-row lg:items-end lg:justify-between">
+          <h2 className="text-3xl font-extrabold tracking-tight text-brand-ink sm:text-4xl lg:text-[2.75rem]">
             {t(UI.mediaReleases, locale)}
           </h2>
-          <MagneticButton>
-            <Link
-              to="/articles"
-              className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-md border border-brand-ink/15 px-5 text-sm font-bold text-brand-ink transition-all duration-300 hover:border-brand-lime hover:bg-brand-lime"
-            >
-              {t(UI.allMedia, locale)}
-            </Link>
-          </MagneticButton>
-        </Reveal>
+          <Link
+            to="/articles"
+            className="inline-flex w-fit items-center gap-2 border-b-2 border-brand-lime pb-0.5 text-sm font-bold text-brand-ink transition-[border-width] hover:border-b-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2"
+          >
+            <span>{t(UI.allNews, locale)}</span>
+            <span aria-hidden="true">←</span>
+          </Link>
+        </div>
 
-        <div className="divide-y divide-brand-ink/8 border-y border-brand-ink/8">
-          {rows.map((item, index) => {
+        <div>
+          {rows.map((item) => {
             const title = t(item.title, locale);
             const date = formatMillis(item.createdAt, locale);
-            const tag = t(MEDIA_TAGS[index % MEDIA_TAGS.length], locale);
+            const category = t(UI.nav.articles, locale);
+
             return (
               <Link
                 key={item.id}
                 to={`/articles/${item.id}`}
-                className="group grid cursor-pointer grid-cols-[5.5rem_1fr] items-center gap-3 py-4 transition-colors hover:bg-surface-muted/70 sm:grid-cols-[6.5rem_1fr_auto] sm:gap-5 sm:px-2 sm:py-5 lg:grid-cols-[7.5rem_6.5rem_8.5rem_1fr_auto]"
+                className="group relative grid grid-cols-[5.5rem_1fr] items-center gap-3 border-b border-brand-ink/15 py-5 sm:grid-cols-[6.5rem_1fr] sm:gap-5 lg:grid-cols-[7.5rem_7rem_9rem_1fr_auto] lg:gap-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
               >
-                <div className="overflow-hidden rounded-xl bg-surface-muted">
+                <span
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-brand-lime transition-transform duration-300 group-hover:scale-x-100"
+                  aria-hidden="true"
+                />
+
+                <div className="order-1 overflow-hidden rounded-md bg-surface-muted sm:order-none">
                   {item.imageUrl ? (
                     <SafeImage
                       src={item.imageUrl}
                       alt={title}
-                      className="aspect-[4/3] h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      width={240}
+                      loading="lazy"
+                      className="aspect-[4/3] h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                     />
                   ) : (
-                    <div className="flex aspect-[4/3] items-center justify-center bg-brand-forest-deep px-2 text-center text-xs font-bold text-brand-lime">
-                      {tag}
+                    <div className="flex aspect-[4/3] items-center justify-center bg-surface-muted px-2 text-center text-xs font-bold text-brand-ink/40">
+                      {category}
                     </div>
                   )}
                 </div>
 
-                <div className="min-w-0 lg:contents">
-                  <p className="mb-1 text-xs font-extrabold uppercase tracking-[0.16em] text-brand-lime lg:mb-0">
-                    {tag}
+                <div className="order-2 min-w-0 lg:contents">
+                  <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-brand-lime lg:mb-0">
+                    {category}
                   </p>
-                  <p className="mb-1 hidden text-sm font-bold text-brand-moss sm:mb-0 lg:block">
+                  <p className="mb-1 hidden text-sm text-text-muted lg:mb-0 lg:block">
                     {date || "—"}
                   </p>
-                  <h3 className="text-base font-extrabold leading-7 text-brand-ink transition-colors group-hover:text-brand-lime sm:text-lg">
+                  <h3 className="text-lg font-extrabold leading-7 text-brand-ink transition-transform duration-300 ltr:group-hover:translate-x-2 rtl:group-hover:-translate-x-2 sm:text-[1.375rem]">
                     {title}
                   </h3>
-                  <p className="mt-1 text-xs font-bold text-brand-moss lg:hidden">
+                  <p className="mt-1 text-xs text-text-muted lg:hidden">
                     {date || "—"}
                   </p>
                 </div>
 
-                <span className="col-span-2 text-sm font-bold text-brand-ink transition-all group-hover:text-brand-lime sm:col-span-1 sm:justify-self-end">
-                  {t(UI.findOutMore, locale)} →
+                <span className="col-span-2 hidden text-sm font-bold text-brand-ink lg:col-span-1 lg:inline-flex lg:justify-self-end">
+                  {t(UI.findOutMore, locale)} ←
                 </span>
               </Link>
             );
           })}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

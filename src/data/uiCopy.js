@@ -144,6 +144,9 @@ export const UI = {
   mediaReleases: { ar: "من الإعلام", en: "Media releases" },
   findOutMore: { ar: "اعرف التفاصيل", en: "Find out more" },
   allMedia: { ar: "كل المقالات", en: "All articles" },
+  allNews: { ar: "كل الأخبار", en: "All news" },
+  allEventsLink: { ar: "كل الفعاليات", en: "All events" },
+
   cultivateEvolve: { ar: "ازرع وتطوّر", en: "Cultivate & Evolve" },
   produceEfficiently: {
     ar: "ننتج بكفاءة",
