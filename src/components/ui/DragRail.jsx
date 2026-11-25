@@ -72,14 +72,25 @@ export default function DragRail({ children, className = "", dots = false }) {
       {enabled ? (
         <div
           ref={cursorRef}
-          className={`drag-rail__cursor pointer-events-none fixed top-0 left-0 z-50 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-white text-[#0A0820] shadow-[0_8px_24px_rgba(10,8,32,0.18)] transition-opacity duration-300 ${
+          className={`drag-rail__cursor pointer-events-none fixed top-0 left-0 z-50 grid h-[72px] w-[72px] place-items-center rounded-full bg-white text-[#0A0820] shadow-[0_8px_24px_rgba(10,8,32,0.18)] transition-opacity duration-300 ${
             cursorOn ? "opacity-100" : "opacity-0"
           }`}
           aria-hidden="true"
         >
-          <span className="font-mono text-sm tracking-widest" dir="ltr">
-            ↔
-          </span>
+          <svg
+            viewBox="0 0 64 24"
+            className="block h-5 w-11"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M8 12h48M8 12 15 6M8 12l7 6M56 12l-7-6M56 12l-7 6"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
       ) : null}
       {dots && count > 1 ? (

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, useInView } from "framer-motion";
 import SiteLogo from "@/components/ui/SiteLogo";
-import LtrText from "@/components/ui/LtrText";
+import RollLink from "@/components/ui/RollLink";
 import { NAV_LINKS } from "@constants/navLinks";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
@@ -72,7 +72,7 @@ function FooterColumn({ children, delay = 0, active, reducedMotion, className = 
   );
 }
 
-function FooterLink({ to, href, children, delay = 0, active, reducedMotion, className = "" }) {
+function FooterLink({ to, href, children, delay = 0, active, reducedMotion, className = "", dir }) {
   const motionProps = {
     initial: reducedMotion ? false : { opacity: 0, y: 10 },
     animate: active ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 },
@@ -86,18 +86,18 @@ function FooterLink({ to, href, children, delay = 0, active, reducedMotion, clas
   if (to) {
     return (
       <motion.li {...motionProps}>
-        <Link to={to} className={`ix-link ix-footer-link ${className}`.trim()}>
+        <RollLink to={to} className={className} dir={dir}>
           {children}
-        </Link>
+        </RollLink>
       </motion.li>
     );
   }
 
   return (
     <motion.div {...motionProps} className={className}>
-      <a href={href} className="ix-link ix-footer-link">
+      <RollLink href={href} dir={dir}>
         {children}
-      </a>
+      </RollLink>
     </motion.div>
   );
 }
@@ -145,6 +145,7 @@ export default function Footer() {
   return (
     <footer
       ref={rootRef}
+      data-home-bg="#0A0820"
       className="relative border-t border-white/8 bg-transparent pt-16 pb-10 text-sm text-white"
       aria-label="footer"
     >
@@ -173,12 +174,7 @@ export default function Footer() {
                 <span className="text-brand-lime">
                   {t(UI.address, locale)}:
                 </span>{" "}
-                <a
-                  href={mapLink || undefined}
-                  className="ix-link ix-footer-link"
-                >
-                  {address}
-                </a>
+                <RollLink href={mapLink || undefined}>{address}</RollLink>
               </p>
             ) : null}
           </FooterColumn>
@@ -260,12 +256,12 @@ export default function Footer() {
                   <span className="text-brand-lime">
                     {t(UI.phone, locale)}:
                   </span>
-                  <a
+                  <RollLink
                     href={`tel:${phone.replace(/\s+/g, "")}`}
-                    className="ix-link ix-footer-link"
+                    dir="ltr"
                   >
-                    <LtrText>{phone}</LtrText>
-                  </a>
+                    {phone}
+                  </RollLink>
                 </motion.div>
               ))}
               {emails.map((email) => (
@@ -285,25 +281,21 @@ export default function Footer() {
                   <span className="text-brand-lime">
                     {t(UI.email, locale)}:
                   </span>
-                  <a
+                  <RollLink
                     href={`mailto:${email}`}
-                    className="ix-link ix-footer-link font-mono"
+                    className="font-mono"
                     dir="ltr"
                   >
                     {email}
-                  </a>
+                  </RollLink>
                 </motion.div>
               ))}
             </div>
             {socials.length > 0 ? (
               <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2 text-xs font-medium">
                 {socials.map((link) => (
-                  <motion.a
+                  <motion.div
                     key={link.id}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ix-link ix-footer-link"
                     initial={reducedMotion ? false : { opacity: 0, y: 10 }}
                     animate={
                       active ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }
@@ -314,8 +306,14 @@ export default function Footer() {
                       delay: reducedMotion ? 0 : nextDelay(),
                     }}
                   >
-                    {link.label}
-                  </motion.a>
+                    <RollLink
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {link.label}
+                    </RollLink>
+                  </motion.div>
                 ))}
               </div>
             ) : null}
@@ -329,12 +327,8 @@ export default function Footer() {
               : `© ${year} ${t(UI.copyright, locale)}`}
           </p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <Link to="/articles" className="ix-link ix-footer-link">
-              {t(UI.nav.articles, locale)}
-            </Link>
-            <Link to="/contact" className="ix-link ix-footer-link">
-              {t(UI.nav.contact, locale)}
-            </Link>
+            <RollLink to="/articles">{t(UI.nav.articles, locale)}</RollLink>
+            <RollLink to="/contact">{t(UI.nav.contact, locale)}</RollLink>
           </div>
         </div>
 

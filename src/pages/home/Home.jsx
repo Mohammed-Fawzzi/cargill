@@ -9,6 +9,7 @@ import ValuesTrio from "@/components/home/ValuesTrio";
 import FeaturedProductsSection from "@/components/home/FeaturedProductsSection";
 import ArticlesSection from "@/components/home/ArticlesSection";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
+import HomeScrollBg from "@/components/home/HomeScrollBg";
 import { useHomePage } from "@/hooks/useHomePage";
 import { useLocale } from "@/context/LocaleContext";
 import { getCategories, getProducts } from "@/services/cms/products";
@@ -134,6 +135,7 @@ export default function Home() {
       ) : null}
       {!isPending && !isError && hasContent ? (
         <main>
+          <HomeScrollBg />
           {showIntro ? (
             <HomepageIntro tiles={introTiles} onComplete={onIntroComplete} />
           ) : null}

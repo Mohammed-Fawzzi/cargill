@@ -27,6 +27,7 @@ export default function GrowTogetherBanner() {
 
   return (
     <motion.section
+      data-home-bg="#181060"
       className="bg-transparent py-14 md:py-16"
       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}

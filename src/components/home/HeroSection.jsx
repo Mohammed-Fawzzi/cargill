@@ -101,7 +101,7 @@ export default function HeroSection({ section, entranceReady = true }) {
 
   return (
     <>
-      <section className="relative isolate bg-[#0A0820]">
+      <section data-home-bg="#0A0820" className="relative isolate bg-[#0A0820]">
         <div
           data-home-hero-media
           className="absolute inset-0 overflow-hidden"

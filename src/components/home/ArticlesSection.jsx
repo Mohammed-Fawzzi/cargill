@@ -48,8 +48,8 @@ function FieldNoteCard({ item, locale, index, reducedMotion }) {
   const minutesLabel =
     minutes > 0 ? `${minutes} ${t(UI.readingMinutes, locale)}` : "";
   const number = `${String(index + 1).padStart(2, "0")}.`;
-  const mediaH = "12rem";
-  const mediaHover = "14.4rem";
+  const mediaH = "12.5625rem";
+  const mediaHover = "15rem";
 
   return (
     <motion.article
@@ -134,6 +134,7 @@ export default function ArticlesSection({ section }) {
 
   return (
     <motion.section
+      data-home-bg="#0A0820"
       className="relative bg-transparent py-20 md:py-24"
       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}

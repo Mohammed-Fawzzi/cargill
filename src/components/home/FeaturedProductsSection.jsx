@@ -54,8 +54,8 @@ function ProductStageCard({
   );
   const waHref = toWhatsAppHref(phone, waMessage);
   const number = `${String(index + 1).padStart(2, "0")}.`;
-  const mediaH = "14rem";
-  const mediaHover = "16.8rem";
+  const mediaH = "12.5625rem";
+  const mediaHover = "15rem";
 
   const rotateX = useMotionValue(0);
   const rotateY = useMotionValue(0);
@@ -217,6 +217,7 @@ export default function FeaturedProductsSection({ section }) {
 
   return (
     <motion.section
+      data-home-bg="#110E33"
       className="border-t border-white/8 bg-transparent py-20 md:py-24"
       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}

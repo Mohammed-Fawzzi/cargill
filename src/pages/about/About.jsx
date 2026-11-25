@@ -201,6 +201,9 @@ function AboutStoryPinned({ steps, images, reducedMotion }) {
     "end-10 bottom-20",
   ];
 
+  const storyEase = [0.22, 1, 0.36, 1];
+  const storyDuration = reducedMotion ? 0 : 0.55;
+
   return (
     <section
       ref={pinRef}
@@ -214,14 +217,14 @@ function AboutStoryPinned({ steps, images, reducedMotion }) {
               key={`slot-${index}`}
               className={`absolute hidden h-36 w-28 overflow-hidden rounded-2xl border border-white/10 lg:block xl:h-44 xl:w-36 ${positions[index]}`}
             >
-              <AnimatePresence mode="wait">
+              <AnimatePresence initial={false}>
                 <motion.div
                   key={`${active}-${src}-${index}`}
                   className="absolute inset-0"
                   initial={reducedMotion ? false : { opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4, ease: easeOut }}
+                  transition={{ duration: storyDuration, ease: storyEase }}
                 >
                   {src ? (
                     <SafeImage
@@ -240,22 +243,37 @@ function AboutStoryPinned({ steps, images, reducedMotion }) {
         </div>
 
         <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-4 sm:px-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={steps[active]?.id || active}
-              className="w-full"
-              initial={reducedMotion ? false : { opacity: 0, y: 22 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -18 }}
-              transition={{ duration: 0.45, ease: easeOut }}
-            >
+          <div className="relative w-full">
+            <div className="invisible pointer-events-none" aria-hidden="true">
               <StoryBlock
                 label={steps[active]?.label}
                 title={steps[active]?.title}
                 body={steps[active]?.body}
               />
-            </motion.div>
-          </AnimatePresence>
+            </div>
+            <AnimatePresence initial={false}>
+              <motion.div
+                key={steps[active]?.id || active}
+                className="absolute inset-x-0 top-0 w-full"
+                initial={
+                  reducedMotion ? false : { opacity: 0, y: 16 }
+                }
+                animate={{ opacity: 1, y: 0 }}
+                exit={
+                  reducedMotion
+                    ? { opacity: 0 }
+                    : { opacity: 0, y: -16 }
+                }
+                transition={{ duration: storyDuration, ease: storyEase }}
+              >
+                <StoryBlock
+                  label={steps[active]?.label}
+                  title={steps[active]?.title}
+                  body={steps[active]?.body}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
           <div
             className="mt-10 flex items-center gap-2"

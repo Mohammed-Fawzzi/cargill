@@ -99,10 +99,10 @@ export default function FullscreenMenu({
       (a, b) => (b.createdAt || 0) - (a.createdAt || 0),
     );
     const events = eventsQuery.data || [];
-    const heroSlides = heroQuery.data?.data?.slides || [];
+    const heroSlides = heroQuery.data?.slides || [];
     const heroImage =
       heroSlides.map((item) => item?.imageUrl).filter(Boolean)[0] ||
-      heroQuery.data?.data?.imageUrl ||
+      heroQuery.data?.imageUrl ||
       "";
 
     return {
@@ -110,7 +110,7 @@ export default function FullscreenMenu({
       "/products": pickPesticidesImage(categories, products),
       "/articles": articles.find((item) => item.imageUrl)?.imageUrl || "",
       "/events": events.find((item) => item.imageUrl)?.imageUrl || "",
-      "/about": contact?.bannerUrl || "",
+      "/about": contact?.bannerUrl || heroImage,
       "/contact": heroImage,
       "/finder": pickPesticidesImage(categories, products),
     };

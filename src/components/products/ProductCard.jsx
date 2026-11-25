@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import SafeImage from "@/components/ui/SafeImage";
+import { SplitBtnLabel } from "@/components/ui/SplitArrowButton";
 import { useLocale } from "@/context/LocaleContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
@@ -16,6 +17,7 @@ export default function ProductCard({
   index = 0,
 }) {
   const { locale } = useLocale();
+  const labelRef = useRef(null);
   const number = `${String(index + 1).padStart(2, "0")}.`;
   const badge = subcategory || category || "";
   const metaLabel = subcategory || category || "";
@@ -27,6 +29,11 @@ export default function ProductCard({
       to={to}
       className="ix-card group relative flex flex-col justify-between overflow-hidden bg-[#1B1931] text-white transition-colors duration-300 hover:bg-[#1F1D35]"
       style={{ "--ix-media-h": mediaH, "--ix-media-h-hover": mediaHover }}
+      onPointerEnter={(event) => {
+        if (event.pointerType === "mouse" || event.pointerType === "pen") {
+          labelRef.current?.play();
+        }
+      }}
     >
       <span
         className="absolute inset-x-0 top-0 h-1 bg-transparent transition-colors duration-300 group-hover:bg-brand-lime"
@@ -89,11 +96,11 @@ export default function ProductCard({
 
       <div className="px-5 pb-5 pt-4">
         <span className="split-btn split-btn--primary pointer-events-none w-full min-h-10">
-          <span className="split-btn__label flex-1">
+          <SplitBtnLabel ref={labelRef} className="flex-1">
             {t(UI.productDetails, locale)}
-          </span>
-          <span className="split-btn__orbit" aria-hidden="true">
-            <span className="split-btn__arrow">←</span>
+          </SplitBtnLabel>
+          <span className="split-btn__arrow" aria-hidden="true">
+            <span className="split-btn__icon">←</span>
           </span>
         </span>
       </div>
