@@ -258,7 +258,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="pointer-events-none fixed inset-x-0 top-0 z-40 px-3 pt-3 sm:px-4 sm:pt-4">
+      <nav className="pointer-events-none fixed inset-x-0 top-0 z-40 px-4 pt-3 sm:px-5 sm:pt-4 lg:px-6">
         <div className="pointer-events-auto relative mx-auto flex h-16 max-w-[1180px] items-center justify-between gap-3 overflow-visible rounded-full nav-glass px-3 sm:h-[4.25rem] sm:px-5">
           <div className="order-3 flex shrink-0 items-center gap-1.5 sm:gap-2">
             <div className="hidden lg:block">

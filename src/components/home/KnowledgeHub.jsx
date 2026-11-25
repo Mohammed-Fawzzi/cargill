@@ -221,10 +221,12 @@ export default function KnowledgeHub({ items = [], section }) {
         best = card;
       }
     }
-    const target =
-      best.offsetLeft - (node.clientWidth - best.offsetWidth) / 2;
+    const pad = Number.parseFloat(
+      getComputedStyle(node).scrollPaddingInlineStart || "0",
+    ) || 0;
+    const target = best.offsetLeft - pad;
     node.scrollTo({
-      left: Math.max(0, target),
+      left: target,
       behavior: reducedMotion ? "auto" : "smooth",
     });
   };
@@ -327,12 +329,16 @@ export default function KnowledgeHub({ items = [], section }) {
         <>
           <div
             ref={railRef}
-            className="flex cursor-grab gap-4 overflow-x-auto px-5 pb-2 scroll-px-5 active:cursor-grabbing sm:px-8 sm:scroll-px-8 lg:px-12 lg:scroll-px-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
+            className="flex cursor-grab gap-4 overflow-x-auto pb-2 scroll-ps-5 scroll-pe-5 active:cursor-grabbing sm:scroll-ps-8 sm:scroll-pe-8 lg:scroll-ps-12 lg:scroll-pe-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
           >
+            <div
+              className="w-5 shrink-0 sm:w-8 lg:w-12"
+              aria-hidden="true"
+            />
             {cards.map((item, index) => (
               <ArticleRailCard
                 key={item.id}
@@ -341,6 +347,10 @@ export default function KnowledgeHub({ items = [], section }) {
                 featured={index === 0}
               />
             ))}
+            <div
+              className="w-5 shrink-0 sm:w-8 lg:w-12"
+              aria-hidden="true"
+            />
           </div>
 
           <div className="container mx-auto mt-8 px-4 lg:px-8">
