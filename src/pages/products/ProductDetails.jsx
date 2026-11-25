@@ -327,7 +327,7 @@ export default function ProductDetails() {
                 <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
                   <div className="order-2 lg:order-1 lg:col-span-6">
                     {name ? (
-                      <h1 className="text-[clamp(2.25rem,5vw,4.5rem)] font-extrabold leading-[0.98] tracking-tight text-brand-ink">
+                      <h1 className="text-[clamp(2.25rem,5vw,4.5rem)] font-extrabold leading-[1.12] tracking-tight text-brand-ink">
                         {name}
                       </h1>
                     ) : null}

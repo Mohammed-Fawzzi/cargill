@@ -21,11 +21,14 @@ function TitleLines({ title, reduceMotion }) {
   if (!title) return null;
 
   return (
-    <h1 className="text-[clamp(2.75rem,8vw,6.5rem)] font-extrabold leading-[0.95] tracking-tight text-brand-ink">
+    <h1 className="text-[clamp(2.75rem,8vw,6.5rem)] font-extrabold leading-[1.12] tracking-tight text-brand-ink">
       {lines.map((line, index) => (
-        <span key={`${line}-${index}`} className="block overflow-hidden">
+        <span
+          key={`${line}-${index}`}
+          className="block overflow-hidden py-[0.12em]"
+        >
           <motion.span
-            className="text-clip-safe block"
+            className="text-clip-safe block leading-[1.12]"
             initial={reduceMotion ? false : { y: "110%", opacity: 0 }}
             animate={{ y: "0%", opacity: 1 }}
             transition={{

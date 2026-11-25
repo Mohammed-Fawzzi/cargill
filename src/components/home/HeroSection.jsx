@@ -253,21 +253,25 @@ function HeadlineLines({ title, brand, reducedMotion, delay }) {
         <span className="h-px w-10 bg-brand-lime sm:w-14" aria-hidden="true" />
       </motion.div>
       {title ? (
-        <h1 className="text-[1.7rem] font-extrabold leading-[1.15] tracking-tight sm:text-4xl lg:text-[2.65rem] xl:text-[3rem]">
+        <h1 className="text-[1.7rem] font-extrabold leading-[1.2] tracking-tight sm:text-4xl lg:text-[2.65rem] xl:text-[3rem]">
           {lines.map((line, index) => (
-            <motion.span
+            <span
               key={`${line}-${index}`}
-              className="block overflow-hidden"
-              initial={reducedMotion ? false : { y: "110%", opacity: 0 }}
-              animate={{ y: "0%", opacity: 1 }}
-              transition={{
-                duration: 0.55,
-                delay: delay + 0.08 + index * 0.1,
-                ease: SPROUT_EASE,
-              }}
+              className="block overflow-hidden py-[0.12em]"
             >
-              <span className="block lg:whitespace-nowrap">{line}</span>
-            </motion.span>
+              <motion.span
+                className="block leading-[1.2] lg:whitespace-nowrap"
+                initial={reducedMotion ? false : { y: "110%", opacity: 0 }}
+                animate={{ y: "0%", opacity: 1 }}
+                transition={{
+                  duration: 0.55,
+                  delay: delay + 0.08 + index * 0.1,
+                  ease: SPROUT_EASE,
+                }}
+              >
+                {line}
+              </motion.span>
+            </span>
           ))}
         </h1>
       ) : null}

@@ -168,7 +168,7 @@ export default function ValuesTrio() {
           lineClassName="bg-brand-ink"
         />
 
-        <h2 className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.25rem,6vw,5.5rem)] font-extrabold leading-[1.05] tracking-tight text-brand-ink sm:mb-14">
+        <h2 className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.25rem,6vw,5.5rem)] font-extrabold leading-[1.12] tracking-tight text-brand-ink sm:mb-14">
           {accentLastWord(heading)}
         </h2>
 

@@ -77,7 +77,7 @@ export default function GrowTogetherBanner() {
           lineClassName="bg-white/20"
         />
 
-        <h2 className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.75rem,9vw,7.5rem)] font-extrabold leading-[1.05] tracking-tight">
+        <h2 className="text-clip-safe mb-10 max-w-5xl text-[clamp(2.75rem,9vw,7.5rem)] font-extrabold leading-[1.12] tracking-tight">
           {accentLastWord(title)}
         </h2>
 

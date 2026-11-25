@@ -209,7 +209,7 @@ export default function EventDetails() {
               </p>
 
               {title ? (
-                <h1 className="max-w-[900px] text-[clamp(2.25rem,5vw,4.25rem)] font-extrabold leading-[1.05] tracking-tight text-brand-ink">
+                <h1 className="max-w-[900px] text-[clamp(2.25rem,5vw,4.25rem)] font-extrabold leading-[1.12] tracking-tight text-brand-ink">
                   {title}
                 </h1>
               ) : null}
