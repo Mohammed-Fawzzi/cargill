@@ -1,13 +1,14 @@
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion, useScroll } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import SafeImage from "@/components/ui/SafeImage";
 import LogoTriangle from "@/components/ui/LogoTriangle";
 import PageBanner from "@/components/ui/PageBanner";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
+import { useLenis } from "@/components/layout/LenisProvider";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 import useCountUp from "@/hooks/useCountUp";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
@@ -153,28 +154,44 @@ function StoryBlock({ label, title, body }) {
 
 function AboutStoryPinned({ steps, images, reducedMotion }) {
   const pinRef = useRef(null);
+  const lenis = useLenis();
   const [active, setActive] = useState(0);
-  const { scrollYProgress } = useScroll({
-    target: pinRef,
-    offset: ["start start", "end end"],
-  });
+  const count = Math.max(steps.length, 1);
 
   useEffect(() => {
-    if (!steps.length) return undefined;
-    return scrollYProgress.on("change", (value) => {
-      const index = Math.min(
-        steps.length - 1,
-        Math.floor(value * steps.length),
-      );
-      setActive(index);
-    });
-  }, [scrollYProgress, steps.length]);
+    const node = pinRef.current;
+    if (!node || !steps.length) return undefined;
+
+    const update = () => {
+      const rect = node.getBoundingClientRect();
+      const travel = Math.max(1, node.offsetHeight - window.innerHeight);
+      const scrolled = Math.min(travel, Math.max(0, -rect.top));
+      const progress = scrolled / travel;
+      const raw = Math.min(count - 1, Math.floor(progress * count + 0.001));
+      setActive((prev) => (prev === raw ? prev : raw));
+    };
+
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    const instance = lenis?.instance;
+    instance?.on?.("scroll", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      instance?.off?.("scroll", update);
+    };
+  }, [steps.length, count, lenis]);
 
   const cornerImages = useMemo(() => {
     const pool = images.filter(Boolean);
     if (!pool.length) return ["", "", "", ""];
-    const base = active % pool.length;
-    return [0, 1, 2, 3].map((offset) => pool[(base + offset) % pool.length]);
+    const start = (active * 2) % pool.length;
+    const picked = [];
+    for (let i = 0; i < 4; i += 1) {
+      picked.push(pool[(start + i) % pool.length]);
+    }
+    return picked;
   }, [images, active]);
 
   const positions = [
@@ -188,7 +205,7 @@ function AboutStoryPinned({ steps, images, reducedMotion }) {
     <section
       ref={pinRef}
       className="relative"
-      style={{ height: `${Math.max(steps.length, 1) * 100}vh` }}
+      style={{ height: `${count * 120}vh` }}
     >
       <div className="sticky top-0 flex h-screen items-center overflow-hidden">
         <div className="pointer-events-none absolute inset-0">
@@ -204,7 +221,7 @@ function AboutStoryPinned({ steps, images, reducedMotion }) {
                   initial={reducedMotion ? false : { opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.45, ease: easeOut }}
+                  transition={{ duration: 0.4, ease: easeOut }}
                 >
                   {src ? (
                     <SafeImage
@@ -222,13 +239,14 @@ function AboutStoryPinned({ steps, images, reducedMotion }) {
           ))}
         </div>
 
-        <div className="relative z-10 mx-auto w-full max-w-3xl px-4 sm:px-6">
+        <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-4 sm:px-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={steps[active]?.id || active}
-              initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+              className="w-full"
+              initial={reducedMotion ? false : { opacity: 0, y: 22 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -14 }}
+              exit={{ opacity: 0, y: -18 }}
               transition={{ duration: 0.45, ease: easeOut }}
             >
               <StoryBlock
@@ -238,6 +256,25 @@ function AboutStoryPinned({ steps, images, reducedMotion }) {
               />
             </motion.div>
           </AnimatePresence>
+
+          <div
+            className="mt-10 flex items-center gap-2"
+            aria-hidden="true"
+          >
+            {steps.map((step, index) => (
+              <span
+                key={step.id}
+                className={`h-1.5 rounded-full transition-[width,background-color] duration-300 ${
+                  index === active
+                    ? "w-7 bg-brand-lime"
+                    : "w-1.5 bg-white/25"
+                }`}
+                style={{
+                  transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
