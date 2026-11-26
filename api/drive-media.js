@@ -55,6 +55,8 @@ export default async function handler(request) {
   out.set("Content-Type", contentType || "video/mp4");
   out.set("Accept-Ranges", "bytes");
   out.set("Cache-Control", CACHE_CONTROL);
+  out.set("CDN-Cache-Control", CACHE_CONTROL);
+  out.set("Vercel-CDN-Cache-Control", CACHE_CONTROL);
   out.set("Vary", "Range");
 
   const contentRange = upstream.headers.get("content-range");
