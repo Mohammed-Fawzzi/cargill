@@ -63,7 +63,11 @@ function driveMediaDevProxy() {
           res.statusCode = upstream.status;
           res.setHeader("Content-Type", contentType || "video/mp4");
           res.setHeader("Accept-Ranges", "bytes");
-          res.setHeader("Cache-Control", "public, max-age=3600");
+          res.setHeader(
+            "Cache-Control",
+            "public, s-maxage=86400, stale-while-revalidate=604800",
+          );
+          res.setHeader("Vary", "Range");
           const contentRange = upstream.headers.get("content-range");
           if (contentRange) res.setHeader("Content-Range", contentRange);
           const contentLength = upstream.headers.get("content-length");
