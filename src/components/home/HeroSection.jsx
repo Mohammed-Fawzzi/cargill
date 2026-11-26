@@ -132,16 +132,19 @@ export default function HeroSection({ section, entranceReady = true }) {
     }
     return [];
   }, [slides, section?.data?.videoUrl, section?.data?.imageUrl]);
-  const activeVideo = videoItems[0] || null;
-  const videoUrl = activeVideo?.videoUrl || "";
+  const videoUrls = useMemo(
+    () => videoItems.map((item) => item.videoUrl),
+    [videoItems],
+  );
   const poster = useMemo(() => {
+    const current = videoItems[media.index || 0] || videoItems[0];
     return (
-      activeVideo?.imageUrl ||
+      current?.imageUrl ||
       images[0] ||
       section?.data?.imageUrl ||
       ""
     );
-  }, [activeVideo, images, section?.data?.imageUrl]);
+  }, [videoItems, media.index, images, section?.data?.imageUrl]);
   const headlineSlide = slides.find((item) => t(item?.title, locale)) || slides[0];
   const title = t(headlineSlide?.title, locale);
   const body = t(headlineSlide?.body, locale);
@@ -180,7 +183,7 @@ export default function HeroSection({ section, entranceReady = true }) {
     return () => window.clearTimeout(timer);
   }, [reducedMotion, entered]);
 
-  if (!title && !body && !images.length && !videoUrl) return null;
+  if (!title && !body && !images.length && !videoUrls.length) return null;
 
   const delay = reducedMotion || !entered ? 0 : 0.05;
   const showMotion = entered && !reducedMotion;
@@ -238,9 +241,9 @@ export default function HeroSection({ section, entranceReady = true }) {
             </AnimatePresence>
           )}
           <HeroMedia
-            videoUrl={videoUrl}
+            videoUrls={videoUrls}
             posterUrl={poster}
-            ready={Boolean(videoUrl)}
+            ready={Boolean(videoUrls.length)}
             slot="home"
             onStateChange={setMedia}
           />

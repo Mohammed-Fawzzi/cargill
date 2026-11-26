@@ -7,19 +7,26 @@ import {
 
 const VIDEO_FAIL_MS = 8000;
 
-function resolveSrc(videoUrl, videoUrls) {
-  if (typeof videoUrl === "string" && videoUrl.trim()) {
-    return resolvePlayableVideoUrl(videoUrl.trim());
+function resolveList(videoUrl, videoUrls) {
+  const raw = [];
+  if (Array.isArray(videoUrls) && videoUrls.length) {
+    videoUrls.forEach((item) => {
+      const value = typeof item === "string" ? item.trim() : "";
+      if (value) raw.push(value);
+    });
+  } else if (typeof videoUrl === "string" && videoUrl.trim()) {
+    raw.push(videoUrl.trim());
   }
-  if (Array.isArray(videoUrls)) {
-    for (const item of videoUrls) {
-      const raw = typeof item === "string" ? item.trim() : "";
-      if (!raw) continue;
-      const resolved = resolvePlayableVideoUrl(raw);
-      if (resolved) return resolved;
-    }
-  }
-  return "";
+
+  const seen = new Set();
+  const list = [];
+  raw.forEach((item) => {
+    const resolved = resolvePlayableVideoUrl(item);
+    if (!resolved || seen.has(resolved)) return;
+    seen.add(resolved);
+    list.push(resolved);
+  });
+  return list;
 }
 
 export default function HeroMedia({
@@ -33,16 +40,22 @@ export default function HeroMedia({
   onStateChange,
 }) {
   const videoRef = useRef(null);
+  const indexRef = useRef(0);
   const playedRef = useRef(false);
+  const busyRef = useRef(false);
+  const [index, setIndex] = useState(0);
   const [allowed, setAllowed] = useState(false);
   const [failed, setFailed] = useState(false);
   const [visible, setVisible] = useState(false);
   const [inView, setInView] = useState(true);
 
-  const videoSrc = useMemo(
-    () => resolveSrc(videoUrl, videoUrls),
+  const list = useMemo(
+    () => resolveList(videoUrl, videoUrls),
     [videoUrl, videoUrls],
   );
+  const listKey = list.join("\n");
+  const videoSrc = list[index] || "";
+  const single = list.length <= 1;
   const posterSrc = useMemo(
     () =>
       posterUrl
@@ -50,17 +63,20 @@ export default function HeroMedia({
         : "",
     [posterUrl],
   );
-  const wantVideo = Boolean(allowed && videoSrc && !failed && ready);
+  const wantVideo = Boolean(allowed && list.length && !failed && ready);
   const baseClass =
     videoClassName ||
     "absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-200 ease-out";
 
   useEffect(() => {
+    indexRef.current = 0;
     playedRef.current = false;
+    busyRef.current = false;
+    setIndex(0);
     setFailed(false);
     setVisible(false);
     setAllowed(false);
-  }, [videoSrc]);
+  }, [listKey]);
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
@@ -68,7 +84,8 @@ export default function HeroMedia({
       ? videoSrc.replace(/key=[^&]+/i, "key=***")
       : "(empty)";
     console.log(`[hero-video] ${slot} src:`, masked);
-  }, [slot, videoSrc]);
+    console.log(`[hero-video] ${slot} playlist:`, list.length, "index:", index);
+  }, [slot, videoSrc, list.length, index]);
 
   useEffect(() => {
     onStateChange?.({
@@ -78,13 +95,13 @@ export default function HeroMedia({
       finished: false,
       src: videoSrc,
       raw: videoSrc,
-      index: 0,
-      total: videoSrc ? 1 : 0,
+      index,
+      total: list.length,
     });
-  }, [wantVideo, visible, failed, videoSrc, onStateChange]);
+  }, [wantVideo, visible, failed, videoSrc, index, list.length, onStateChange]);
 
   useEffect(() => {
-    if (!ready || !videoSrc) {
+    if (!ready || !list.length) {
       setAllowed(false);
       return undefined;
     }
@@ -94,7 +111,7 @@ export default function HeroMedia({
     }
     setAllowed(true);
     return undefined;
-  }, [ready, videoSrc]);
+  }, [ready, listKey]);
 
   useEffect(() => {
     const node = videoRef.current;
@@ -105,76 +122,171 @@ export default function HeroMedia({
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [wantVideo, videoSrc]);
+  }, [wantVideo, listKey]);
 
   useEffect(() => {
     const node = videoRef.current;
-    if (!node || !wantVideo || !videoSrc) return undefined;
+    if (!node || !wantVideo || !list.length) return undefined;
 
     let cancelled = false;
     let failTimer = 0;
-    let sawPlaying = false;
+    let itemPlaying = false;
+    const tried = new Set();
 
-    const markPlayed = () => {
-      if (cancelled || playedRef.current) return;
-      playedRef.current = true;
-      sawPlaying = true;
+    const clearFailTimer = () => {
       window.clearTimeout(failTimer);
-      if (!cancelled) setVisible(true);
+      failTimer = 0;
     };
 
-    const failOnce = () => {
-      if (cancelled || playedRef.current || sawPlaying) return;
-      window.clearTimeout(failTimer);
+    const syncIndex = (next) => {
+      indexRef.current = next;
+      if (!cancelled) setIndex(next);
+    };
+
+    const markPlayed = () => {
+      if (cancelled) return;
+      itemPlaying = true;
+      playedRef.current = true;
+      clearFailTimer();
+      busyRef.current = false;
+      setVisible(true);
+    };
+
+    const failHard = () => {
+      if (cancelled || playedRef.current) return;
+      clearFailTimer();
+      busyRef.current = false;
       setVisible(false);
       setFailed(true);
     };
 
-    const onPlaying = () => markPlayed();
-    const onCanPlay = () => {
-      if (cancelled || playedRef.current) return;
-      const run = node.play();
-      if (run?.catch) run.catch(() => {});
-    };
-    const onError = () => {
-      if (!sawPlaying && !playedRef.current) failOnce();
-    };
-
-    node.addEventListener("playing", onPlaying);
-    node.addEventListener("canplay", onCanPlay);
-    node.addEventListener("error", onError);
-
-    failTimer = window.setTimeout(() => {
-      if (!sawPlaying && !playedRef.current && node.readyState < 2) failOnce();
-    }, VIDEO_FAIL_MS);
-
-    try {
-      const needsSrc = node.dataset.heroSrc !== videoSrc;
-      if (needsSrc) {
-        node.dataset.heroSrc = videoSrc;
-        node.src = videoSrc;
-        node.load();
+    const advanceFrom = (fromIndex) => {
+      if (list.length <= 1) {
+        if (!playedRef.current) failHard();
+        return;
       }
-      const run = node.play();
-      if (run?.catch) run.catch(() => {});
-      if (node.readyState >= 2) onCanPlay();
-      if (node.readyState >= 3 && !node.paused) markPlayed();
-    } catch {
-      failOnce();
-    }
+      const next = fromIndex >= list.length - 1 ? 0 : fromIndex + 1;
+      if (next === fromIndex) return;
+      playAt(next);
+    };
+
+    let onItemPlaying = null;
+
+    const playAt = (nextIndex) => {
+      if (cancelled || !list.length) return;
+      if (nextIndex < 0 || nextIndex >= list.length) {
+        if (playedRef.current) {
+          playAt(0);
+          return;
+        }
+        failHard();
+        return;
+      }
+
+      if (!playedRef.current && tried.has(nextIndex)) {
+        failHard();
+        return;
+      }
+      if (!playedRef.current) tried.add(nextIndex);
+
+      busyRef.current = true;
+      itemPlaying = false;
+      clearFailTimer();
+      if (onItemPlaying) {
+        node.removeEventListener("playing", onItemPlaying);
+        onItemPlaying = null;
+      }
+
+      const src = list[nextIndex];
+      syncIndex(nextIndex);
+
+      onItemPlaying = () => {
+        if (onItemPlaying) {
+          node.removeEventListener("playing", onItemPlaying);
+          onItemPlaying = null;
+        }
+        markPlayed();
+      };
+      node.addEventListener("playing", onItemPlaying);
+
+      failTimer = window.setTimeout(() => {
+        if (cancelled || itemPlaying) return;
+        if (onItemPlaying) {
+          node.removeEventListener("playing", onItemPlaying);
+          onItemPlaying = null;
+        }
+        advanceFrom(nextIndex);
+      }, VIDEO_FAIL_MS);
+
+      try {
+        if (node.dataset.heroSrc !== src) {
+          node.dataset.heroSrc = src;
+          node.src = src;
+          node.load();
+        } else {
+          try {
+            node.currentTime = 0;
+          } catch {}
+        }
+        const run = node.play();
+        if (run?.catch) {
+          run.catch(() => {
+            if (cancelled || itemPlaying) return;
+            if (onItemPlaying) {
+              node.removeEventListener("playing", onItemPlaying);
+              onItemPlaying = null;
+            }
+            advanceFrom(nextIndex);
+          });
+        }
+        if (node.readyState >= 3 && !node.paused) {
+          if (onItemPlaying) {
+            node.removeEventListener("playing", onItemPlaying);
+            onItemPlaying = null;
+          }
+          markPlayed();
+        }
+      } catch {
+        if (onItemPlaying) {
+          node.removeEventListener("playing", onItemPlaying);
+          onItemPlaying = null;
+        }
+        advanceFrom(nextIndex);
+      }
+    };
+
+    const onEnded = () => {
+      if (cancelled || busyRef.current) return;
+      if (list.length <= 1) return;
+      advanceFrom(indexRef.current);
+    };
+
+    const onError = () => {
+      if (cancelled || busyRef.current) return;
+      advanceFrom(indexRef.current);
+    };
+
+    node.addEventListener("ended", onEnded);
+    node.addEventListener("error", onError);
+    playAt(indexRef.current || 0);
 
     return () => {
       cancelled = true;
-      window.clearTimeout(failTimer);
-      node.removeEventListener("playing", onPlaying);
-      node.removeEventListener("canplay", onCanPlay);
+      busyRef.current = false;
+      clearFailTimer();
+      if (onItemPlaying) {
+        node.removeEventListener("playing", onItemPlaying);
+        onItemPlaying = null;
+      }
+      node.removeEventListener("ended", onEnded);
       node.removeEventListener("error", onError);
     };
-  }, [wantVideo, videoSrc]);
+  }, [wantVideo, listKey]);
 
   useEffect(() => {
     const node = videoRef.current;
     if (!node || !wantVideo || !visible || !playedRef.current) return;
+    if (busyRef.current) return;
     try {
       if (inView) {
         const run = node.play();
@@ -196,7 +308,7 @@ export default function HeroMedia({
         muted
         playsInline
         autoPlay
-        loop={true}
+        loop={single}
         preload="auto"
         poster={posterSrc || undefined}
         aria-hidden="true"
