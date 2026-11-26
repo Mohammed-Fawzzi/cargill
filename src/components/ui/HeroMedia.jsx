@@ -6,6 +6,7 @@ import {
 } from "@/lib/image";
 
 const VIDEO_FAIL_MS = 8000;
+const HANDOFF_S = 0.4;
 
 function resolveList(videoUrl, videoUrls) {
   const raw = [];
@@ -39,11 +40,14 @@ export default function HeroMedia({
   videoClassName = "",
   onStateChange,
 }) {
-  const videoRef = useRef(null);
+  const aRef = useRef(null);
+  const bRef = useRef(null);
   const indexRef = useRef(0);
+  const activeRef = useRef(0);
   const playedRef = useRef(false);
   const busyRef = useRef(false);
   const [index, setIndex] = useState(0);
+  const [active, setActive] = useState(0);
   const [allowed, setAllowed] = useState(false);
   const [failed, setFailed] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -55,7 +59,7 @@ export default function HeroMedia({
   );
   const listKey = list.join("\n");
   const videoSrc = list[index] || "";
-  const single = list.length <= 1;
+  const multi = list.length > 1;
   const posterSrc = useMemo(
     () =>
       posterUrl
@@ -66,13 +70,15 @@ export default function HeroMedia({
   const wantVideo = Boolean(allowed && list.length && !failed && ready);
   const baseClass =
     videoClassName ||
-    "absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-200 ease-out";
+    "absolute inset-0 h-full w-full object-cover object-center";
 
   useEffect(() => {
     indexRef.current = 0;
+    activeRef.current = 0;
     playedRef.current = false;
     busyRef.current = false;
     setIndex(0);
+    setActive(0);
     setFailed(false);
     setVisible(false);
     setAllowed(false);
@@ -114,7 +120,7 @@ export default function HeroMedia({
   }, [ready, listKey]);
 
   useEffect(() => {
-    const node = videoRef.current;
+    const node = active === 0 ? aRef.current : bRef.current;
     if (!node || !wantVideo) return undefined;
     const observer = new IntersectionObserver(
       ([entry]) => setInView(Boolean(entry?.isIntersecting)),
@@ -122,15 +128,17 @@ export default function HeroMedia({
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [wantVideo, listKey]);
+  }, [wantVideo, active, listKey]);
 
   useEffect(() => {
-    const node = videoRef.current;
-    if (!node || !wantVideo || !list.length) return undefined;
+    if (!wantVideo || !list.length) return undefined;
+
+    const nodes = [aRef.current, bRef.current];
+    if (!nodes[0] || !nodes[1]) return undefined;
 
     let cancelled = false;
     let failTimer = 0;
-    let itemPlaying = false;
+    let handoff = false;
     const tried = new Set();
 
     const clearFailTimer = () => {
@@ -143,13 +151,9 @@ export default function HeroMedia({
       if (!cancelled) setIndex(next);
     };
 
-    const markPlayed = () => {
-      if (cancelled) return;
-      itemPlaying = true;
-      playedRef.current = true;
-      clearFailTimer();
-      busyRef.current = false;
-      setVisible(true);
+    const syncActive = (next) => {
+      activeRef.current = next;
+      if (!cancelled) setActive(next);
     };
 
     const failHard = () => {
@@ -160,20 +164,79 @@ export default function HeroMedia({
       setFailed(true);
     };
 
-    const advanceFrom = (fromIndex) => {
-      if (list.length <= 1) {
-        if (!playedRef.current) failHard();
-        return;
-      }
-      const next = fromIndex >= list.length - 1 ? 0 : fromIndex + 1;
-      if (next === fromIndex) return;
-      playAt(next);
+    const assignSrc = (node, src) => {
+      if (node.dataset.heroSrc === src) return false;
+      node.dataset.heroSrc = src;
+      node.src = src;
+      try {
+        node.load();
+      } catch {}
+      return true;
     };
 
-    let onItemPlaying = null;
+    const prefetch = (fromIndex) => {
+      if (!multi || cancelled) return;
+      const idleSlot = activeRef.current === 0 ? 1 : 0;
+      const idle = nodes[idleSlot];
+      if (!idle) return;
+      const nextIndex = (fromIndex + 1) % list.length;
+      const src = list[nextIndex];
+      if (!src) return;
+      if (idle.dataset.heroSrc === src && idle.readyState >= 2) return;
+      try {
+        assignSrc(idle, src);
+      } catch {}
+    };
 
-    const playAt = (nextIndex) => {
+    const waitCanPlay = (node) =>
+      new Promise((resolve, reject) => {
+        let done = false;
+        const finish = (ok) => {
+          if (done) return;
+          done = true;
+          node.removeEventListener("canplay", onReady);
+          node.removeEventListener("loadeddata", onReady);
+          node.removeEventListener("error", onErr);
+          if (ok) resolve();
+          else reject(new Error("not-ready"));
+        };
+        const onReady = () => finish(true);
+        const onErr = () => finish(false);
+        if (node.readyState >= 2) {
+          finish(true);
+          return;
+        }
+        node.addEventListener("canplay", onReady);
+        node.addEventListener("loadeddata", onReady);
+        node.addEventListener("error", onErr);
+        window.setTimeout(() => {
+          if (node.readyState >= 2) finish(true);
+          else finish(false);
+        }, VIDEO_FAIL_MS);
+      });
+
+    const showPlaying = (slotIndex, clipIndex) => {
+      if (cancelled) return;
+      const node = nodes[slotIndex];
+      const prev = nodes[activeRef.current];
+      playedRef.current = true;
+      handoff = false;
+      busyRef.current = false;
+      clearFailTimer();
+      syncIndex(clipIndex);
+      syncActive(slotIndex);
+      setVisible(true);
+      if (prev && prev !== node) {
+        try {
+          prev.pause();
+        } catch {}
+      }
+      prefetch(clipIndex);
+    };
+
+    const playAt = async (nextIndex, { fromHandoff = false } = {}) => {
       if (cancelled || !list.length) return;
+      if (busyRef.current && !fromHandoff) return;
       if (nextIndex < 0 || nextIndex >= list.length) {
         if (playedRef.current) {
           playAt(0);
@@ -190,101 +253,140 @@ export default function HeroMedia({
       if (!playedRef.current) tried.add(nextIndex);
 
       busyRef.current = true;
-      itemPlaying = false;
       clearFailTimer();
-      if (onItemPlaying) {
-        node.removeEventListener("playing", onItemPlaying);
-        onItemPlaying = null;
-      }
 
       const src = list[nextIndex];
-      syncIndex(nextIndex);
+      const currentSlot = activeRef.current;
+      let slotIndex = currentSlot;
 
-      onItemPlaying = () => {
-        if (onItemPlaying) {
-          node.removeEventListener("playing", onItemPlaying);
-          onItemPlaying = null;
+      if (multi) {
+        const idleSlot = currentSlot === 0 ? 1 : 0;
+        const idle = nodes[idleSlot];
+        if (idle?.dataset?.heroSrc === src && idle.readyState >= 2) {
+          slotIndex = idleSlot;
+        } else if (playedRef.current) {
+          slotIndex = idleSlot;
+        } else {
+          slotIndex = currentSlot;
         }
-        markPlayed();
-      };
-      node.addEventListener("playing", onItemPlaying);
+      }
+
+      const node = nodes[slotIndex];
+      if (!node) {
+        busyRef.current = false;
+        failHard();
+        return;
+      }
 
       failTimer = window.setTimeout(() => {
-        if (cancelled || itemPlaying) return;
-        if (onItemPlaying) {
-          node.removeEventListener("playing", onItemPlaying);
-          onItemPlaying = null;
-        }
-        advanceFrom(nextIndex);
+        if (cancelled || playedRef.current) return;
+        busyRef.current = false;
+        const fallback = nextIndex >= list.length - 1 ? 0 : nextIndex + 1;
+        if (fallback !== nextIndex) playAt(fallback);
+        else failHard();
       }, VIDEO_FAIL_MS);
 
       try {
-        if (node.dataset.heroSrc !== src) {
-          node.dataset.heroSrc = src;
-          node.src = src;
-          node.load();
-        } else {
-          try {
-            node.currentTime = 0;
-          } catch {}
-        }
+        assignSrc(node, src);
+        await waitCanPlay(node);
+        if (cancelled) return;
+        try {
+          if (node.currentTime > 0.05) node.currentTime = 0;
+        } catch {}
         const run = node.play();
-        if (run?.catch) {
-          run.catch(() => {
-            if (cancelled || itemPlaying) return;
-            if (onItemPlaying) {
-              node.removeEventListener("playing", onItemPlaying);
-              onItemPlaying = null;
-            }
-            advanceFrom(nextIndex);
-          });
-        }
-        if (node.readyState >= 3 && !node.paused) {
-          if (onItemPlaying) {
-            node.removeEventListener("playing", onItemPlaying);
-            onItemPlaying = null;
+        if (run?.catch) await run.catch(() => {});
+        if (cancelled) return;
+        if (node.paused && node.readyState < 2) {
+          busyRef.current = false;
+          clearFailTimer();
+          const fallback = nextIndex >= list.length - 1 ? 0 : nextIndex + 1;
+          if (!playedRef.current && fallback !== nextIndex) {
+            playAt(fallback);
+            return;
           }
-          markPlayed();
+          if (!playedRef.current) failHard();
+          return;
         }
+        showPlaying(slotIndex, nextIndex);
       } catch {
-        if (onItemPlaying) {
-          node.removeEventListener("playing", onItemPlaying);
-          onItemPlaying = null;
+        busyRef.current = false;
+        clearFailTimer();
+        if (cancelled) return;
+        const fallback = nextIndex >= list.length - 1 ? 0 : nextIndex + 1;
+        if (!playedRef.current && fallback !== nextIndex) {
+          playAt(fallback);
+          return;
         }
-        advanceFrom(nextIndex);
+        if (!playedRef.current) failHard();
+        else if (multi && fallback !== nextIndex) playAt(fallback);
       }
     };
 
-    const onEnded = () => {
-      if (cancelled || busyRef.current) return;
-      if (list.length <= 1) return;
-      advanceFrom(indexRef.current);
+    const onTimeUpdate = (event) => {
+      if (!multi || cancelled || busyRef.current || handoff) return;
+      const node = event.currentTarget;
+      if (node !== nodes[activeRef.current]) return;
+      const duration = node.duration;
+      if (!Number.isFinite(duration) || duration <= 0) return;
+      const left = duration - node.currentTime;
+      if (left > HANDOFF_S || left < 0) return;
+      handoff = true;
+      const next =
+        indexRef.current >= list.length - 1 ? 0 : indexRef.current + 1;
+      playAt(next, { fromHandoff: true });
     };
 
-    const onError = () => {
-      if (cancelled || busyRef.current) return;
-      advanceFrom(indexRef.current);
+    const onEnded = (event) => {
+      if (!multi || cancelled || busyRef.current) return;
+      const node = event.currentTarget;
+      if (node !== nodes[activeRef.current]) return;
+      if (handoff) return;
+      const next =
+        indexRef.current >= list.length - 1 ? 0 : indexRef.current + 1;
+      playAt(next);
     };
 
-    node.addEventListener("ended", onEnded);
-    node.addEventListener("error", onError);
-    playAt(indexRef.current || 0);
+    const onError = (event) => {
+      if (cancelled) return;
+      const node = event.currentTarget;
+      const activeNode = nodes[activeRef.current];
+      if (node !== activeNode) return;
+      if (busyRef.current) return;
+      if (!playedRef.current) {
+        const fallback =
+          indexRef.current >= list.length - 1 ? 0 : indexRef.current + 1;
+        if (fallback !== indexRef.current) playAt(fallback);
+        else failHard();
+        return;
+      }
+      if (!multi) return;
+      const next =
+        indexRef.current >= list.length - 1 ? 0 : indexRef.current + 1;
+      playAt(next);
+    };
+
+    nodes.forEach((node) => {
+      node.addEventListener("timeupdate", onTimeUpdate);
+      node.addEventListener("ended", onEnded);
+      node.addEventListener("error", onError);
+    });
+
+    playAt(0);
 
     return () => {
       cancelled = true;
       busyRef.current = false;
       clearFailTimer();
-      if (onItemPlaying) {
-        node.removeEventListener("playing", onItemPlaying);
-        onItemPlaying = null;
-      }
-      node.removeEventListener("ended", onEnded);
-      node.removeEventListener("error", onError);
+      nodes.forEach((node) => {
+        node.removeEventListener("timeupdate", onTimeUpdate);
+        node.removeEventListener("ended", onEnded);
+        node.removeEventListener("error", onError);
+      });
     };
-  }, [wantVideo, listKey]);
+  }, [wantVideo, listKey, multi]);
 
   useEffect(() => {
-    const node = videoRef.current;
+    const node = active === 0 ? aRef.current : bRef.current;
     if (!node || !wantVideo || !visible || !playedRef.current) return;
     if (busyRef.current) return;
     try {
@@ -295,24 +397,32 @@ export default function HeroMedia({
         node.pause();
       }
     } catch {}
-  }, [inView, wantVideo, visible]);
+  }, [inView, wantVideo, visible, active]);
 
   if (!wantVideo && !visible) return null;
 
+  const renderVideo = (ref, slotIndex) => (
+    <video
+      ref={ref}
+      className={baseClass}
+      style={{
+        opacity: visible && active === slotIndex ? 1 : 0,
+        zIndex: active === slotIndex ? 2 : 1,
+      }}
+      muted
+      playsInline
+      autoPlay={slotIndex === 0}
+      loop={!multi}
+      preload="auto"
+      poster={slotIndex === 0 && !visible ? posterSrc || undefined : undefined}
+      aria-hidden="true"
+    />
+  );
+
   return (
     <div className={className || "absolute inset-0 overflow-hidden"}>
-      <video
-        ref={videoRef}
-        className={baseClass}
-        style={{ opacity: visible ? 1 : 0 }}
-        muted
-        playsInline
-        autoPlay
-        loop={single}
-        preload="auto"
-        poster={posterSrc || undefined}
-        aria-hidden="true"
-      />
+      {renderVideo(aRef, 0)}
+      {renderVideo(bRef, 1)}
     </div>
   );
 }
