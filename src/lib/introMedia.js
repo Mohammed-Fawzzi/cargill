@@ -5,15 +5,95 @@ import {
   resolvePlayableVideoUrl,
 } from "@/lib/image";
 
-export const INTRO_EASE = [0.22, 1, 0.36, 1];
-export const INTRO_STAGGER_MS = 60;
-export const INTRO_TILE_MS = 500;
-export const INTRO_FOCUS_MS = 400;
-export const INTRO_EXPAND_MS = 900;
-export const INTRO_PRELOAD_MAX_MS = 600;
-export const INTRO_OVERLAY_MS = 400;
-export const INTRO_NAV_DELAY_MS = 100;
-export const INTRO_COPY_DELAY_MS = 200;
+export const introTimings = {
+  page: {
+    preloadMaxMs: 600,
+    tileMs: 550,
+    staggerMs: 140,
+    holdMs: 250,
+    focusMs: 500,
+    expandMs: 1000,
+    overlayMs: 400,
+    navDelayMs: 100,
+    copyDelayMs: 200,
+    enterY: 40,
+    enterScale: 0.96,
+    focusScale: 1.04,
+    focusSideOpacity: 0.3,
+    focusDriftVw: 3,
+    expandDriftVw: 12,
+    radiusPx: 12,
+    endHeroScale: 1.08,
+    ease: [0.22, 1, 0.36, 1],
+    expandEase: [0.65, 0, 0.35, 1],
+  },
+  home: {
+    preloadMaxMs: 600,
+    tileMs: 620,
+    staggerMs: 160,
+    holdMs: 300,
+    focusMs: 560,
+    expandMs: 1100,
+    overlayMs: 400,
+    navDelayMs: 100,
+    copyDelayMs: 200,
+    enterY: 40,
+    enterScale: 0.96,
+    focusScale: 1.04,
+    focusSideOpacity: 0.3,
+    focusDriftVw: 3,
+    expandDriftVw: 12,
+    radiusPx: 6,
+    endHeroScale: 1,
+    ease: [0.22, 1, 0.36, 1],
+    expandEase: [0.65, 0, 0.35, 1],
+  },
+  mobile: {
+    tileMs: 480,
+    staggerMs: 120,
+    holdMs: 200,
+    focusMs: 420,
+    expandMs: 860,
+    enterY: 32,
+  },
+};
+
+export function getIntroTimings({ home = false, mobile = false } = {}) {
+  const base = home ? introTimings.home : introTimings.page;
+  if (!mobile) return base;
+  return { ...base, ...introTimings.mobile };
+}
+
+export function rtlEnterDelaySec(index, count, staggerMs) {
+  return ((Math.max(count, 1) - 1 - index) * staggerMs) / 1000;
+}
+
+export function introSchedule(count, timings) {
+  const tileCount = Math.max(count, 1);
+  const enterEndMs = (tileCount - 1) * timings.staggerMs + timings.tileMs;
+  const holdEndMs = enterEndMs + timings.holdMs;
+  const focusEndMs = holdEndMs + timings.focusMs;
+  const expandEndMs = focusEndMs + timings.expandMs;
+  return {
+    enterEndMs,
+    holdEndMs,
+    focusEndMs,
+    expandEndMs,
+    focusAtMs: enterEndMs + timings.holdMs,
+    expandAtMs: holdEndMs + timings.focusMs,
+  };
+}
+
+export const INTRO_EASE = introTimings.page.ease;
+export const INTRO_EXPAND_EASE = introTimings.page.expandEase;
+export const INTRO_STAGGER_MS = introTimings.page.staggerMs;
+export const INTRO_TILE_MS = introTimings.page.tileMs;
+export const INTRO_FOCUS_MS = introTimings.page.focusMs;
+export const INTRO_EXPAND_MS = introTimings.page.expandMs;
+export const INTRO_PRELOAD_MAX_MS = introTimings.page.preloadMaxMs;
+export const INTRO_OVERLAY_MS = introTimings.page.overlayMs;
+export const INTRO_NAV_DELAY_MS = introTimings.page.navDelayMs;
+export const INTRO_COPY_DELAY_MS = introTimings.page.copyDelayMs;
 
 export function introImageKey(src = "") {
   const value = String(src || "").trim();

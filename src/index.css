@@ -235,7 +235,13 @@ html[data-page-intro="playing"] .page-hero__copy {
 .page-hero__photo.is-fade,
 .page-hero__panel.is-fade,
 .page-hero__shade.is-fade {
-  transition: opacity 300ms linear;
+  transition: opacity 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-hero__shade {
+    transition: opacity 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
 }
 
 .page-hero__shade {

@@ -4,23 +4,16 @@ import { animate, motion } from "framer-motion";
 import LogoTriangle from "@/components/ui/LogoTriangle";
 import { useLenis } from "@/components/layout/LenisProvider";
 import {
-  INTRO_EASE,
-  INTRO_EXPAND_MS,
-  INTRO_FOCUS_MS,
-  INTRO_PRELOAD_MAX_MS,
-  INTRO_STAGGER_MS,
-  INTRO_TILE_MS,
+  getIntroTimings,
+  introSchedule,
   normalizeIntroSrc,
   preloadImages,
+  rtlEnterDelaySec,
 } from "@/lib/introMedia";
 
-function staggerDelay(index, centerIndex) {
-  return (Math.abs(index - centerIndex) * INTRO_STAGGER_MS) / 1000;
-}
-
-function outwardX(index, centerIndex) {
+function outwardX(index, centerIndex, vw) {
   if (index === centerIndex) return 0;
-  return index < centerIndex ? "-4vw" : "4vw";
+  return index < centerIndex ? `-${vw}vw` : `${vw}vw`;
 }
 
 function measureHeroTarget() {
@@ -50,12 +43,23 @@ export default function HomepageIntro({ tiles, onComplete }) {
   const finishedRef = useRef(false);
   const centerRef = useRef(null);
   const cloneRef = useRef(null);
+  const cloneImgRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
   const [phase, setPhase] = useState("boot");
   const [expanding, setExpanding] = useState(false);
   const [portalReady, setPortalReady] = useState(false);
   const [armed, setArmed] = useState(false);
   const [frozenTiles, setFrozenTiles] = useState(null);
+  const [mobile] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(max-width: 767px)").matches
+      : false,
+  );
+
+  const timings = useMemo(
+    () => getIntroTimings({ home: true, mobile }),
+    [mobile],
+  );
 
   onCompleteRef.current = onComplete;
 
@@ -76,13 +80,18 @@ export default function HomepageIntro({ tiles, onComplete }) {
     return index >= 0 ? index : Math.floor(tileSources.length / 2);
   }, [tileSources]);
 
+  const schedule = useMemo(
+    () => introSchedule(tileSources.length || 1, timings),
+    [tileSources.length, timings],
+  );
+
   const finish = () => {
     if (finishedRef.current) return;
     finishedRef.current = true;
     document.documentElement.dataset.homeIntro = "revealing";
     window.setTimeout(() => {
       document.documentElement.dataset.homeIntro = "done";
-    }, 520);
+    }, timings.overlayMs + timings.navDelayMs + 40);
     document.body.style.overflow = "";
     try {
       lenis?.instance?.start?.();
@@ -122,7 +131,7 @@ export default function HomepageIntro({ tiles, onComplete }) {
     const sources = next
       .map((tile) => normalizeIntroSrc(tile.src, tile.isHero ? 1600 : 720))
       .filter(Boolean);
-    preloadImages(sources, INTRO_PRELOAD_MAX_MS).finally(() => {
+    preloadImages(sources, timings.preloadMaxMs).finally(() => {
       if (!alive) return;
       setFrozenTiles(next);
       setArmed(true);
@@ -130,7 +139,19 @@ export default function HomepageIntro({ tiles, onComplete }) {
     return () => {
       alive = false;
     };
-  }, [tiles, frozenTiles]);
+  }, [tiles, frozenTiles, timings.preloadMaxMs]);
+
+  useEffect(() => {
+    const skip = () => finish();
+    window.addEventListener("pointerdown", skip);
+    window.addEventListener("wheel", skip, { passive: true });
+    window.addEventListener("keydown", skip);
+    return () => {
+      window.removeEventListener("pointerdown", skip);
+      window.removeEventListener("wheel", skip);
+      window.removeEventListener("keydown", skip);
+    };
+  }, []);
 
   useEffect(() => {
     if (!armed) return undefined;
@@ -139,19 +160,25 @@ export default function HomepageIntro({ tiles, onComplete }) {
       return undefined;
     }
     setPhase("in");
-    const focusAt = INTRO_TILE_MS + centerIndex * INTRO_STAGGER_MS + 80;
-    const expandAt = focusAt + INTRO_FOCUS_MS + 120;
     const timers = [];
-    timers.push(window.setTimeout(() => setPhase("focus"), focusAt));
-    timers.push(window.setTimeout(() => setExpanding(true), expandAt));
+    timers.push(
+      window.setTimeout(() => setPhase("hold"), schedule.enterEndMs),
+    );
+    timers.push(
+      window.setTimeout(() => setPhase("focus"), schedule.focusAtMs),
+    );
+    timers.push(
+      window.setTimeout(() => setExpanding(true), schedule.expandAtMs),
+    );
     return () => timers.forEach((id) => window.clearTimeout(id));
-  }, [armed, tileSources, centerIndex]);
+  }, [armed, tileSources, schedule]);
 
   useLayoutEffect(() => {
     if (!expanding || finishedRef.current) return undefined;
     const tileNode = centerRef.current;
     const clone = cloneRef.current;
-    if (!tileNode || !clone) {
+    const cloneImg = cloneImgRef.current;
+    if (!tileNode || !clone || !cloneImg) {
       finish();
       return undefined;
     }
@@ -166,6 +193,8 @@ export default function HomepageIntro({ tiles, onComplete }) {
       first.left + first.width / 2 - (last.left + last.width / 2);
     const dy =
       first.top + first.height / 2 - (last.top + last.height / 2);
+    const endScale = timings.endHeroScale;
+    const radius = timings.radiusPx;
 
     const heroNode =
       document.querySelector("[data-home-hero-media] img") ||
@@ -180,26 +209,40 @@ export default function HomepageIntro({ tiles, onComplete }) {
     clone.style.top = `${last.top}px`;
     clone.style.width = `${last.width}px`;
     clone.style.height = `${last.height}px`;
-    clone.style.objectFit = "cover";
-    clone.style.objectPosition = objectPosition;
+    clone.style.overflow = "hidden";
     clone.style.transformOrigin = "center center";
-    clone.style.borderRadius = "6px";
     clone.style.zIndex = "122";
-    clone.style.willChange = "transform, border-radius";
+    clone.style.willChange = "transform, clip-path, opacity";
+    clone.style.clipPath = `inset(0 round ${radius}px)`;
     clone.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`;
+    clone.style.opacity = "1";
+
+    cloneImg.style.width = "100%";
+    cloneImg.style.height = "100%";
+    cloneImg.style.objectFit = "cover";
+    cloneImg.style.objectPosition = objectPosition;
+    cloneImg.style.transformOrigin = "center center";
+    cloneImg.style.willChange = "transform";
+    cloneImg.style.transform = `scale(${Math.max(1 / Math.max(sx, 0.001), 1 / Math.max(sy, 0.001))})`;
 
     if (heroNode) heroNode.style.opacity = "0";
 
     const run = animate(0, 1, {
-      duration: INTRO_EXPAND_MS / 1000,
-      ease: INTRO_EASE,
+      duration: timings.expandMs / 1000,
+      ease: timings.expandEase,
       onUpdate: (t) => {
         const tx = dx * (1 - t);
         const ty = dy * (1 - t);
-        const scaleX = sx + (1 - sx) * t;
-        const scaleY = sy + (1 - sy) * t;
+        const scaleX = sx + (endScale - sx) * t;
+        const scaleY = sy + (endScale - sy) * t;
+        const r = radius * (1 - t);
+        const imgScale =
+          Math.max(1 / Math.max(sx, 0.001), 1 / Math.max(sy, 0.001)) *
+            (1 - t) +
+          1 * t;
         clone.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scaleX}, ${scaleY})`;
-        clone.style.borderRadius = `${6 * (1 - t)}px`;
+        clone.style.clipPath = `inset(0 round ${r}px)`;
+        cloneImg.style.transform = `scale(${imgScale})`;
       },
       onComplete: () => {
         requestAnimationFrame(() => {
@@ -214,13 +257,15 @@ export default function HomepageIntro({ tiles, onComplete }) {
     });
 
     return () => run.stop();
-  }, [expanding]);
+  }, [expanding, timings]);
 
   if (!portalReady) return null;
 
   const tileWidth = isMobileStrip ? "26vw" : "14vw";
   const tileHeight = isMobileStrip ? "40vh" : "48vh";
   const centerSrc = tileSources[centerIndex]?.src || "";
+  const focused = phase === "focus" || expanding;
+  const settled = phase === "hold" || focused;
 
   return createPortal(
     <div className="fixed inset-0 z-[120] bg-[#0A0820]" aria-hidden="true">
@@ -232,7 +277,11 @@ export default function HomepageIntro({ tiles, onComplete }) {
             ? { opacity: 0, y: -8 }
             : { opacity: 1, y: 0 }
         }
-        transition={{ duration: 0.4, ease: INTRO_EASE }}
+        transition={{
+          duration: timings.tileMs / 1000,
+          delay: rtlEnterDelaySec(0, tileSources.length || 1, timings.staggerMs),
+          ease: timings.ease,
+        }}
       >
         <LogoTriangle className="h-8 w-9 sm:h-9 sm:w-10" />
         <span className="font-display text-[28px] font-black tracking-tight text-white sm:text-[34px]">
@@ -245,7 +294,6 @@ export default function HomepageIntro({ tiles, onComplete }) {
           <div className="flex items-center justify-center" style={{ gap: "1.5vw" }}>
             {tileSources.map((tile, index) => {
               const isCenter = index === centerIndex;
-              const focused = phase === "focus" || expanding;
               return (
                 <motion.div
                   key={tile.id}
@@ -255,43 +303,82 @@ export default function HomepageIntro({ tiles, onComplete }) {
                     width: tileWidth,
                     height: tileHeight,
                     maxWidth: isMobileStrip ? 200 : 220,
-                    borderRadius: 6,
-                    willChange: "transform, opacity",
+                    borderRadius: timings.radiusPx,
+                    willChange: "transform, opacity, filter",
                     visibility: isCenter && expanding ? "hidden" : "visible",
                   }}
-                  initial={{ opacity: 0, y: 24, filter: "grayscale(1)" }}
+                  initial={{
+                    opacity: 0,
+                    y: timings.enterY,
+                    scale: timings.enterScale,
+                    filter: "grayscale(1)",
+                    x: 0,
+                  }}
                   animate={
                     expanding && !isCenter
                       ? {
                           opacity: 0,
-                          x: outwardX(index, centerIndex),
+                          x: outwardX(
+                            index,
+                            centerIndex,
+                            timings.expandDriftVw,
+                          ),
                           y: 0,
+                          scale: 1,
                           filter: "grayscale(1)",
                         }
                       : focused && !isCenter
                         ? {
-                            opacity: 0.35,
-                            x: outwardX(index, centerIndex),
+                            opacity: timings.focusSideOpacity,
+                            x: outwardX(
+                              index,
+                              centerIndex,
+                              timings.focusDriftVw,
+                            ),
                             y: 0,
+                            scale: 1,
                             filter: "grayscale(1)",
                           }
-                        : {
-                            opacity: 1,
-                            x: 0,
-                            y: 0,
-                            filter:
-                              isCenter && focused
-                                ? "grayscale(0)"
-                                : "grayscale(1)",
-                          }
+                        : focused && isCenter
+                          ? {
+                              opacity: 1,
+                              x: 0,
+                              y: 0,
+                              scale: timings.focusScale,
+                              filter: "grayscale(0)",
+                            }
+                          : settled
+                            ? {
+                                opacity: 1,
+                                x: 0,
+                                y: 0,
+                                scale: 1,
+                                filter: "grayscale(1)",
+                              }
+                            : {
+                                opacity: 1,
+                                x: 0,
+                                y: 0,
+                                scale: 1,
+                                filter: "grayscale(1)",
+                              }
                   }
                   transition={{
                     duration:
                       phase === "in"
-                        ? INTRO_TILE_MS / 1000
-                        : INTRO_FOCUS_MS / 1000,
-                    delay: phase === "in" ? staggerDelay(index, centerIndex) : 0,
-                    ease: INTRO_EASE,
+                        ? timings.tileMs / 1000
+                        : expanding
+                          ? timings.expandMs / 1000
+                          : timings.focusMs / 1000,
+                    delay:
+                      phase === "in"
+                        ? rtlEnterDelaySec(
+                            index,
+                            tileSources.length,
+                            timings.staggerMs,
+                          )
+                        : 0,
+                    ease: expanding ? timings.expandEase : timings.ease,
                   }}
                 >
                   {tile.src ? (
@@ -311,14 +398,19 @@ export default function HomepageIntro({ tiles, onComplete }) {
       ) : null}
 
       {expanding && centerSrc ? (
-        <img
+        <div
           ref={cloneRef}
-          src={centerSrc}
-          alt=""
-          referrerPolicy="no-referrer"
-          draggable={false}
-          className="pointer-events-none fixed z-[122] object-cover object-center"
-        />
+          className="pointer-events-none fixed z-[122]"
+          aria-hidden="true"
+        >
+          <img
+            ref={cloneImgRef}
+            src={centerSrc}
+            alt=""
+            referrerPolicy="no-referrer"
+            draggable={false}
+          />
+        </div>
       ) : null}
     </div>,
     document.body,

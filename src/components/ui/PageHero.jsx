@@ -8,6 +8,7 @@ import {
 } from "@/lib/image";
 import { easeOut } from "@/lib/motion";
 import { notePageSession, shouldPlayPageIntro } from "@/lib/pageIntro";
+import { INTRO_COPY_DELAY_MS } from "@/lib/introMedia";
 import { useLenis } from "@/components/layout/LenisProvider";
 import InnerPageIntro from "@/components/ui/InnerPageIntro";
 import HeroMedia from "@/components/ui/HeroMedia";
@@ -262,7 +263,7 @@ export default function PageHero({
       return;
     }
     setRevealed(true);
-    window.setTimeout(() => setCopyOn(true), 200);
+    window.setTimeout(() => setCopyOn(true), INTRO_COPY_DELAY_MS);
   };
 
   const scrollNext = () => {

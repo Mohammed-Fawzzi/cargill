@@ -6,26 +6,18 @@ import { useLenis } from "@/components/layout/LenisProvider";
 import { useSiteData } from "@/context/SiteDataContext";
 import { getCategories, getProducts } from "@/services/cms/products";
 import {
-  INTRO_EASE,
-  INTRO_EXPAND_MS,
-  INTRO_FOCUS_MS,
-  INTRO_PRELOAD_MAX_MS,
-  INTRO_STAGGER_MS,
-  INTRO_TILE_MS,
   buildIntroTiles,
   collectIntroSideImages,
+  getIntroTimings,
+  introSchedule,
   normalizeIntroSrc,
   preloadImages,
+  rtlEnterDelaySec,
 } from "@/lib/introMedia";
 
-function staggerDelay(index, centerIndex) {
-  const distance = Math.abs(index - centerIndex);
-  return (distance * INTRO_STAGGER_MS) / 1000;
-}
-
-function outwardX(index, centerIndex) {
+function outwardX(index, centerIndex, vw) {
   if (index === centerIndex) return 0;
-  return index < centerIndex ? "-5vw" : "5vw";
+  return index < centerIndex ? `-${vw}vw` : `${vw}vw`;
 }
 
 export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
@@ -43,6 +35,7 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
   });
   const centerRef = useRef(null);
   const cloneRef = useRef(null);
+  const cloneImgRef = useRef(null);
   const doneRef = useRef(false);
   const onDoneRef = useRef(onDone);
   const [phase, setPhase] = useState("boot");
@@ -53,6 +46,11 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
     typeof window !== "undefined"
       ? window.matchMedia("(max-width: 767px)").matches
       : false,
+  );
+
+  const timings = useMemo(
+    () => getIntroTimings({ home: false, mobile }),
+    [mobile],
   );
 
   onDoneRef.current = onDone;
@@ -86,6 +84,10 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
   ]);
 
   const centerIndex = Math.floor(tiles.length / 2);
+  const schedule = useMemo(
+    () => introSchedule(tiles.length, timings),
+    [tiles.length, timings],
+  );
 
   const finish = (mode) => {
     if (doneRef.current) return;
@@ -93,7 +95,7 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
     document.documentElement.dataset.pageIntro = "revealing";
     window.setTimeout(() => {
       document.documentElement.dataset.pageIntro = "done";
-    }, 520);
+    }, timings.overlayMs + timings.navDelayMs + 40);
     document.body.style.overflow = "";
     try {
       lenis?.instance?.start?.();
@@ -127,13 +129,13 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
   useEffect(() => {
     let alive = true;
     const sources = tiles.map((tile) => tile.src).filter(Boolean);
-    preloadImages(sources, INTRO_PRELOAD_MAX_MS).finally(() => {
+    preloadImages(sources, timings.preloadMaxMs).finally(() => {
       if (alive) setArmed(true);
     });
     return () => {
       alive = false;
     };
-  }, [tiles]);
+  }, [tiles, timings.preloadMaxMs]);
 
   useEffect(() => {
     const skip = () => finish("skip");
@@ -150,13 +152,18 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
   useEffect(() => {
     if (!armed) return undefined;
     setPhase("in");
-    const focusAt = INTRO_TILE_MS + centerIndex * INTRO_STAGGER_MS + 80;
-    const expandAt = focusAt + INTRO_FOCUS_MS + 120;
     const timers = [];
-    timers.push(window.setTimeout(() => setPhase("focus"), focusAt));
-    timers.push(window.setTimeout(() => setExpanding(true), expandAt));
+    timers.push(
+      window.setTimeout(() => setPhase("hold"), schedule.enterEndMs),
+    );
+    timers.push(
+      window.setTimeout(() => setPhase("focus"), schedule.focusAtMs),
+    );
+    timers.push(
+      window.setTimeout(() => setExpanding(true), schedule.expandAtMs),
+    );
     return () => timers.forEach((id) => window.clearTimeout(id));
-  }, [armed, centerIndex]);
+  }, [armed, schedule]);
 
   useLayoutEffect(() => {
     if (!expanding || doneRef.current) return undefined;
@@ -166,7 +173,8 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
       document.querySelector("[data-page-hero-photo]") ||
       document.querySelector("[data-page-hero-media]");
     const clone = cloneRef.current;
-    if (!tileNode || !heroImg || !clone) {
+    const cloneImg = cloneImgRef.current;
+    if (!tileNode || !heroImg || !clone || !cloneImg) {
       finish("panel");
       return undefined;
     }
@@ -181,9 +189,10 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
       first.left + first.width / 2 - (last.left + last.width / 2);
     const dy =
       first.top + first.height / 2 - (last.top + last.height / 2);
-    const endScale = 1.08;
+    const endScale = timings.endHeroScale;
     const objectPosition =
       getComputedStyle(heroImg).objectPosition || "center center";
+    const radius = timings.radiusPx;
 
     clone.style.position = "fixed";
     clone.style.left = `${last.left}px`;
@@ -191,14 +200,21 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
     clone.style.width = `${last.width}px`;
     clone.style.height = `${last.height}px`;
     clone.style.margin = "0";
-    clone.style.objectFit = "cover";
-    clone.style.objectPosition = objectPosition;
+    clone.style.overflow = "hidden";
     clone.style.transformOrigin = "center center";
-    clone.style.borderRadius = "12px";
     clone.style.zIndex = "122";
-    clone.style.willChange = "transform, border-radius";
+    clone.style.willChange = "transform, clip-path, opacity";
+    clone.style.clipPath = `inset(0 round ${radius}px)`;
     clone.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`;
     clone.style.opacity = "1";
+
+    cloneImg.style.width = "100%";
+    cloneImg.style.height = "100%";
+    cloneImg.style.objectFit = "cover";
+    cloneImg.style.objectPosition = objectPosition;
+    cloneImg.style.transformOrigin = "center center";
+    cloneImg.style.willChange = "transform";
+    cloneImg.style.transform = `scale(${Math.max(1 / Math.max(sx, 0.001), 1 / Math.max(sy, 0.001))})`;
 
     const heroPhoto = document.querySelector("[data-page-hero-photo]");
     if (heroPhoto) {
@@ -207,16 +223,21 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
     }
 
     const run = animate(0, 1, {
-      duration: INTRO_EXPAND_MS / 1000,
-      ease: INTRO_EASE,
+      duration: timings.expandMs / 1000,
+      ease: timings.expandEase,
       onUpdate: (t) => {
         const tx = dx * (1 - t);
         const ty = dy * (1 - t);
         const scaleX = sx + (endScale - sx) * t;
         const scaleY = sy + (endScale - sy) * t;
-        const radius = 12 * (1 - t);
+        const r = radius * (1 - t);
+        const imgScale =
+          Math.max(1 / Math.max(sx, 0.001), 1 / Math.max(sy, 0.001)) *
+            (1 - t) +
+          1 * t;
         clone.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scaleX}, ${scaleY})`;
-        clone.style.borderRadius = `${radius}px`;
+        clone.style.clipPath = `inset(0 round ${r}px)`;
+        cloneImg.style.transform = `scale(${imgScale})`;
       },
       onComplete: () => {
         requestAnimationFrame(() => {
@@ -234,9 +255,12 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
     });
 
     return () => run.stop();
-  }, [expanding]);
+  }, [expanding, timings]);
 
   if (!portalReady) return null;
+
+  const focused = phase === "focus" || expanding;
+  const settled = phase === "hold" || focused;
 
   return createPortal(
     <div className="fixed inset-0 z-[120] bg-[#0A0820]" aria-hidden="true">
@@ -249,7 +273,6 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
           >
             {tiles.map((tile, index) => {
               const isCenter = tile.hero;
-              const focused = phase === "focus" || expanding;
               return (
                 <motion.div
                   key={tile.id}
@@ -258,43 +281,82 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
                   style={{
                     width: mobile ? "42vw" : "18vw",
                     aspectRatio: "3 / 4",
-                    borderRadius: 12,
-                    willChange: "transform, opacity",
+                    borderRadius: timings.radiusPx,
+                    willChange: "transform, opacity, filter",
                     visibility: isCenter && expanding ? "hidden" : "visible",
                   }}
-                  initial={{ opacity: 0, y: 24, filter: "grayscale(1)" }}
+                  initial={{
+                    opacity: 0,
+                    y: timings.enterY,
+                    scale: timings.enterScale,
+                    filter: "grayscale(1)",
+                    x: 0,
+                  }}
                   animate={
                     expanding && !isCenter
                       ? {
                           opacity: 0,
-                          x: outwardX(index, centerIndex),
+                          x: outwardX(
+                            index,
+                            centerIndex,
+                            timings.expandDriftVw,
+                          ),
                           y: 0,
+                          scale: 1,
                           filter: "grayscale(1)",
                         }
                       : focused && !isCenter
                         ? {
-                            opacity: 0.35,
-                            x: outwardX(index, centerIndex),
+                            opacity: timings.focusSideOpacity,
+                            x: outwardX(
+                              index,
+                              centerIndex,
+                              timings.focusDriftVw,
+                            ),
                             y: 0,
+                            scale: 1,
                             filter: "grayscale(1)",
                           }
-                        : {
-                            opacity: 1,
-                            x: 0,
-                            y: 0,
-                            filter:
-                              isCenter && focused
-                                ? "grayscale(0)"
-                                : "grayscale(1)",
-                          }
+                        : focused && isCenter
+                          ? {
+                              opacity: 1,
+                              x: 0,
+                              y: 0,
+                              scale: timings.focusScale,
+                              filter: "grayscale(0)",
+                            }
+                          : settled
+                            ? {
+                                opacity: 1,
+                                x: 0,
+                                y: 0,
+                                scale: 1,
+                                filter: "grayscale(1)",
+                              }
+                            : {
+                                opacity: 1,
+                                x: 0,
+                                y: 0,
+                                scale: 1,
+                                filter: "grayscale(1)",
+                              }
                   }
                   transition={{
                     duration:
                       phase === "in"
-                        ? INTRO_TILE_MS / 1000
-                        : INTRO_FOCUS_MS / 1000,
-                    delay: phase === "in" ? staggerDelay(index, centerIndex) : 0,
-                    ease: INTRO_EASE,
+                        ? timings.tileMs / 1000
+                        : expanding
+                          ? timings.expandMs / 1000
+                          : timings.focusMs / 1000,
+                    delay:
+                      phase === "in"
+                        ? rtlEnterDelaySec(
+                            index,
+                            tiles.length,
+                            timings.staggerMs,
+                          )
+                        : 0,
+                    ease: expanding ? timings.expandEase : timings.ease,
                   }}
                 >
                   {tile.src ? (
@@ -314,14 +376,19 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
       ) : null}
 
       {expanding && centerSrc ? (
-        <img
+        <div
           ref={cloneRef}
-          src={centerSrc}
-          alt=""
-          referrerPolicy="no-referrer"
-          draggable={false}
-          className="pointer-events-none fixed z-[122] object-cover object-center"
-        />
+          className="pointer-events-none fixed z-[122]"
+          aria-hidden="true"
+        >
+          <img
+            ref={cloneImgRef}
+            src={centerSrc}
+            alt=""
+            referrerPolicy="no-referrer"
+            draggable={false}
+          />
+        </div>
       ) : null}
     </div>,
     document.body,
