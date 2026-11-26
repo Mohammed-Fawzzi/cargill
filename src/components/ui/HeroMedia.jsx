@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { resolvePlayableVideoUrl, shouldPlayHeroVideo } from "@/lib/image";
+import {
+  getDrivePosterUrl,
+  resolvePlayableVideoUrl,
+  shouldPlayHeroVideo,
+} from "@/lib/image";
 
 const VIDEO_FAIL_MS = 8000;
 const HANDOFF_S = 0.55;
@@ -64,13 +68,11 @@ export default function HeroMedia({
   const playingRef = useRef(false);
   const busyRef = useRef(false);
   const playWhenRef = useRef(playWhen);
-  const coverRef = useRef([false, false]);
   const [index, setIndex] = useState(0);
   const [active, setActive] = useState(0);
-  const [allowed, setAllowed] = useState(false);
   const [failed, setFailed] = useState(false);
   const [visible, setVisible] = useState(false);
-  const [cover, setCover] = useState([false, false]);
+  const [cover, setCover] = useState([true, false]);
   const [inView, setInView] = useState(true);
 
   const list = useMemo(
@@ -78,21 +80,24 @@ export default function HeroMedia({
     [videoUrl, videoUrls],
   );
   const listKey = list.join("\n");
-  const videoSrc = list[index] || "";
+  const firstSrc = list[0] || "";
+  const videoSrc = list[index] || firstSrc;
   const multi = list.length > 1;
-  const wantVideo = Boolean(allowed && list.length && !failed && ready);
+  const allowed = Boolean(ready && list.length && shouldPlayHeroVideo());
+  const wantVideo = Boolean(allowed && !failed);
+  const posterSrc = useMemo(() => {
+    if (typeof posterUrl === "string" && posterUrl.trim()) return posterUrl.trim();
+    const raw =
+      (Array.isArray(videoUrls) && videoUrls[0]) ||
+      (typeof videoUrl === "string" ? videoUrl : "") ||
+      "";
+    return getDrivePosterUrl(raw);
+  }, [posterUrl, videoUrl, videoUrls]);
   const baseClass =
     videoClassName ||
     "absolute inset-0 h-full w-full object-cover object-center";
 
   playWhenRef.current = playWhen;
-
-  const setSlotCover = (slotIndex, on) => {
-    const next = coverRef.current.slice();
-    next[slotIndex] = on;
-    coverRef.current = next;
-    setCover(next);
-  };
 
   useEffect(() => {
     indexRef.current = 0;
@@ -100,14 +105,12 @@ export default function HeroMedia({
     framedRef.current = false;
     playingRef.current = false;
     busyRef.current = false;
-    coverRef.current = [false, false];
     setIndex(0);
     setActive(0);
     setFailed(false);
-    setVisible(false);
-    setAllowed(false);
-    setCover([false, false]);
-  }, [listKey]);
+    setVisible(Boolean(posterSrc));
+    setCover([true, false]);
+  }, [listKey, posterSrc]);
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
@@ -130,19 +133,6 @@ export default function HeroMedia({
       total: list.length,
     });
   }, [wantVideo, visible, failed, videoSrc, index, list.length, onStateChange]);
-
-  useEffect(() => {
-    if (!ready || !list.length) {
-      setAllowed(false);
-      return undefined;
-    }
-    if (!shouldPlayHeroVideo()) {
-      setAllowed(false);
-      return undefined;
-    }
-    setAllowed(true);
-    return undefined;
-  }, [ready, listKey]);
 
   useEffect(() => {
     const node = active === 0 ? aRef.current : bRef.current;
@@ -181,6 +171,16 @@ export default function HeroMedia({
       if (!cancelled) setActive(next);
     };
 
+    const setSlotCover = (slotIndex, on) => {
+      if (cancelled) return;
+      setCover((current) => {
+        if (current[slotIndex] === on) return current;
+        const next = current.slice();
+        next[slotIndex] = on;
+        return next;
+      });
+    };
+
     const failHard = () => {
       if (cancelled || framedRef.current) return;
       clearFailTimer();
@@ -190,9 +190,9 @@ export default function HeroMedia({
     };
 
     const assignSrc = (node, src) => {
-      if (node.dataset.heroSrc === src) return false;
+      if (node.dataset.heroSrc === src && node.src) return false;
       node.dataset.heroSrc = src;
-      node.src = src;
+      if (node.getAttribute("src") !== src) node.setAttribute("src", src);
       try {
         node.load();
       } catch {}
@@ -206,6 +206,7 @@ export default function HeroMedia({
           if (done) return;
           done = true;
           node.removeEventListener("loadeddata", onReady);
+          node.removeEventListener("loadedmetadata", onReady);
           node.removeEventListener("canplay", onReady);
           node.removeEventListener("error", onErr);
           if (ok) resolve();
@@ -218,6 +219,7 @@ export default function HeroMedia({
           return;
         }
         node.addEventListener("loadeddata", onReady);
+        node.addEventListener("loadedmetadata", onReady);
         node.addEventListener("canplay", onReady);
         node.addEventListener("error", onErr);
         window.setTimeout(() => {
@@ -243,6 +245,10 @@ export default function HeroMedia({
     const showFrame = (slotIndex, clipIndex) => {
       if (cancelled) return;
       const node = nodes[slotIndex];
+      try {
+        node.pause();
+        if (node.currentTime > 0.02) node.currentTime = 0;
+      } catch {}
       node.style.opacity = "1";
       node.style.zIndex = "3";
       setSlotCover(slotIndex, true);
@@ -303,6 +309,14 @@ export default function HeroMedia({
       prefetch(clipIndex);
     };
 
+    const markFirstFrame = (node) => {
+      if (cancelled || framedRef.current) return;
+      if (node !== nodes[0]) return;
+      showFrame(0, 0);
+      busyRef.current = false;
+      startPlayback();
+    };
+
     const playAt = async (nextIndex, { fromHandoff = false } = {}) => {
       if (cancelled || !list.length) return;
       if (busyRef.current && !fromHandoff) return;
@@ -349,14 +363,17 @@ export default function HeroMedia({
       }
 
       try {
-        assignSrc(node, src);
+        if (slotIndex === 0 && nextIndex === 0 && node.dataset.heroSrc === src) {
+          if (node.readyState >= 2) {
+            markFirstFrame(node);
+            return;
+          }
+        } else {
+          assignSrc(node, src);
+        }
+
         await waitFrame(node);
         if (cancelled) return;
-
-        try {
-          node.pause();
-          if (node.currentTime > 0.02) node.currentTime = 0;
-        } catch {}
 
         if (!playingRef.current) {
           showFrame(slotIndex, nextIndex);
@@ -425,13 +442,27 @@ export default function HeroMedia({
       playAt(fallback);
     };
 
+    const onLoadedData = (event) => {
+      markFirstFrame(event.currentTarget);
+    };
+
     nodes.forEach((node) => {
       node.addEventListener("timeupdate", onTimeUpdate);
       node.addEventListener("ended", onEnded);
       node.addEventListener("error", onError);
     });
+    nodes[0].addEventListener("loadeddata", onLoadedData);
+    nodes[0].addEventListener("loadedmetadata", onLoadedData);
 
-    playAt(0);
+    if (!nodes[0].dataset.heroSrc && firstSrc) {
+      nodes[0].dataset.heroSrc = firstSrc;
+    }
+
+    if (nodes[0].readyState >= 2) {
+      markFirstFrame(nodes[0]);
+    } else {
+      playAt(0);
+    }
 
     return () => {
       cancelled = true;
@@ -442,8 +473,10 @@ export default function HeroMedia({
         node.removeEventListener("ended", onEnded);
         node.removeEventListener("error", onError);
       });
+      nodes[0].removeEventListener("loadeddata", onLoadedData);
+      nodes[0].removeEventListener("loadedmetadata", onLoadedData);
     };
-  }, [wantVideo, listKey, multi]);
+  }, [wantVideo, listKey, multi, firstSrc]);
 
   useEffect(() => {
     if (!wantVideo || !visible || !framedRef.current) return;
@@ -479,29 +512,38 @@ export default function HeroMedia({
 
   if (!wantVideo && !visible) return null;
 
-  const renderVideo = (ref, slotIndex) => {
-    const shown = Boolean(cover[slotIndex]);
-    return (
+  return (
+    <div className={className || "absolute inset-0 overflow-hidden"}>
       <video
-        ref={ref}
+        ref={aRef}
         className={baseClass}
         style={{
-          opacity: shown ? 1 : 0,
-          zIndex: active === slotIndex ? 3 : shown ? 2 : 1,
+          opacity: wantVideo || cover[0] ? 1 : 0,
+          zIndex: active === 0 ? 3 : cover[0] ? 2 : 1,
+        }}
+        src={wantVideo ? firstSrc : undefined}
+        poster={posterSrc || undefined}
+        muted
+        playsInline
+        loop={!multi}
+        preload="auto"
+        referrerPolicy="no-referrer"
+        aria-hidden="true"
+      />
+      <video
+        ref={bRef}
+        className={baseClass}
+        style={{
+          opacity: cover[1] ? 1 : 0,
+          zIndex: active === 1 ? 3 : cover[1] ? 2 : 1,
         }}
         muted
         playsInline
         loop={!multi}
         preload="auto"
+        referrerPolicy="no-referrer"
         aria-hidden="true"
       />
-    );
-  };
-
-  return (
-    <div className={className || "absolute inset-0 overflow-hidden"}>
-      {renderVideo(aRef, 0)}
-      {renderVideo(bRef, 1)}
     </div>
   );
 }

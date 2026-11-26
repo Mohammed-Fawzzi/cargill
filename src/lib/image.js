@@ -115,6 +115,13 @@ export function getDriveProxyUrl(url) {
   return `/api/drive-media?id=${encodeURIComponent(id)}`;
 }
 
+export function getDrivePosterUrl(url, width = 1920) {
+  const id = getDriveFileId(url);
+  if (!id) return "";
+  const size = Math.max(320, Math.min(Number(width) || 1920, 2560));
+  return `https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=w${size}`;
+}
+
 export function resolvePlayableVideoUrl(url) {
   const source = typeof url === "string" ? url.trim() : "";
   if (!source) return "";

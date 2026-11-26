@@ -12,7 +12,7 @@ import { toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
-import { warnMissingMedia } from "@/lib/image";
+import { getDrivePosterUrl, warnMissingMedia } from "@/lib/image";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 const SPROUT = [0.22, 1, 0.36, 1];
@@ -140,8 +140,10 @@ export default function HeroSection({ section, entranceReady = true }) {
     const current = videoItems[media.index || 0] || videoItems[0];
     return (
       current?.imageUrl ||
+      getDrivePosterUrl(current?.videoUrl || "") ||
       images[0] ||
       section?.data?.imageUrl ||
+      getDrivePosterUrl(videoItems[0]?.videoUrl || "") ||
       ""
     );
   }, [videoItems, media.index, images, section?.data?.imageUrl]);
@@ -160,6 +162,22 @@ export default function HeroSection({ section, entranceReady = true }) {
   useEffect(() => {
     warnMissingMedia("homepage/hero.images", images[0] || section?.data?.imageUrl);
   }, [images, section?.data?.imageUrl]);
+
+  useEffect(() => {
+    const src = videoUrls[0];
+    if (!src || typeof document === "undefined") return undefined;
+    const existing = document.head.querySelector(`link[data-hero-video-preload="${src}"]`);
+    if (existing) return undefined;
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "video";
+    link.href = src;
+    link.dataset.heroVideoPreload = src;
+    document.head.appendChild(link);
+    return () => {
+      link.remove();
+    };
+  }, [videoUrls]);
 
   useEffect(() => {
     if (!entered || reducedMotion || wantVideo || images.length < 2) {

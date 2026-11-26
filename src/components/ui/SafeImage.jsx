@@ -20,6 +20,9 @@ export default function SafeImage({
 
   if (!normalized) return null;
 
+  const needsNoReferrer =
+    /googleusercontent\.com|google\.com\/thumbnail/i.test(normalized);
+
   return (
     <img
       src={normalized}
@@ -30,6 +33,7 @@ export default function SafeImage({
       loading={loading}
       decoding="async"
       {...props}
+      referrerPolicy={needsNoReferrer ? "no-referrer" : props.referrerPolicy}
     />
   );
 }
