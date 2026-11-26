@@ -78,7 +78,7 @@ export default function HeroMedia({
   }, [posterUrl, videoUrl, videoUrls]);
   const baseClass =
     videoClassName ||
-    "absolute inset-0 h-full w-full object-cover object-center";
+    "absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-500 ease-out";
 
   playWhenRef.current = playWhen;
   listRef.current = list;

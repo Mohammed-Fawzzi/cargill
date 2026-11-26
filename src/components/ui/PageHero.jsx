@@ -262,7 +262,7 @@ export default function PageHero({
       return;
     }
     setRevealed(true);
-    window.setTimeout(() => setCopyOn(true), 180);
+    window.setTimeout(() => setCopyOn(true), 200);
   };
 
   const scrollNext = () => {

@@ -80,7 +80,11 @@ function HeroPoster({ src, animate, entered, reducedMotion }) {
   );
 }
 
-export default function HeroSection({ section, entranceReady = true }) {
+export default function HeroSection({
+  section,
+  entranceReady = true,
+  videoPosterUrl = "",
+}) {
   const { locale } = useLocale();
   const { contact } = useSiteData();
   const { reducedMotion } = useMotionPrefs();
@@ -139,13 +143,14 @@ export default function HeroSection({ section, entranceReady = true }) {
   const poster = useMemo(() => {
     const first = videoItems[0];
     return (
+      videoPosterUrl ||
       first?.imageUrl ||
       getDrivePosterUrl(first?.videoUrl || "") ||
       images[0] ||
       section?.data?.imageUrl ||
       ""
     );
-  }, [videoItems, images, section?.data?.imageUrl]);
+  }, [videoItems, images, section?.data?.imageUrl, videoPosterUrl]);
   const headlineSlide = slides.find((item) => t(item?.title, locale)) || slides[0];
   const title = t(headlineSlide?.title, locale);
   const body = t(headlineSlide?.body, locale);
@@ -213,16 +218,21 @@ export default function HeroSection({ section, entranceReady = true }) {
           data-home-hero-media
           className="absolute inset-0 overflow-hidden"
         >
-          {videoUrls.length && !media.visible ? (
-            <div className="absolute inset-0 overflow-hidden">
+          {videoUrls.length ? (
+            <motion.div
+              className="absolute inset-0 overflow-hidden"
+              initial={false}
+              animate={{ opacity: media.visible ? 0 : 1 }}
+              transition={{ duration: 0.5, ease: SPROUT }}
+            >
               <HeroPoster
                 src={poster || slideSrc}
                 animate={false}
                 entered={entered}
                 reducedMotion={reducedMotion}
               />
-            </div>
-          ) : !videoUrls.length ? (
+            </motion.div>
+          ) : (
             <AnimatePresence mode="sync" initial={false}>
               {useSlideshow ? (
                 <motion.div
@@ -256,7 +266,7 @@ export default function HeroSection({ section, entranceReady = true }) {
                 <div className="absolute inset-0 bg-[#0A0820]" />
               )}
             </AnimatePresence>
-          ) : null}
+          )}
           <HeroMedia
             videoUrls={videoUrls}
             posterUrl={poster}
@@ -270,14 +280,14 @@ export default function HeroSection({ section, entranceReady = true }) {
             aria-hidden="true"
             initial={false}
             animate={{ opacity: entered ? 1 : 0 }}
-            transition={{ duration: 0.35, ease: INTRO_EASE }}
+            transition={{ duration: 0.4, ease: SPROUT }}
           />
           <motion.div
             className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,8,32,0.25)_0%,transparent_28%,transparent_50%,#0A0820_100%)]"
             aria-hidden="true"
             initial={false}
             animate={{ opacity: entered ? 1 : 0 }}
-            transition={{ duration: 0.35, ease: INTRO_EASE }}
+            transition={{ duration: 0.4, ease: SPROUT }}
           />
         </div>
 

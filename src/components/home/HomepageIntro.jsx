@@ -1,35 +1,38 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { animate, motion, useMotionValue } from "framer-motion";
+import { animate, motion } from "framer-motion";
 import LogoTriangle from "@/components/ui/LogoTriangle";
-import { normalizeImageUrl } from "@/lib/image";
 import { useLenis } from "@/components/layout/LenisProvider";
+import {
+  INTRO_EASE,
+  INTRO_EXPAND_MS,
+  INTRO_FOCUS_MS,
+  INTRO_PRELOAD_MAX_MS,
+  INTRO_STAGGER_MS,
+  INTRO_TILE_MS,
+  normalizeIntroSrc,
+  preloadImages,
+} from "@/lib/introMedia";
 
-const EASE = [0.76, 0, 0.24, 1];
-const HARD_TIMEOUT_MS = 2500;
-const EXPAND_AT_MS = 1000;
-const FINISH_AT_MS = 1800;
+function staggerDelay(index, centerIndex) {
+  return (Math.abs(index - centerIndex) * INTRO_STAGGER_MS) / 1000;
+}
 
-function preloadImage(src) {
-  return new Promise((resolve) => {
-    if (!src) {
-      resolve(false);
-      return;
-    }
-    const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src = src;
-  });
+function outwardX(index, centerIndex) {
+  if (index === centerIndex) return 0;
+  return index < centerIndex ? "-4vw" : "4vw";
 }
 
 function measureHeroTarget() {
-  const node = document.querySelector("[data-home-hero-media]");
+  const img =
+    document.querySelector("[data-home-hero-media] img") ||
+    document.querySelector("[data-home-hero-media] video");
+  const node = img || document.querySelector("[data-home-hero-media]");
   if (!node) {
     return {
       top: 0,
       left: 0,
-      width: window.innerWidth,
+      width: document.documentElement.clientWidth || window.innerWidth,
       height: window.innerHeight,
     };
   }
@@ -46,31 +49,21 @@ export default function HomepageIntro({ tiles, onComplete }) {
   const lenis = useLenis();
   const finishedRef = useRef(false);
   const centerRef = useRef(null);
-  const imagesReadyRef = useRef(false);
+  const cloneRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
-  const [phase, setPhase] = useState("logo");
+  const [phase, setPhase] = useState("boot");
   const [expanding, setExpanding] = useState(false);
   const [portalReady, setPortalReady] = useState(false);
+  const [armed, setArmed] = useState(false);
+  const [frozenTiles] = useState(() => tiles || []);
 
   onCompleteRef.current = onComplete;
-
-  const left = useMotionValue(0);
-  const top = useMotionValue(0);
-  const width = useMotionValue(0);
-  const height = useMotionValue(0);
-  const radius = useMotionValue(6);
-  const overlayOpacity = useMotionValue(1);
-
-  const [frozenTiles] = useState(() => tiles || []);
 
   const tileSources = useMemo(
     () =>
       frozenTiles.map((tile) => ({
         ...tile,
-        src: normalizeImageUrl(tile.src, {
-          width: tile.isHero ? 1600 : 480,
-          quality: tile.isHero ? 78 : 70,
-        }),
+        src: normalizeIntroSrc(tile.src, tile.isHero ? 1600 : 720),
       })),
     [frozenTiles],
   );
@@ -84,11 +77,14 @@ export default function HomepageIntro({ tiles, onComplete }) {
   const finish = () => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    document.documentElement.dataset.homeIntro = "done";
+    document.documentElement.dataset.homeIntro = "revealing";
+    window.setTimeout(() => {
+      document.documentElement.dataset.homeIntro = "done";
+    }, 520);
     document.body.style.overflow = "";
     try {
       lenis?.instance?.start?.();
-    } catch { }
+    } catch {}
     onCompleteRef.current?.();
   };
 
@@ -103,8 +99,7 @@ export default function HomepageIntro({ tiles, onComplete }) {
     window.scrollTo(0, 0);
     try {
       lenis?.instance?.stop?.();
-    } catch { }
-
+    } catch {}
     return () => {
       document.body.style.overflow = previousOverflow;
       if (document.documentElement.dataset.homeIntro === "playing") {
@@ -112,16 +107,15 @@ export default function HomepageIntro({ tiles, onComplete }) {
       }
       try {
         lenis?.instance?.start?.();
-      } catch { }
+      } catch {}
     };
   }, [lenis]);
 
   useEffect(() => {
     let alive = true;
     const sources = tileSources.map((tile) => tile.src).filter(Boolean);
-    Promise.all(sources.map(preloadImage)).then(() => {
-      if (!alive) return;
-      imagesReadyRef.current = true;
+    preloadImages(sources, INTRO_PRELOAD_MAX_MS).finally(() => {
+      if (alive) setArmed(true);
     });
     return () => {
       alive = false;
@@ -129,110 +123,91 @@ export default function HomepageIntro({ tiles, onComplete }) {
   }, [tileSources]);
 
   useEffect(() => {
-    const heroTile = tileSources.find((tile) => tile.isHero);
-    if (!heroTile?.src) {
+    if (!armed) return undefined;
+    if (!tileSources.some((tile) => tile.isHero && tile.src)) {
+      finish();
+      return undefined;
+    }
+    setPhase("in");
+    const focusAt = INTRO_TILE_MS + centerIndex * INTRO_STAGGER_MS + 80;
+    const expandAt = focusAt + INTRO_FOCUS_MS + 120;
+    const timers = [];
+    timers.push(window.setTimeout(() => setPhase("focus"), focusAt));
+    timers.push(window.setTimeout(() => setExpanding(true), expandAt));
+    return () => timers.forEach((id) => window.clearTimeout(id));
+  }, [armed, tileSources, centerIndex]);
+
+  useLayoutEffect(() => {
+    if (!expanding || finishedRef.current) return undefined;
+    const tileNode = centerRef.current;
+    const clone = cloneRef.current;
+    if (!tileNode || !clone) {
       finish();
       return undefined;
     }
 
-    const timers = [];
+    const first = tileNode.getBoundingClientRect();
+    const last = measureHeroTarget();
+    const dx = first.left - last.left;
+    const dy = first.top - last.top;
+    const sx = first.width / Math.max(last.width, 1);
+    const sy = first.height / Math.max(last.height, 1);
 
-    timers.push(
-      window.setTimeout(() => {
-        setPhase("strip");
-      }, 300),
-    );
+    clone.style.position = "fixed";
+    clone.style.left = `${last.left}px`;
+    clone.style.top = `${last.top}px`;
+    clone.style.width = `${last.width}px`;
+    clone.style.height = `${last.height}px`;
+    clone.style.objectFit = "cover";
+    clone.style.objectPosition = "center";
+    clone.style.transformOrigin = "top left";
+    clone.style.borderRadius = "6px";
+    clone.style.zIndex = "122";
+    clone.style.willChange = "transform, border-radius";
+    clone.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`;
 
-    timers.push(
-      window.setTimeout(() => {
-        if (!imagesReadyRef.current) {
+    const run = animate(0, 1, {
+      duration: INTRO_EXPAND_MS / 1000,
+      ease: INTRO_EASE,
+      onUpdate: (t) => {
+        const tx = dx * (1 - t);
+        const ty = dy * (1 - t);
+        const scaleX = sx + (1 - sx) * t;
+        const scaleY = sy + (1 - sy) * t;
+        clone.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scaleX}, ${scaleY})`;
+        clone.style.borderRadius = `${6 * (1 - t)}px`;
+      },
+      onComplete: () => {
+        requestAnimationFrame(() => {
+          clone.style.opacity = "0";
           finish();
-          return;
-        }
-        const node = centerRef.current;
-        if (!node) {
-          finish();
-          return;
-        }
+          requestAnimationFrame(() => {
+            clone.style.display = "none";
+          });
+        });
+      },
+    });
 
-        const from = node.getBoundingClientRect();
-        left.set(from.left);
-        top.set(from.top);
-        width.set(from.width);
-        height.set(from.height);
-        radius.set(6);
-        setExpanding(true);
-        setPhase("expand");
-
-        const midW = Math.min(window.innerWidth * 0.6, window.innerWidth - 24);
-        const midH = Math.min(window.innerHeight * 0.64, window.innerHeight - 24);
-        const midLeft = (window.innerWidth - midW) / 2;
-        const midTop = (window.innerHeight - midH) / 2;
-        const target = measureHeroTarget();
-
-        const mid = { duration: 0.38, ease: EASE };
-        const end = { duration: 0.42, ease: EASE };
-
-        Promise.all([
-          animate(left, midLeft, mid),
-          animate(top, midTop, mid),
-          animate(width, midW, mid),
-          animate(height, midH, mid),
-        ])
-          .then(() =>
-            Promise.all([
-              animate(left, target.left, end),
-              animate(top, target.top, end),
-              animate(width, target.width, end),
-              animate(height, target.height, end),
-              animate(radius, 0, end),
-            ]),
-          )
-          .catch(() => { });
-      }, EXPAND_AT_MS),
-    );
-
-    timers.push(
-      window.setTimeout(() => {
-        animate(overlayOpacity, 0, { duration: 0.16, ease: EASE })
-          .then(() => finish())
-          .catch(() => finish());
-      }, FINISH_AT_MS),
-    );
-
-    timers.push(
-      window.setTimeout(() => {
-        finish();
-      }, HARD_TIMEOUT_MS),
-    );
-
-    return () => {
-      timers.forEach((id) => window.clearTimeout(id));
-    };
-  }, [tileSources, left, top, width, height, radius, overlayOpacity]);
+    return () => run.stop();
+  }, [expanding]);
 
   if (!portalReady) return null;
 
-  const stripIn = phase === "strip" || phase === "expand";
-  const sideOut = phase === "expand";
   const tileWidth = isMobileStrip ? "26vw" : "14vw";
   const tileHeight = isMobileStrip ? "40vh" : "48vh";
+  const centerSrc = tileSources[centerIndex]?.src || "";
 
   return createPortal(
-    <motion.div
-      className="fixed inset-0 z-[120] bg-[#0A0820]"
-      style={{ opacity: overlayOpacity }}
-      aria-hidden="true"
-    >
+    <div className="fixed inset-0 z-[120] bg-[#0A0820]" aria-hidden="true">
       <motion.div
         className="absolute top-[11vh] start-[7vw] flex items-center gap-3"
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={
-          sideOut
-            ? { opacity: 0, x: 20, scale: 0.96 }
-            : { opacity: 1, scale: 1, x: 0 }
+          expanding
+            ? { opacity: 0, y: -8 }
+            : { opacity: 1, y: 0 }
         }
-        transition={{ duration: 0.3, ease: EASE }}
+        transition={{ duration: 0.4, ease: INTRO_EASE }}
       >
         <LogoTriangle className="h-8 w-9 sm:h-9 sm:w-10" />
         <span className="font-display text-[28px] font-black tracking-tight text-white sm:text-[34px]">
@@ -240,96 +215,87 @@ export default function HomepageIntro({ tiles, onComplete }) {
         </span>
       </motion.div>
 
-      <div className="absolute inset-0 flex items-center justify-center">
-        <motion.div
-          className="flex items-center justify-center"
-          style={{ gap: "1.5vw" }}
-          initial={{ x: "34vw" }}
-          animate={{ x: stripIn ? 0 : "34vw" }}
-          transition={{ duration: 0.6, ease: EASE }}
-        >
-          {tileSources.map((tile, index) => {
-            const fromCenter = index - centerIndex;
-            const isCenter = index === centerIndex;
-            const imageDelay = 0.06 + index * 0.06;
-
-            if (isCenter && expanding) {
+      {armed ? (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex items-center justify-center" style={{ gap: "1.5vw" }}>
+            {tileSources.map((tile, index) => {
+              const isCenter = index === centerIndex;
+              const focused = phase === "focus" || expanding;
               return (
-                <div
-                  key={`${tile.id}-slot`}
-                  className="shrink-0"
+                <motion.div
+                  key={tile.id}
+                  ref={isCenter ? centerRef : undefined}
+                  className="relative shrink-0 overflow-hidden bg-[#110E33]"
                   style={{
                     width: tileWidth,
                     height: tileHeight,
                     maxWidth: isMobileStrip ? 200 : 220,
+                    borderRadius: 6,
+                    willChange: "transform, opacity",
+                    visibility: isCenter && expanding ? "hidden" : "visible",
                   }}
-                />
+                  initial={{ opacity: 0, y: 24, filter: "grayscale(1)" }}
+                  animate={
+                    expanding && !isCenter
+                      ? {
+                          opacity: 0,
+                          x: outwardX(index, centerIndex),
+                          y: 0,
+                          filter: "grayscale(1)",
+                        }
+                      : focused && !isCenter
+                        ? {
+                            opacity: 0.35,
+                            x: outwardX(index, centerIndex),
+                            y: 0,
+                            filter: "grayscale(1)",
+                          }
+                        : {
+                            opacity: 1,
+                            x: 0,
+                            y: 0,
+                            filter:
+                              isCenter && focused
+                                ? "grayscale(0)"
+                                : "grayscale(1)",
+                          }
+                  }
+                  transition={{
+                    duration:
+                      phase === "in"
+                        ? INTRO_TILE_MS / 1000
+                        : INTRO_FOCUS_MS / 1000,
+                    delay: phase === "in" ? staggerDelay(index, centerIndex) : 0,
+                    ease: INTRO_EASE,
+                  }}
+                >
+                  {tile.src ? (
+                    <img
+                      src={tile.src}
+                      alt=""
+                      className="h-full w-full object-cover object-center"
+                      referrerPolicy="no-referrer"
+                      draggable={false}
+                    />
+                  ) : null}
+                </motion.div>
               );
-            }
-
-            return (
-              <motion.div
-                key={tile.id}
-                ref={isCenter ? centerRef : undefined}
-                className="relative shrink-0 overflow-hidden bg-[#110E33]"
-                style={{
-                  width: tileWidth,
-                  height: tileHeight,
-                  maxWidth: isMobileStrip ? 200 : 220,
-                  borderRadius: 6,
-                }}
-                initial={{ opacity: 1, x: 0 }}
-                animate={
-                  sideOut && !isCenter
-                    ? {
-                      opacity: 0,
-                      x: fromCenter < 0 ? -40 : 40,
-                    }
-                    : { opacity: 1, x: 0 }
-                }
-                transition={{ duration: 0.3, ease: EASE }}
-              >
-                {tile.src ? (
-                  <motion.img
-                    src={tile.src}
-                    alt=""
-                    className="h-full w-full object-cover"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: stripIn ? 1 : 0 }}
-                    transition={{
-                      duration: 0.2,
-                      delay: stripIn ? imageDelay : 0,
-                      ease: "linear",
-                    }}
-                    draggable={false}
-                  />
-                ) : null}
-              </motion.div>
-            );
-          })}
-        </motion.div>
-      </div>
-
-      {expanding ? (
-        <motion.div
-          className="pointer-events-none fixed z-[121] overflow-hidden bg-[#110E33]"
-          style={{
-            left,
-            top,
-            width,
-            height,
-            borderRadius: radius,
-          }}
-        >
-          <img
-            src={tileSources[centerIndex]?.src || ""}
-            alt=""
-            className="h-full w-full object-cover"
-            draggable={false}
-          />
-        </motion.div>
+            })}
+          </div>
+        </div>
       ) : null}
-    </motion.div>,
+
+      {expanding && centerSrc ? (
+        <img
+          ref={cloneRef}
+          src={centerSrc}
+          alt=""
+          referrerPolicy="no-referrer"
+          draggable={false}
+          className="pointer-events-none fixed z-[122] object-cover object-center"
+        />
+      ) : null}
+    </div>,
     document.body,
   );
 }

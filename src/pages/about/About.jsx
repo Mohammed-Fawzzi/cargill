@@ -596,10 +596,28 @@ export default function About() {
   const aboutImage = aboutImages[0]?.src || contact?.logoUrl || "";
   const aboutVideo = contact?.aboutVideoUrl || contact?.videoUrl || "";
   const heroSides = useMemo(() => {
-    return storyImages.filter(
-      (src, index, list) => src && src !== aboutImage && list.indexOf(src) === index,
-    );
-  }, [storyImages, aboutImage]);
+    const pool = [];
+    const push = (src) => {
+      const value = String(src || "").trim();
+      if (!value || value === aboutImage || pool.includes(value)) return;
+      pool.push(value);
+    };
+    storyImages.forEach(push);
+    push(bannerUrl);
+    push(contact?.bannerUrl);
+    (categories || []).forEach((category) => push(category?.imageUrl));
+    (productsQuery.data || []).forEach((product) => {
+      if (product?.imageUrl) push(product.imageUrl);
+    });
+    return pool;
+  }, [
+    storyImages,
+    aboutImage,
+    bannerUrl,
+    contact?.bannerUrl,
+    categories,
+    productsQuery.data,
+  ]);
 
   useEffect(() => {
     warnMissingMedia("contact/page.logoUrl", aboutImage);

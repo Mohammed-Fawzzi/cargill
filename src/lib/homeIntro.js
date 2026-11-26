@@ -1,3 +1,5 @@
+import { uniqueImages } from "@/lib/introMedia";
+
 let introPlayedInSpa = false;
 
 const CATEGORY_MATCHERS = [
@@ -137,25 +139,34 @@ export function buildHomeIntroTiles({
     ),
   );
 
-  const imagePool = [];
-  const pushPool = (src) => {
-    const value = String(src || "").trim();
-    if (value && !imagePool.includes(value)) imagePool.push(value);
-  };
-  heroSlides.forEach(pushPool);
-  categoriesWithImages.forEach((category) => pushPool(category.imageUrl));
-  pushPool(heroImage);
+  const imagePool = uniqueImages([
+    ...heroSlides,
+    ...categoriesWithImages.map((category) => category.imageUrl),
+    ...(products || []).map((product) => product.imageUrl),
+  ], heroImage);
 
   const fillMissing = (list) => {
-    const extras = pickFallbackSides(
-      categoriesWithImages,
-      used,
-      list.filter((item) => !item.src).length,
+    const extras = [
+      ...pickFallbackSides(
+        categoriesWithImages,
+        used,
+        list.filter((item) => !item.src).length + 4,
+      ),
+      ...imagePool,
+    ].filter((src) => src && src !== heroImage);
+    const taken = new Set(
+      list.map((item) => item.src).filter((src) => src && src !== heroImage),
     );
     let cursor = 0;
     return list.map((item) => {
-      if (item.src) return item;
-      const src = extras[cursor] || imagePool[cursor % Math.max(imagePool.length, 1)] || "";
+      if (item.src && item.src !== heroImage && !taken.has(item.src)) {
+        taken.add(item.src);
+        return item;
+      }
+      if (item.src && item.src !== heroImage) return item;
+      while (cursor < extras.length && taken.has(extras[cursor])) cursor += 1;
+      const src = extras[cursor] || "";
+      if (src) taken.add(src);
       cursor += 1;
       return { ...item, src };
     });

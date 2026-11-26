@@ -22,6 +22,9 @@ import {
   markHomeIntroSeen,
   shouldPlayHomeIntro,
 } from "@/lib/homeIntro";
+import { captureVideoFrame } from "@/lib/introMedia";
+import { getDrivePosterUrl } from "@/lib/image";
+import { HERO_VIDEO_URL } from "@/config/media";
 
 export default function Home() {
   const { locale } = useLocale();
@@ -48,6 +51,7 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth < 768 : false,
   );
+  const [videoPoster, setVideoPoster] = useState("");
 
   useEffect(() => {
     const sync = () => setIsMobile(window.innerWidth < 768);
@@ -58,12 +62,50 @@ export default function Home() {
 
   const heroSlides = useMemo(() => homepageSlideImages(hero), [hero]);
 
+  const heroVideoUrl = useMemo(() => {
+    const slides = hero?.data?.slides || [];
+    const fromSlide = slides
+      .map((item) =>
+        typeof item?.videoUrl === "string" ? item.videoUrl.trim() : "",
+      )
+      .find(Boolean);
+    const fromSection =
+      typeof hero?.data?.videoUrl === "string" ? hero.data.videoUrl.trim() : "";
+    return fromSlide || fromSection || HERO_VIDEO_URL || "";
+  }, [hero]);
+
   const heroImage = useMemo(() => {
     const slideImage = heroSlides[0] || "";
     const sectionImage = hero?.data?.imageUrl || "";
-    if (isMobile) return sectionImage || slideImage;
-    return slideImage || sectionImage;
-  }, [hero, heroSlides, isMobile]);
+    const drivePoster = getDrivePosterUrl(heroVideoUrl);
+    if (isMobile) {
+      return sectionImage || slideImage || videoPoster || drivePoster || "";
+    }
+    return (
+      videoPoster ||
+      drivePoster ||
+      slideImage ||
+      sectionImage ||
+      ""
+    );
+  }, [hero, heroSlides, isMobile, heroVideoUrl, videoPoster]);
+
+  useEffect(() => {
+    let alive = true;
+    if (!heroVideoUrl) {
+      setVideoPoster("");
+      return undefined;
+    }
+    const quick = getDrivePosterUrl(heroVideoUrl);
+    if (quick) setVideoPoster(quick);
+    captureVideoFrame(heroVideoUrl).then((frame) => {
+      if (!alive || !frame) return;
+      setVideoPoster(frame);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [heroVideoUrl]);
 
   const introTiles = useMemo(
     () =>
@@ -80,7 +122,8 @@ export default function Home() {
   const catalogReady =
     !categoriesQuery.isPending && !productsQuery.isPending;
 
-  const waitingForIntro = wantIntro && !introDone && Boolean(heroImage);
+  const waitingForIntro =
+    wantIntro && !introDone && Boolean(heroImage || heroVideoUrl);
 
   const showIntro =
     waitingForIntro &&
@@ -146,6 +189,7 @@ export default function Home() {
             <HeroSection
               section={hero}
               entranceReady={!waitingForIntro}
+              videoPosterUrl={videoPoster || getDrivePosterUrl(heroVideoUrl)}
             />
           ) : null}
           <ValuesTrio />

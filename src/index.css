@@ -170,6 +170,30 @@ html[data-page-hero="on"] .nav-glass:not(.is-scrolled) {
   -webkit-backdrop-filter: none;
 }
 
+html[data-page-intro="playing"] .nav-glass,
+html[data-home-intro="playing"] .nav-glass {
+  opacity: 0;
+  transform: translate3d(0, -14px, 0);
+  pointer-events: none;
+}
+
+html[data-page-intro="revealing"] .nav-glass,
+html[data-home-intro="revealing"] .nav-glass,
+html[data-page-intro="done"] .nav-glass,
+html[data-home-intro="done"] .nav-glass {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity 400ms cubic-bezier(0.22, 1, 0.36, 1) 100ms,
+    transform 400ms cubic-bezier(0.22, 1, 0.36, 1) 100ms;
+}
+
+html[data-page-intro="playing"] .page-hero__shade,
+html[data-page-intro="playing"] .page-hero__copy {
+  opacity: 0 !important;
+  visibility: hidden;
+}
+
 .page-hero-wrap {
   position: relative;
 }
@@ -218,7 +242,7 @@ html[data-page-hero="on"] .nav-glass:not(.is-scrolled) {
   z-index: 1;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 400ms cubic-bezier(0.76, 0, 0.24, 1);
+  transition: opacity 400ms cubic-bezier(0.22, 1, 0.36, 1);
   background:
     linear-gradient(to top, #0a0820 0%, rgba(10, 8, 32, 0) 25%),
     linear-gradient(to left, rgba(10, 8, 32, 0.85) 0%, rgba(10, 8, 32, 0.35) 55%, rgba(10, 8, 32, 0.15) 100%);
