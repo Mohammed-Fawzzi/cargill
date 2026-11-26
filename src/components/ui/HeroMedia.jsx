@@ -23,8 +23,10 @@ export default function HeroMedia({
   const settledRef = useRef(false);
   const [allowed, setAllowed] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [finished, setFinished] = useState(false);
   const [visible, setVisible] = useState(false);
   const [inView, setInView] = useState(true);
+  const fadeOutTimerRef = useRef(0);
 
   const rawVideo = typeof videoUrl === "string" ? videoUrl.trim() : "";
   const videoSrc = useMemo(() => resolvePlayableVideoUrl(rawVideo), [rawVideo]);
@@ -35,7 +37,9 @@ export default function HeroMedia({
         : "",
     [posterUrl],
   );
-  const wantVideo = Boolean(allowed && videoSrc && !failed && ready);
+  const wantVideo = Boolean(
+    allowed && videoSrc && !failed && !finished && ready,
+  );
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
@@ -51,15 +55,18 @@ export default function HeroMedia({
       want: wantVideo,
       visible,
       failed,
+      finished,
       src: videoSrc,
       raw: rawVideo,
     });
-  }, [wantVideo, visible, failed, videoSrc, rawVideo, onStateChange]);
+  }, [wantVideo, visible, failed, finished, videoSrc, rawVideo, onStateChange]);
 
   useEffect(() => {
     settledRef.current = false;
     setFailed(false);
+    setFinished(false);
     setVisible(false);
+    window.clearTimeout(fadeOutTimerRef.current);
     if (!ready || !videoSrc) {
       setAllowed(false);
       return undefined;
@@ -126,6 +133,17 @@ export default function HeroMedia({
       else setVisible(true);
     };
     const onError = () => fail();
+    const onEnded = () => {
+      clearTimers();
+      setVisible(false);
+      try {
+        node.pause();
+      } catch {}
+      window.clearTimeout(fadeOutTimerRef.current);
+      fadeOutTimerRef.current = window.setTimeout(() => {
+        setFinished(true);
+      }, VIDEO_FADE_MS);
+    };
     const onStalled = () => {
       window.clearTimeout(stallTimerRef.current);
       stallTimerRef.current = window.setTimeout(() => {
@@ -137,6 +155,7 @@ export default function HeroMedia({
     node.addEventListener("loadeddata", onCanPlay);
     node.addEventListener("playing", onPlaying);
     node.addEventListener("error", onError);
+    node.addEventListener("ended", onEnded);
     node.addEventListener("stalled", onStalled);
     node.addEventListener("waiting", onStalled);
 
@@ -157,10 +176,12 @@ export default function HeroMedia({
 
     return () => {
       clearTimers();
+      window.clearTimeout(fadeOutTimerRef.current);
       node.removeEventListener("canplay", onCanPlay);
       node.removeEventListener("loadeddata", onCanPlay);
       node.removeEventListener("playing", onPlaying);
       node.removeEventListener("error", onError);
+      node.removeEventListener("ended", onEnded);
       node.removeEventListener("stalled", onStalled);
       node.removeEventListener("waiting", onStalled);
       try {
@@ -171,7 +192,7 @@ export default function HeroMedia({
 
   useEffect(() => {
     const node = videoRef.current;
-    if (!node || !wantVideo || !visible) return;
+    if (!node || !wantVideo || !visible || finished) return;
     try {
       if (inView) {
         const run = node.play();
@@ -180,7 +201,7 @@ export default function HeroMedia({
         node.pause();
       }
     } catch {}
-  }, [inView, wantVideo, visible]);
+  }, [inView, wantVideo, visible, finished]);
 
   if (!wantVideo && !visible) return null;
 
@@ -199,7 +220,6 @@ export default function HeroMedia({
           }}
           src={videoSrc}
           muted
-          loop
           playsInline
           autoPlay
           preload="auto"
