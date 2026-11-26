@@ -137,16 +137,15 @@ export default function HeroSection({ section, entranceReady = true }) {
     [videoItems],
   );
   const poster = useMemo(() => {
-    const current = videoItems[media.index || 0] || videoItems[0];
+    const first = videoItems[0];
     return (
-      current?.imageUrl ||
-      getDrivePosterUrl(current?.videoUrl || "") ||
+      first?.imageUrl ||
+      getDrivePosterUrl(first?.videoUrl || "") ||
       images[0] ||
       section?.data?.imageUrl ||
-      getDrivePosterUrl(videoItems[0]?.videoUrl || "") ||
       ""
     );
-  }, [videoItems, media.index, images, section?.data?.imageUrl]);
+  }, [videoItems, images, section?.data?.imageUrl]);
   const headlineSlide = slides.find((item) => t(item?.title, locale)) || slides[0];
   const title = t(headlineSlide?.title, locale);
   const body = t(headlineSlide?.body, locale);
