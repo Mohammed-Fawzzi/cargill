@@ -69,8 +69,16 @@ export default function Contact() {
     () => homepageSlideImages(heroQuery.data),
     [heroQuery.data],
   );
-  const contactImage = section?.imageUrl || contact?.bannerUrl || "";
-  const contactSides = [contact?.bannerUrl, ...heroSlides].filter(
+  const contactImage =
+    section?.imageUrl ||
+    section?.slides?.[0]?.imageUrl ||
+    contact?.bannerUrl ||
+    "";
+  const contactSides = [
+    contact?.bannerUrl,
+    contact?.aboutImageUrl,
+    ...heroSlides,
+  ].filter(
     (src, index, list) =>
       src && src !== contactImage && list.indexOf(src) === index,
   );

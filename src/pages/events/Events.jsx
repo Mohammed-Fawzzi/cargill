@@ -94,13 +94,14 @@ export default function Events() {
     updateParams({ status: nextFilter });
   };
 
+  const eventCovers = events.map((item) => item.imageUrl).filter(Boolean);
   const hero = resolvePageHero({
     section: sectionQuery.data,
     contact,
     locale,
     fallbackTitle: t(UI.nav.events, locale),
     fallbackSubtitle: t(UI.eventsIntro, locale),
-    fallbackImage: "",
+    fallbackImage: eventCovers[0] || "",
     videoCandidates: events.map((item) => item.videoUrl),
   });
 
@@ -115,14 +116,17 @@ export default function Events() {
         ? t(UI.noPastEvents, locale)
         : t(UI.noEvents, locale);
 
-  const eventCovers = events.map((item) => item.imageUrl).filter(Boolean);
-  const heroImage = hero.imageUrl;
+  const heroImage =
+    sectionQuery.data?.imageUrl ||
+    sectionQuery.data?.slides?.[0]?.imageUrl ||
+    hero.imageUrl ||
+    "";
   const heroVideo = hero.videoUrl;
   const heroVideos = hero.videoUrls;
   useEffect(() => {
-    warnMissingMedia("homepage/events.imageUrl", heroImage);
-  }, [heroImage]);
-  const pending = eventsQuery.isPending;
+    warnMissingMedia("homepage/events.imageUrl", sectionQuery.data?.imageUrl);
+  }, [sectionQuery.data?.imageUrl]);
+  const pending = eventsQuery.isPending || sectionQuery.isPending;
   const error = eventsQuery.isError;
   const showSplit = filter === "all";
 

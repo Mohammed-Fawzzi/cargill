@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -16,6 +16,7 @@ import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { resolvePageHero } from "@/lib/pageHero";
+import { warnMissingMedia } from "@/lib/image";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { formatMillis } from "@/lib/time";
@@ -97,7 +98,17 @@ export default function Articles() {
     videoCandidates: articles.map((item) => item.videoUrl),
   });
 
-  const pending = articlesQuery.isPending;
+  const heroImage =
+    sectionQuery.data?.imageUrl ||
+    sectionQuery.data?.slides?.[0]?.imageUrl ||
+    hero.imageUrl ||
+    "";
+
+  useEffect(() => {
+    warnMissingMedia("homepage/articles.imageUrl", sectionQuery.data?.imageUrl);
+  }, [sectionQuery.data?.imageUrl]);
+
+  const pending = articlesQuery.isPending || sectionQuery.isPending;
   const error = articlesQuery.isError;
   const featuredCategory =
     categoryKey(featured, locale) || t(UI.nav.articles, locale);
@@ -122,12 +133,12 @@ export default function Articles() {
           <PageHero
             title={hero.title}
             description={hero.subtitle}
-            imageUrl={hero.imageUrl}
+            imageUrl={heroImage}
             videoUrl={hero.videoUrl}
             videoUrls={hero.videoUrls}
             sideImages={articles
               .map((item) => item.imageUrl)
-              .filter((src) => src && src !== hero.imageUrl)}
+              .filter((src) => src && src !== heroImage)}
             size="mid"
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },

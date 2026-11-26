@@ -201,19 +201,27 @@ export default function Products() {
     ],
   });
 
-  const heroImage = hero.imageUrl || pageQuery.data?.imageUrl || "";
+  const heroImage =
+    sectionQuery.data?.imageUrl ||
+    sectionQuery.data?.slides?.[0]?.imageUrl ||
+    pageQuery.data?.imageUrl ||
+    hero.imageUrl ||
+    "";
   const heroVideo = hero.videoUrl;
   const heroVideos = hero.videoUrls;
   useEffect(() => {
-    warnMissingMedia("product_categories/page.imageUrl", heroImage);
-  }, [heroImage]);
+    warnMissingMedia(
+      "homepage/product_categories.imageUrl",
+      sectionQuery.data?.imageUrl || pageQuery.data?.imageUrl,
+    );
+  }, [sectionQuery.data?.imageUrl, pageQuery.data?.imageUrl]);
   const heroSides = useMemo(() => {
     const covers = categoryCoverImages(categories, products);
-    const sectionImage = sectionQuery.data?.imageUrl || "";
-    return [sectionImage, ...covers].filter(
+    const pageImage = pageQuery.data?.imageUrl || "";
+    return [pageImage, ...covers].filter(
       (src, index, list) => src && src !== heroImage && list.indexOf(src) === index,
     );
-  }, [sectionQuery.data?.imageUrl, categories, products, heroImage]);
+  }, [pageQuery.data?.imageUrl, categories, products, heroImage]);
   const phone = contact?.phones?.[0] || "";
   const askSearchHref = toWhatsAppHref(
     phone,
@@ -223,7 +231,11 @@ export default function Products() {
     ),
   );
 
-  const pending = productsQuery.isPending || categoriesQuery.isPending;
+  const pending =
+    productsQuery.isPending ||
+    categoriesQuery.isPending ||
+    sectionQuery.isPending ||
+    pageQuery.isPending;
   const error = productsQuery.isError || categoriesQuery.isError;
 
   return (

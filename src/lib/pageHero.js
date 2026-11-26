@@ -32,18 +32,17 @@ export function resolvePageHero({
   const contactSubtitle = t(contact?.subtitle, locale);
   const contactDescription = t(contact?.description, locale);
 
+  const sectionSlideImage = asTrimmed(section?.slides?.[0]?.imageUrl);
   const imageUrl =
     asTrimmed(section?.imageUrl) ||
-    asTrimmed(contact?.bannerUrl) ||
+    sectionSlideImage ||
     asTrimmed(fallbackImage) ||
     "";
 
   const videoUrls = uniqueMediaUrls([
     section?.videoUrl,
     section?.heroVideoUrl,
-    contact?.videoUrl,
-    contact?.aboutVideoUrl,
-    contact?.heroVideoUrl,
+    section?.slides?.[0]?.videoUrl,
     fallbackVideo,
     ...videoCandidates,
   ]);

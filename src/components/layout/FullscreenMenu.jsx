@@ -70,6 +70,8 @@ export default function FullscreenMenu({
     staleTime: 1000 * 60 * 5,
   });
   const heroQuery = useHomepageSection("hero");
+  const productsSectionQuery = useHomepageSection("product_categories");
+  const articlesSectionQuery = useHomepageSection("articles");
   const eventsSectionQuery = useHomepageSection("events");
   const contactSectionQuery = useHomepageSection("contact");
   const categoriesPageQuery = useQuery({
@@ -115,14 +117,19 @@ export default function FullscreenMenu({
     return {
       "/": heroImage,
       "/products":
+        productsSectionQuery.data?.imageUrl ||
         categoriesPageQuery.data?.imageUrl ||
         pickCategoryImage(categories, products),
-      "/articles": articles.find((item) => item.imageUrl)?.imageUrl || "",
+      "/articles":
+        articlesSectionQuery.data?.imageUrl ||
+        articles.find((item) => item.imageUrl)?.imageUrl ||
+        "",
       "/events":
         eventsSectionQuery.data?.imageUrl ||
         events.find((item) => item.imageUrl)?.imageUrl ||
         "",
-      "/about": contact?.logoUrl || "",
+      "/about":
+        contact?.aboutImageUrl || contact?.bannerUrl || contact?.logoUrl || "",
       "/contact":
         contactSectionQuery.data?.imageUrl || contact?.bannerUrl || "",
       "/finder": pickCategoryImage(categories, products),
@@ -133,9 +140,12 @@ export default function FullscreenMenu({
     articlesQuery.data,
     eventsQuery.data,
     heroQuery.data,
+    productsSectionQuery.data,
+    articlesSectionQuery.data,
     categoriesPageQuery.data,
     eventsSectionQuery.data,
     contactSectionQuery.data,
+    contact?.aboutImageUrl,
     contact?.bannerUrl,
     contact?.logoUrl,
   ]);

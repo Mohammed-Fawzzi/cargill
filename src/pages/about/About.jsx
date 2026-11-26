@@ -579,10 +579,11 @@ export default function About() {
       if (!value || list.some((item) => item.src === value)) return;
       list.push({ src: value, alt });
     };
-    push(contact?.logoUrl, titleText || "");
+    push(contact?.aboutImageUrl, titleText || "");
     push(bannerUrl, titleText || "");
+    push(contact?.logoUrl, titleText || "");
     return list;
-  }, [contact?.logoUrl, bannerUrl, titleText]);
+  }, [contact?.aboutImageUrl, contact?.logoUrl, bannerUrl, titleText]);
 
   const storyMedia = useMemo(() => aboutImages, [aboutImages]);
 
@@ -593,7 +594,8 @@ export default function About() {
 
   const hasContent = Boolean(about || vision || mission || categories.length);
   const usePinned = !reducedMotion && storySteps.length > 1;
-  const aboutImage = aboutImages[0]?.src || contact?.logoUrl || "";
+  const aboutImage =
+    contact?.aboutImageUrl || bannerUrl || contact?.logoUrl || "";
   const aboutVideo = contact?.aboutVideoUrl || contact?.videoUrl || "";
   const heroSides = useMemo(() => {
     const pool = [];
@@ -603,8 +605,8 @@ export default function About() {
       pool.push(value);
     };
     storyImages.forEach(push);
+    push(contact?.logoUrl);
     push(bannerUrl);
-    push(contact?.bannerUrl);
     (categories || []).forEach((category) => push(category?.imageUrl));
     (productsQuery.data || []).forEach((product) => {
       if (product?.imageUrl) push(product.imageUrl);
@@ -614,14 +616,17 @@ export default function About() {
     storyImages,
     aboutImage,
     bannerUrl,
-    contact?.bannerUrl,
+    contact?.logoUrl,
     categories,
     productsQuery.data,
   ]);
 
   useEffect(() => {
-    warnMissingMedia("contact/page.logoUrl", aboutImage);
-  }, [aboutImage]);
+    warnMissingMedia(
+      "contact/page.aboutImageUrl",
+      contact?.aboutImageUrl || aboutImage,
+    );
+  }, [contact?.aboutImageUrl, aboutImage]);
 
   return (
     <>

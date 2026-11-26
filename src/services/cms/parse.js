@@ -81,7 +81,13 @@ export function parseHomepageSection(id, data = {}) {
     id,
     title: parseLocalized(data.title),
     body: parseLocalized(data.body),
-    imageUrl: asString(data.imageUrl),
+    imageUrl: asString(
+      data.imageUrl ||
+        data.bannerUrl ||
+        data.coverUrl ||
+        data.heroImageUrl ||
+        data.image,
+    ),
     videoUrl: asString(data.videoUrl || data.heroVideoUrl || data.video),
     cta: parseCta(data.cta),
     mapEmbedUrl: asString(data.mapEmbedUrl),
