@@ -214,7 +214,7 @@ export default function HeroSection({ section, entranceReady = true }) {
           data-home-hero-media
           className="absolute inset-0 overflow-hidden"
         >
-          {wantVideo || videoUrls.length ? (
+          {videoUrls.length && !media.visible ? (
             <div className="absolute inset-0 overflow-hidden">
               <HeroPoster
                 src={poster || slideSrc}
@@ -223,7 +223,7 @@ export default function HeroSection({ section, entranceReady = true }) {
                 reducedMotion={reducedMotion}
               />
             </div>
-          ) : (
+          ) : !videoUrls.length ? (
             <AnimatePresence mode="sync" initial={false}>
               {useSlideshow ? (
                 <motion.div
@@ -257,7 +257,7 @@ export default function HeroSection({ section, entranceReady = true }) {
                 <div className="absolute inset-0 bg-[#0A0820]" />
               )}
             </AnimatePresence>
-          )}
+          ) : null}
           <HeroMedia
             videoUrls={videoUrls}
             posterUrl={poster}

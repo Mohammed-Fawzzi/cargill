@@ -6,7 +6,7 @@ import {
 } from "@/lib/image";
 
 const VIDEO_FAIL_MS = 8000;
-const HANDOFF_S = 0.55;
+const HANDOFF_S = 0.6;
 
 function resolveList(videoUrl, videoUrls) {
   const raw = [];
@@ -41,7 +41,7 @@ function paintReady(node) {
     if (typeof node.requestVideoFrameCallback === "function") {
       try {
         node.requestVideoFrameCallback(() => finish());
-        window.setTimeout(finish, 120);
+        window.setTimeout(finish, 160);
         return;
       } catch {}
     }
@@ -108,7 +108,7 @@ export default function HeroMedia({
     setIndex(0);
     setActive(0);
     setFailed(false);
-    setVisible(Boolean(posterSrc));
+    setVisible(false);
     setCover([true, false]);
   }, [listKey, posterSrc]);
 
@@ -139,7 +139,7 @@ export default function HeroMedia({
     if (!node || !wantVideo) return undefined;
     const observer = new IntersectionObserver(
       ([entry]) => setInView(Boolean(entry?.isIntersecting)),
-      { threshold: 0.15 },
+      { threshold: 0.05 },
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -154,7 +154,6 @@ export default function HeroMedia({
     let cancelled = false;
     let failTimer = 0;
     let handoff = false;
-    const tried = new Set();
 
     const clearFailTimer = () => {
       window.clearTimeout(failTimer);
@@ -182,7 +181,7 @@ export default function HeroMedia({
     };
 
     const failHard = () => {
-      if (cancelled || framedRef.current) return;
+      if (cancelled || framedRef.current || playingRef.current) return;
       clearFailTimer();
       busyRef.current = false;
       setVisible(false);
@@ -190,9 +189,9 @@ export default function HeroMedia({
     };
 
     const assignSrc = (node, src) => {
-      if (node.dataset.heroSrc === src && node.src) return false;
+      if (node.dataset.heroSrc === src) return false;
       node.dataset.heroSrc = src;
-      if (node.getAttribute("src") !== src) node.setAttribute("src", src);
+      node.src = src;
       try {
         node.load();
       } catch {}
@@ -242,12 +241,16 @@ export default function HeroMedia({
       } catch {}
     };
 
-    const showFrame = (slotIndex, clipIndex) => {
+    const clearVideoPoster = (node) => {
+      if (!node) return;
+      node.removeAttribute("poster");
+    };
+
+    const showStill = (slotIndex, clipIndex) => {
       if (cancelled) return;
       const node = nodes[slotIndex];
       try {
         node.pause();
-        if (node.currentTime > 0.02) node.currentTime = 0;
       } catch {}
       node.style.opacity = "1";
       node.style.zIndex = "3";
@@ -265,6 +268,7 @@ export default function HeroMedia({
       const node = nodes[activeRef.current];
       if (!node) return;
       try {
+        clearVideoPoster(node);
         const run = node.play();
         if (run?.catch) await run.catch(() => {});
         if (cancelled) return;
@@ -282,9 +286,16 @@ export default function HeroMedia({
       const prevSlot = activeRef.current;
       const prev = nodes[prevSlot];
 
+      clearVideoPoster(node);
       node.style.opacity = "1";
       node.style.zIndex = "3";
+      if (prev && prev !== node) {
+        prev.style.zIndex = "2";
+        prev.style.opacity = "1";
+      }
       setSlotCover(slotIndex, true);
+      if (prev && prev !== node) setSlotCover(prevSlot, true);
+
       syncIndex(clipIndex);
       syncActive(slotIndex);
       framedRef.current = true;
@@ -312,7 +323,7 @@ export default function HeroMedia({
     const markFirstFrame = (node) => {
       if (cancelled || framedRef.current) return;
       if (node !== nodes[0]) return;
-      showFrame(0, 0);
+      showStill(0, 0);
       busyRef.current = false;
       startPlayback();
     };
@@ -321,19 +332,10 @@ export default function HeroMedia({
       if (cancelled || !list.length) return;
       if (busyRef.current && !fromHandoff) return;
       if (nextIndex < 0 || nextIndex >= list.length) {
-        if (framedRef.current) {
-          playAt(0, { fromHandoff });
-          return;
-        }
-        failHard();
+        if (playingRef.current) playAt(0, { fromHandoff });
+        else failHard();
         return;
       }
-
-      if (!framedRef.current && tried.has(nextIndex)) {
-        failHard();
-        return;
-      }
-      if (!framedRef.current) tried.add(nextIndex);
 
       busyRef.current = true;
       clearFailTimer();
@@ -341,61 +343,75 @@ export default function HeroMedia({
       const src = list[nextIndex];
       const currentSlot = activeRef.current;
       let slotIndex = currentSlot;
-      if (multi && playingRef.current) {
+      if (multi && (playingRef.current || fromHandoff)) {
         slotIndex = currentSlot === 0 ? 1 : 0;
       }
 
       const node = nodes[slotIndex];
+      const prev = nodes[currentSlot];
       if (!node) {
         busyRef.current = false;
-        failHard();
+        if (!playingRef.current) failHard();
+        else handoff = false;
         return;
       }
 
-      if (!framedRef.current) {
-        failTimer = window.setTimeout(() => {
-          if (cancelled || framedRef.current) return;
-          busyRef.current = false;
-          const fallback = (nextIndex + 1) % list.length;
-          if (fallback !== nextIndex) playAt(fallback);
-          else failHard();
-        }, VIDEO_FAIL_MS);
-      }
-
       try {
-        if (slotIndex === 0 && nextIndex === 0 && node.dataset.heroSrc === src) {
-          if (node.readyState >= 2) {
-            markFirstFrame(node);
-            return;
-          }
-        } else {
+        if (!(slotIndex === 0 && nextIndex === 0 && node.dataset.heroSrc === src)) {
           assignSrc(node, src);
+        } else if (!node.dataset.heroSrc) {
+          node.dataset.heroSrc = src;
         }
 
         await waitFrame(node);
         if (cancelled) return;
 
-        if (!playingRef.current) {
-          showFrame(slotIndex, nextIndex);
+        if (!playingRef.current && !fromHandoff) {
+          showStill(slotIndex, nextIndex);
           busyRef.current = false;
           await startPlayback();
           return;
         }
 
+        try {
+          if (node.currentTime > 0.05) node.currentTime = 0;
+        } catch {}
+
+        clearVideoPoster(node);
         const run = node.play();
         if (run?.catch) await run.catch(() => {});
         if (cancelled) return;
+
+        if (node.paused) {
+          busyRef.current = false;
+          handoff = false;
+          if (prev && prev !== node) {
+            try {
+              const resume = prev.play();
+              if (resume?.catch) resume.catch(() => {});
+            } catch {}
+          }
+          return;
+        }
+
         await revealNext(slotIndex, nextIndex);
       } catch {
         busyRef.current = false;
+        handoff = false;
         clearFailTimer();
         if (cancelled) return;
-        const fallback = (nextIndex + 1) % list.length;
-        if (fallback !== nextIndex) {
-          playAt(fallback);
+        if (!playingRef.current) {
+          const fallback = (nextIndex + 1) % list.length;
+          if (fallback !== nextIndex) playAt(fallback);
+          else failHard();
           return;
         }
-        if (!framedRef.current) failHard();
+        if (prev && prev !== node) {
+          try {
+            const resume = prev.play();
+            if (resume?.catch) resume.catch(() => {});
+          } catch {}
+        }
       }
     };
 
@@ -403,6 +419,17 @@ export default function HeroMedia({
       if (!multi || cancelled || busyRef.current || handoff) return;
       if (!playingRef.current) return;
       handoff = true;
+      const current = nodes[activeRef.current];
+      if (current) {
+        try {
+          if (
+            Number.isFinite(current.duration) &&
+            current.duration - current.currentTime < 0.12
+          ) {
+            current.pause();
+          }
+        } catch {}
+      }
       const next = (indexRef.current + 1) % list.length;
       playAt(next, { fromHandoff: true });
     };
@@ -420,13 +447,18 @@ export default function HeroMedia({
     };
 
     const onEnded = (event) => {
-      if (!multi || cancelled || !playingRef.current) return;
+      if (cancelled || !playingRef.current) return;
       const node = event.currentTarget;
       if (node !== nodes[activeRef.current]) return;
       if (busyRef.current || handoff) return;
-      try {
-        node.pause();
-      } catch {}
+      if (!multi) {
+        try {
+          node.currentTime = 0;
+          const run = node.play();
+          if (run?.catch) run.catch(() => {});
+        } catch {}
+        return;
+      }
       startHandoff();
     };
 
@@ -434,9 +466,10 @@ export default function HeroMedia({
       if (cancelled || busyRef.current) return;
       const node = event.currentTarget;
       if (node !== nodes[activeRef.current]) return;
+      if (playingRef.current) return;
       const fallback = (indexRef.current + 1) % list.length;
       if (fallback === indexRef.current) {
-        if (!framedRef.current) failHard();
+        failHard();
         return;
       }
       playAt(fallback);
@@ -454,15 +487,18 @@ export default function HeroMedia({
     nodes[0].addEventListener("loadeddata", onLoadedData);
     nodes[0].addEventListener("loadedmetadata", onLoadedData);
 
-    if (!nodes[0].dataset.heroSrc && firstSrc) {
+    if (firstSrc) {
       nodes[0].dataset.heroSrc = firstSrc;
+      if (!nodes[0].getAttribute("src")) {
+        nodes[0].src = firstSrc;
+        try {
+          nodes[0].load();
+        } catch {}
+      }
     }
 
-    if (nodes[0].readyState >= 2) {
-      markFirstFrame(nodes[0]);
-    } else {
-      playAt(0);
-    }
+    if (nodes[0].readyState >= 2) markFirstFrame(nodes[0]);
+    else playAt(0);
 
     return () => {
       cancelled = true;
@@ -484,6 +520,7 @@ export default function HeroMedia({
     if (!playWhen) return;
     const node = active === 0 ? aRef.current : bRef.current;
     if (!node) return;
+    node.removeAttribute("poster");
     const run = node.play();
     if (run?.then) {
       run
@@ -521,7 +558,6 @@ export default function HeroMedia({
           opacity: wantVideo || cover[0] ? 1 : 0,
           zIndex: active === 0 ? 3 : cover[0] ? 2 : 1,
         }}
-        src={wantVideo ? firstSrc : undefined}
         poster={posterSrc || undefined}
         muted
         playsInline
