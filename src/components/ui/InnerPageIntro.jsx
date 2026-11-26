@@ -130,7 +130,9 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
     let alive = true;
     const sources = tiles.map((tile) => tile.src).filter(Boolean);
     preloadImages(sources, timings.preloadMaxMs).finally(() => {
-      if (alive) setArmed(true);
+      if (!alive) return;
+      setPhase("in");
+      setArmed(true);
     });
     return () => {
       alive = false;
@@ -150,8 +152,7 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
   }, []);
 
   useEffect(() => {
-    if (!armed) return undefined;
-    setPhase("in");
+    if (!armed || phase !== "in") return undefined;
     const timers = [];
     timers.push(
       window.setTimeout(() => setPhase("hold"), schedule.enterEndMs),
@@ -163,7 +164,7 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
       window.setTimeout(() => setExpanding(true), schedule.expandAtMs),
     );
     return () => timers.forEach((id) => window.clearTimeout(id));
-  }, [armed, schedule]);
+  }, [armed, phase, schedule]);
 
   useLayoutEffect(() => {
     if (!expanding || doneRef.current) return undefined;
@@ -260,11 +261,10 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
   if (!portalReady) return null;
 
   const focused = phase === "focus" || expanding;
-  const settled = phase === "hold" || focused;
 
   return createPortal(
     <div className="fixed inset-0 z-[120] bg-[#0A0820]" aria-hidden="true">
-      {armed ? (
+      {armed && phase !== "boot" ? (
         <div className="absolute inset-0 flex items-center justify-center">
           <div
             className="flex items-center justify-center"
@@ -273,6 +273,11 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
           >
             {tiles.map((tile, index) => {
               const isCenter = tile.hero;
+              const enterDelay = rtlEnterDelaySec(
+                index,
+                tiles.length,
+                timings.staggerMs,
+              );
               return (
                 <motion.div
                   key={tile.id}
@@ -325,39 +330,31 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
                               scale: timings.focusScale,
                               filter: "grayscale(0)",
                             }
-                          : settled
-                            ? {
-                                opacity: 1,
-                                x: 0,
-                                y: 0,
-                                scale: 1,
-                                filter: "grayscale(1)",
-                              }
-                            : {
-                                opacity: 1,
-                                x: 0,
-                                y: 0,
-                                scale: 1,
-                                filter: "grayscale(1)",
-                              }
+                          : {
+                              opacity: 1,
+                              x: 0,
+                              y: 0,
+                              scale: 1,
+                              filter: "grayscale(1)",
+                            }
                   }
-                  transition={{
-                    duration:
-                      phase === "in"
-                        ? timings.tileMs / 1000
-                        : expanding
-                          ? timings.expandMs / 1000
-                          : timings.focusMs / 1000,
-                    delay:
-                      phase === "in"
-                        ? rtlEnterDelaySec(
-                            index,
-                            tiles.length,
-                            timings.staggerMs,
-                          )
-                        : 0,
-                    ease: expanding ? timings.expandEase : timings.ease,
-                  }}
+                  transition={
+                    phase === "in"
+                      ? {
+                          duration: timings.tileMs / 1000,
+                          delay: enterDelay,
+                          ease: timings.ease,
+                        }
+                      : expanding
+                        ? {
+                            duration: timings.expandMs / 1000,
+                            ease: timings.expandEase,
+                          }
+                        : {
+                            duration: timings.focusMs / 1000,
+                            ease: timings.ease,
+                          }
+                  }
                 >
                   {tile.src ? (
                     <img

@@ -134,6 +134,7 @@ export default function HomepageIntro({ tiles, onComplete }) {
     preloadImages(sources, timings.preloadMaxMs).finally(() => {
       if (!alive) return;
       setFrozenTiles(next);
+      setPhase("in");
       setArmed(true);
     });
     return () => {
@@ -154,12 +155,11 @@ export default function HomepageIntro({ tiles, onComplete }) {
   }, []);
 
   useEffect(() => {
-    if (!armed) return undefined;
+    if (!armed || phase !== "in") return undefined;
     if (!tileSources.some((tile) => tile.isHero && tile.src)) {
       finish();
       return undefined;
     }
-    setPhase("in");
     const timers = [];
     timers.push(
       window.setTimeout(() => setPhase("hold"), schedule.enterEndMs),
@@ -171,7 +171,7 @@ export default function HomepageIntro({ tiles, onComplete }) {
       window.setTimeout(() => setExpanding(true), schedule.expandAtMs),
     );
     return () => timers.forEach((id) => window.clearTimeout(id));
-  }, [armed, tileSources, schedule]);
+  }, [armed, phase, tileSources, schedule]);
 
   useLayoutEffect(() => {
     if (!expanding || finishedRef.current) return undefined;
@@ -265,7 +265,6 @@ export default function HomepageIntro({ tiles, onComplete }) {
   const tileHeight = isMobileStrip ? "40vh" : "48vh";
   const centerSrc = tileSources[centerIndex]?.src || "";
   const focused = phase === "focus" || expanding;
-  const settled = phase === "hold" || focused;
 
   return createPortal(
     <div className="fixed inset-0 z-[120] bg-[#0A0820]" aria-hidden="true">
@@ -289,11 +288,16 @@ export default function HomepageIntro({ tiles, onComplete }) {
         </span>
       </motion.div>
 
-      {armed ? (
+      {armed && phase !== "boot" ? (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex items-center justify-center" style={{ gap: "1.5vw" }}>
             {tileSources.map((tile, index) => {
               const isCenter = index === centerIndex;
+              const enterDelay = rtlEnterDelaySec(
+                index,
+                tileSources.length,
+                timings.staggerMs,
+              );
               return (
                 <motion.div
                   key={tile.id}
@@ -347,39 +351,31 @@ export default function HomepageIntro({ tiles, onComplete }) {
                               scale: timings.focusScale,
                               filter: "grayscale(0)",
                             }
-                          : settled
-                            ? {
-                                opacity: 1,
-                                x: 0,
-                                y: 0,
-                                scale: 1,
-                                filter: "grayscale(1)",
-                              }
-                            : {
-                                opacity: 1,
-                                x: 0,
-                                y: 0,
-                                scale: 1,
-                                filter: "grayscale(1)",
-                              }
+                          : {
+                              opacity: 1,
+                              x: 0,
+                              y: 0,
+                              scale: 1,
+                              filter: "grayscale(1)",
+                            }
                   }
-                  transition={{
-                    duration:
-                      phase === "in"
-                        ? timings.tileMs / 1000
-                        : expanding
-                          ? timings.expandMs / 1000
-                          : timings.focusMs / 1000,
-                    delay:
-                      phase === "in"
-                        ? rtlEnterDelaySec(
-                            index,
-                            tileSources.length,
-                            timings.staggerMs,
-                          )
-                        : 0,
-                    ease: expanding ? timings.expandEase : timings.ease,
-                  }}
+                  transition={
+                    phase === "in"
+                      ? {
+                          duration: timings.tileMs / 1000,
+                          delay: enterDelay,
+                          ease: timings.ease,
+                        }
+                      : expanding
+                        ? {
+                            duration: timings.expandMs / 1000,
+                            ease: timings.expandEase,
+                          }
+                        : {
+                            duration: timings.focusMs / 1000,
+                            ease: timings.ease,
+                          }
+                  }
                 >
                   {tile.src ? (
                     <img
