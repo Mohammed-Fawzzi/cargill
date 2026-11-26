@@ -1,12 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  normalizeImageUrl,
-  resolvePlayableVideoUrl,
-  shouldPlayHeroVideo,
-} from "@/lib/image";
+import { resolvePlayableVideoUrl, shouldPlayHeroVideo } from "@/lib/image";
 
 const VIDEO_FAIL_MS = 8000;
-const HANDOFF_S = 0.4;
+const HANDOFF_S = 0.55;
 
 function resolveList(videoUrl, videoUrls) {
   const raw = [];
@@ -30,6 +26,25 @@ function resolveList(videoUrl, videoUrls) {
   return list;
 }
 
+function paintReady(node) {
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      resolve();
+    };
+    if (typeof node.requestVideoFrameCallback === "function") {
+      try {
+        node.requestVideoFrameCallback(() => finish());
+        window.setTimeout(finish, 120);
+        return;
+      } catch {}
+    }
+    requestAnimationFrame(() => requestAnimationFrame(finish));
+  });
+}
+
 export default function HeroMedia({
   videoUrl = "",
   videoUrls,
@@ -46,11 +61,13 @@ export default function HeroMedia({
   const activeRef = useRef(0);
   const playedRef = useRef(false);
   const busyRef = useRef(false);
+  const coverRef = useRef([false, false]);
   const [index, setIndex] = useState(0);
   const [active, setActive] = useState(0);
   const [allowed, setAllowed] = useState(false);
   const [failed, setFailed] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [cover, setCover] = useState([false, false]);
   const [inView, setInView] = useState(true);
 
   const list = useMemo(
@@ -60,28 +77,30 @@ export default function HeroMedia({
   const listKey = list.join("\n");
   const videoSrc = list[index] || "";
   const multi = list.length > 1;
-  const posterSrc = useMemo(
-    () =>
-      posterUrl
-        ? normalizeImageUrl(posterUrl, { width: 1920, quality: 78 })
-        : "",
-    [posterUrl],
-  );
   const wantVideo = Boolean(allowed && list.length && !failed && ready);
   const baseClass =
     videoClassName ||
     "absolute inset-0 h-full w-full object-cover object-center";
+
+  const setSlotCover = (slotIndex, on) => {
+    const next = coverRef.current.slice();
+    next[slotIndex] = on;
+    coverRef.current = next;
+    setCover(next);
+  };
 
   useEffect(() => {
     indexRef.current = 0;
     activeRef.current = 0;
     playedRef.current = false;
     busyRef.current = false;
+    coverRef.current = [false, false];
     setIndex(0);
     setActive(0);
     setFailed(false);
     setVisible(false);
     setAllowed(false);
+    setCover([false, false]);
   }, [listKey]);
 
   useEffect(() => {
@@ -174,6 +193,35 @@ export default function HeroMedia({
       return true;
     };
 
+    const waitCanPlay = (node) =>
+      new Promise((resolve, reject) => {
+        let done = false;
+        const finish = (ok) => {
+          if (done) return;
+          done = true;
+          node.removeEventListener("canplay", onReady);
+          node.removeEventListener("loadeddata", onReady);
+          node.removeEventListener("playing", onReady);
+          node.removeEventListener("error", onErr);
+          if (ok) resolve();
+          else reject(new Error("not-ready"));
+        };
+        const onReady = () => finish(true);
+        const onErr = () => finish(false);
+        if (node.readyState >= 3) {
+          finish(true);
+          return;
+        }
+        node.addEventListener("canplay", onReady);
+        node.addEventListener("loadeddata", onReady);
+        node.addEventListener("playing", onReady);
+        node.addEventListener("error", onErr);
+        window.setTimeout(() => {
+          if (node.readyState >= 2) finish(true);
+          else finish(false);
+        }, VIDEO_FAIL_MS);
+      });
+
     const prefetch = (fromIndex) => {
       if (!multi || cancelled) return;
       const idleSlot = activeRef.current === 0 ? 1 : 0;
@@ -188,49 +236,35 @@ export default function HeroMedia({
       } catch {}
     };
 
-    const waitCanPlay = (node) =>
-      new Promise((resolve, reject) => {
-        let done = false;
-        const finish = (ok) => {
-          if (done) return;
-          done = true;
-          node.removeEventListener("canplay", onReady);
-          node.removeEventListener("loadeddata", onReady);
-          node.removeEventListener("error", onErr);
-          if (ok) resolve();
-          else reject(new Error("not-ready"));
-        };
-        const onReady = () => finish(true);
-        const onErr = () => finish(false);
-        if (node.readyState >= 2) {
-          finish(true);
-          return;
-        }
-        node.addEventListener("canplay", onReady);
-        node.addEventListener("loadeddata", onReady);
-        node.addEventListener("error", onErr);
-        window.setTimeout(() => {
-          if (node.readyState >= 2) finish(true);
-          else finish(false);
-        }, VIDEO_FAIL_MS);
-      });
-
-    const showPlaying = (slotIndex, clipIndex) => {
+    const reveal = async (slotIndex, clipIndex) => {
       if (cancelled) return;
       const node = nodes[slotIndex];
-      const prev = nodes[activeRef.current];
-      playedRef.current = true;
-      handoff = false;
-      busyRef.current = false;
-      clearFailTimer();
+      const prevSlot = activeRef.current;
+      const prev = nodes[prevSlot];
+
+      node.style.opacity = "1";
+      node.style.zIndex = "3";
+      setSlotCover(slotIndex, true);
       syncIndex(clipIndex);
       syncActive(slotIndex);
+      playedRef.current = true;
       setVisible(true);
+      clearFailTimer();
+
+      await paintReady(node);
+      if (cancelled) return;
+
       if (prev && prev !== node) {
         try {
           prev.pause();
         } catch {}
+        prev.style.opacity = "0";
+        prev.style.zIndex = "1";
+        setSlotCover(prevSlot, false);
       }
+
+      handoff = false;
+      busyRef.current = false;
       prefetch(clipIndex);
     };
 
@@ -261,65 +295,82 @@ export default function HeroMedia({
 
       if (multi) {
         const idleSlot = currentSlot === 0 ? 1 : 0;
-        const idle = nodes[idleSlot];
-        if (idle?.dataset?.heroSrc === src && idle.readyState >= 2) {
-          slotIndex = idleSlot;
-        } else if (playedRef.current) {
-          slotIndex = idleSlot;
-        } else {
-          slotIndex = currentSlot;
-        }
+        slotIndex = playedRef.current ? idleSlot : currentSlot;
       }
 
       const node = nodes[slotIndex];
+      const prev = nodes[currentSlot];
       if (!node) {
         busyRef.current = false;
         failHard();
         return;
       }
 
-      failTimer = window.setTimeout(() => {
-        if (cancelled || playedRef.current) return;
-        busyRef.current = false;
-        const fallback = nextIndex >= list.length - 1 ? 0 : nextIndex + 1;
-        if (fallback !== nextIndex) playAt(fallback);
-        else failHard();
-      }, VIDEO_FAIL_MS);
+      if (!playedRef.current) {
+        failTimer = window.setTimeout(() => {
+          if (cancelled || playedRef.current) return;
+          busyRef.current = false;
+          const fallback = (nextIndex + 1) % list.length;
+          if (fallback !== nextIndex) playAt(fallback);
+          else failHard();
+        }, VIDEO_FAIL_MS);
+      }
 
       try {
         assignSrc(node, src);
         await waitCanPlay(node);
         if (cancelled) return;
+
         try {
-          if (node.currentTime > 0.05) node.currentTime = 0;
+          if (node.currentTime > 0.02) node.currentTime = 0;
         } catch {}
+
         const run = node.play();
         if (run?.catch) await run.catch(() => {});
         if (cancelled) return;
+
         if (node.paused && node.readyState < 2) {
           busyRef.current = false;
           clearFailTimer();
-          const fallback = nextIndex >= list.length - 1 ? 0 : nextIndex + 1;
-          if (!playedRef.current && fallback !== nextIndex) {
+          const fallback = (nextIndex + 1) % list.length;
+          if (fallback !== nextIndex) {
             playAt(fallback);
             return;
           }
           if (!playedRef.current) failHard();
           return;
         }
-        showPlaying(slotIndex, nextIndex);
+
+        if (prev && prev !== node && !prev.paused) {
+          try {
+            if (
+              Number.isFinite(prev.duration) &&
+              prev.duration - prev.currentTime < 0.2
+            ) {
+              prev.pause();
+            }
+          } catch {}
+        }
+
+        await reveal(slotIndex, nextIndex);
       } catch {
         busyRef.current = false;
         clearFailTimer();
         if (cancelled) return;
-        const fallback = nextIndex >= list.length - 1 ? 0 : nextIndex + 1;
-        if (!playedRef.current && fallback !== nextIndex) {
+        const fallback = (nextIndex + 1) % list.length;
+        if (fallback !== nextIndex) {
           playAt(fallback);
           return;
         }
         if (!playedRef.current) failHard();
-        else if (multi && fallback !== nextIndex) playAt(fallback);
       }
+    };
+
+    const startHandoff = () => {
+      if (!multi || cancelled || busyRef.current || handoff) return;
+      handoff = true;
+      const next = (indexRef.current + 1) % list.length;
+      playAt(next, { fromHandoff: true });
     };
 
     const onTimeUpdate = (event) => {
@@ -327,42 +378,33 @@ export default function HeroMedia({
       const node = event.currentTarget;
       if (node !== nodes[activeRef.current]) return;
       const duration = node.duration;
-      if (!Number.isFinite(duration) || duration <= 0) return;
+      if (!Number.isFinite(duration) || duration <= HANDOFF_S) return;
       const left = duration - node.currentTime;
       if (left > HANDOFF_S || left < 0) return;
-      handoff = true;
-      const next =
-        indexRef.current >= list.length - 1 ? 0 : indexRef.current + 1;
-      playAt(next, { fromHandoff: true });
+      startHandoff();
     };
 
     const onEnded = (event) => {
-      if (!multi || cancelled || busyRef.current) return;
+      if (!multi || cancelled) return;
       const node = event.currentTarget;
       if (node !== nodes[activeRef.current]) return;
-      if (handoff) return;
-      const next =
-        indexRef.current >= list.length - 1 ? 0 : indexRef.current + 1;
-      playAt(next);
+      if (busyRef.current || handoff) return;
+      try {
+        node.pause();
+      } catch {}
+      startHandoff();
     };
 
     const onError = (event) => {
-      if (cancelled) return;
+      if (cancelled || busyRef.current) return;
       const node = event.currentTarget;
-      const activeNode = nodes[activeRef.current];
-      if (node !== activeNode) return;
-      if (busyRef.current) return;
-      if (!playedRef.current) {
-        const fallback =
-          indexRef.current >= list.length - 1 ? 0 : indexRef.current + 1;
-        if (fallback !== indexRef.current) playAt(fallback);
-        else failHard();
+      if (node !== nodes[activeRef.current]) return;
+      const fallback = (indexRef.current + 1) % list.length;
+      if (fallback === indexRef.current) {
+        if (!playedRef.current) failHard();
         return;
       }
-      if (!multi) return;
-      const next =
-        indexRef.current >= list.length - 1 ? 0 : indexRef.current + 1;
-      playAt(next);
+      playAt(fallback);
     };
 
     nodes.forEach((node) => {
@@ -401,23 +443,26 @@ export default function HeroMedia({
 
   if (!wantVideo && !visible) return null;
 
-  const renderVideo = (ref, slotIndex) => (
-    <video
-      ref={ref}
-      className={baseClass}
-      style={{
-        opacity: visible && active === slotIndex ? 1 : 0,
-        zIndex: active === slotIndex ? 2 : 1,
-      }}
-      muted
-      playsInline
-      autoPlay={slotIndex === 0}
-      loop={!multi}
-      preload="auto"
-      poster={slotIndex === 0 && !visible ? posterSrc || undefined : undefined}
-      aria-hidden="true"
-    />
-  );
+  const renderVideo = (ref, slotIndex) => {
+    const shown = Boolean(cover[slotIndex]);
+    return (
+      <video
+        ref={ref}
+        className={baseClass}
+        style={{
+          opacity: shown ? 1 : 0,
+          zIndex: active === slotIndex ? 3 : shown ? 2 : 1,
+        }}
+        muted
+        playsInline
+        autoPlay={slotIndex === 0}
+        loop={!multi}
+        preload="auto"
+        poster={undefined}
+        aria-hidden="true"
+      />
+    );
+  };
 
   return (
     <div className={className || "absolute inset-0 overflow-hidden"}>
