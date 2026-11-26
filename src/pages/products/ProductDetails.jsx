@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
 import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import LtrText from "@/components/ui/LtrText";
 import PageHero from "@/components/ui/PageHero";
 import SplitArrowButton from "@/components/ui/SplitArrowButton";
@@ -293,7 +294,7 @@ export default function ProductDetails() {
     t(UI.askAgronomistMessage, locale),
   );
   const heroImage = section?.imageUrl || "";
-  const heroVideo = section?.videoUrl || "";
+  const heroVideo = section?.videoUrl || product?.videoUrl || "";
   useEffect(() => {
     warnMissingMedia(
       `product_categories.sections[${section?.id || "?"}].imageUrl`,
@@ -386,10 +387,15 @@ export default function ProductDetails() {
             }
             card={
               <div>
-                {currentImage ? (
-                  <div className="flex h-48 items-center justify-center">
-                    <SafeImage
+                {currentImage || product?.videoUrl ? (
+                  <div className="relative flex h-48 items-center justify-center overflow-hidden">
+                    <SafeMedia
                       src={currentImage}
+                      videoUrl={
+                        currentImage === product?.imageUrl
+                          ? product?.videoUrl || ""
+                          : ""
+                      }
                       alt={name}
                       width={480}
                       className="max-h-44 max-w-full object-contain"
@@ -584,6 +590,7 @@ export default function ProductDetails() {
                         <ProductCard
                           to={`/products/${item.id}`}
                           imageUrl={item.imageUrl}
+                          videoUrl={item.videoUrl || ""}
                           title={t(item.name, locale)}
                           category={t(relatedCategory?.name, locale)}
                           origin={t(item.originCountry, locale)}

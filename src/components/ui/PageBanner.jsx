@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import { easeOut } from "@/lib/motion";
 
 function TitleLines({ title, reduceMotion }) {
@@ -45,6 +45,7 @@ export default function PageBanner({
   title,
   subtitle,
   imageUrl,
+  videoUrl = "",
   label,
   breadcrumbs = [],
   meta = [],
@@ -121,15 +122,16 @@ export default function PageBanner({
           ) : null}
         </div>
 
-        {imageUrl ? (
+        {imageUrl || videoUrl ? (
           <motion.div
             className="relative mt-10 overflow-hidden rounded-2xl border border-white/8 bg-[#110E33]"
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.18, ease: easeOut }}
           >
-            <SafeImage
+            <SafeMedia
               src={imageUrl}
+              videoUrl={videoUrl}
               alt=""
               className="h-[28vh] w-full object-cover md:h-[32vh]"
               aria-hidden="true"

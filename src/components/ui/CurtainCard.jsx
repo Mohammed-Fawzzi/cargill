@@ -1,9 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import ParallaxImage from "@/components/ui/ParallaxImage";
 
-function Cover({ imageUrl }) {
+function Cover({ imageUrl, videoUrl }) {
+  if (!imageUrl && !videoUrl) return null;
   return (
     <div className="curtain-card__cover" aria-hidden="true">
       {imageUrl ? (
@@ -13,7 +14,15 @@ function Cover({ imageUrl }) {
           width={960}
           className="curtain-card__photo"
         />
-      ) : null}
+      ) : (
+        <SafeMedia
+          src=""
+          videoUrl={videoUrl}
+          alt=""
+          width={960}
+          className="curtain-card__photo"
+        />
+      )}
       <div className="curtain-card__shade" />
     </div>
   );
@@ -23,6 +32,7 @@ export default function CurtainCard({
   to,
   titleTo,
   imageUrl,
+  videoUrl = "",
   imageAlt = "",
   label = "",
   title = "",
@@ -35,34 +45,26 @@ export default function CurtainCard({
 }) {
   const photoClass = fit === "contain" ? "is-contain" : "is-cover";
   const thumbClass = "curtain-card__thumb ix-card__media";
-  const thumb = (
-    <div className={thumbClass}>
-      {imageUrl ? (
-        <SafeImage
-          src={imageUrl}
-          alt={imageAlt || title || ""}
-          width={480}
-          className={photoClass}
-        />
-      ) : null}
-    </div>
-  );
+  const hasMedia = Boolean(imageUrl || videoUrl);
+  const media = hasMedia ? (
+    <SafeMedia
+      src={imageUrl}
+      videoUrl={videoUrl}
+      alt={imageAlt || title || ""}
+      width={480}
+      className={photoClass}
+    />
+  ) : null;
+  const thumb = <div className={thumbClass}>{media}</div>;
 
   const inner = (
     <>
-      {imageUrl ? <Cover imageUrl={imageUrl} /> : null}
-      {imageUrl && titleTo && !to ? (
+      {hasMedia ? <Cover imageUrl={imageUrl} videoUrl={videoUrl} /> : null}
+      {hasMedia && titleTo && !to ? (
         <Link to={titleTo} className={thumbClass}>
-          {imageUrl ? (
-            <SafeImage
-              src={imageUrl}
-              alt={imageAlt || title || ""}
-              width={480}
-              className={photoClass}
-            />
-          ) : null}
+          {media}
         </Link>
-      ) : imageUrl ? (
+      ) : hasMedia ? (
         thumb
       ) : null}
       <div className="curtain-card__copy">

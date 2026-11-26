@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import Reveal from "@/components/ui/Reveal";
-import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import { EmptyState } from "@/components/ui/StatusMessage";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
@@ -95,9 +95,10 @@ export default function ProductCategoriesSection({ section }) {
                 to={`/products?section=${encodeURIComponent(current.id)}`}
                 className="group relative mb-8 block aspect-square w-full max-w-[22rem] cursor-pointer overflow-hidden rounded-full shadow-[0_20px_50px_rgba(24,16,96,0.16)]"
               >
-                {current.imageUrl ? (
-                  <SafeImage
+                {current.imageUrl || current.videoUrl ? (
+                  <SafeMedia
                     src={current.imageUrl}
+                    videoUrl={current.videoUrl || ""}
                     alt={currentName}
                     className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   />

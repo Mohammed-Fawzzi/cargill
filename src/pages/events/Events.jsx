@@ -116,7 +116,10 @@ export default function Events() {
 
   const eventCovers = events.map((item) => item.imageUrl).filter(Boolean);
   const heroImage = sectionQuery.data?.imageUrl || "";
-  const heroVideo = sectionQuery.data?.videoUrl || "";
+  const heroVideo =
+    sectionQuery.data?.videoUrl ||
+    events.find((item) => item.videoUrl)?.videoUrl ||
+    "";
   useEffect(() => {
     warnMissingMedia("homepage/events.imageUrl", heroImage);
   }, [heroImage]);

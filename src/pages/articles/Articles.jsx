@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
 import Loading from "@/components/loading/Loading";
-import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import PageHero from "@/components/ui/PageHero";
 import ArticleCard from "@/components/articles/ArticleCard";
 import DragRail from "@/components/ui/DragRail";
@@ -121,7 +121,9 @@ export default function Articles() {
             title={hero.title}
             description={hero.subtitle}
             imageUrl={latestArticle?.imageUrl || ""}
-            videoUrl={sectionQuery.data?.videoUrl || ""}
+            videoUrl={
+              sectionQuery.data?.videoUrl || latestArticle?.videoUrl || ""
+            }
             sideImages={articles
               .map((item) => item.imageUrl)
               .filter((src) => src && src !== latestArticle?.imageUrl)}
@@ -186,9 +188,10 @@ export default function Articles() {
                     >
                       <div className="grid min-h-[440px] grid-cols-1 lg:grid-cols-12">
                         <div className="curtain-frame relative min-h-[300px] overflow-hidden lg:col-span-7 lg:min-h-full">
-                          {featured.imageUrl ? (
-                            <SafeImage
+                          {featured.imageUrl || featured.videoUrl ? (
+                            <SafeMedia
                               src={featured.imageUrl}
+                              videoUrl={featured.videoUrl || ""}
                               alt={featuredTitle}
                               width={1400}
                               className="h-full w-full object-cover"
@@ -198,10 +201,11 @@ export default function Articles() {
                               {featuredTitle}
                             </div>
                           )}
-                          {featured.imageUrl ? (
+                          {featured.imageUrl || featured.videoUrl ? (
                             <div className="curtain-card__cover">
-                              <SafeImage
+                              <SafeMedia
                                 src={featured.imageUrl}
+                                videoUrl={featured.videoUrl || ""}
                                 alt=""
                                 width={1400}
                                 className="curtain-card__photo is-cover"
@@ -272,6 +276,7 @@ export default function Articles() {
                           <ArticleCard
                             to={`/articles/${item.id}`}
                             imageUrl={item.imageUrl}
+                            videoUrl={item.videoUrl || ""}
                             title={t(item.title, locale)}
                             body={t(item.excerpt, locale)}
                             meta={formatMillis(item.createdAt, locale)}

@@ -7,6 +7,7 @@ import { UI } from "@/data/uiCopy";
 export default function EventCard({
   to,
   imageUrl,
+  videoUrl = "",
   title,
   body,
   date,
@@ -20,6 +21,7 @@ export default function EventCard({
     <ContentCard
       to={to}
       imageUrl={imageUrl}
+      videoUrl={videoUrl}
       title={title}
       body={body}
       category={isEnded ? t(UI.ended, locale) : t(UI.upcoming, locale)}

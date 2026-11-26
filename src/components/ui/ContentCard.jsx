@@ -1,12 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import { easeOut } from "@/lib/motion";
 
 export default function ContentCard({
   to,
   imageUrl,
+  videoUrl = "",
   title,
   body,
   category,
@@ -20,6 +21,7 @@ export default function ContentCard({
   const contain = imageFit === "contain";
   const number = `${String(index + 1).padStart(2, "0")}.`;
   const mediaH = horizontal ? "14rem" : "12.5rem";
+  const hasMedia = Boolean(imageUrl || videoUrl);
 
   return (
     <article className="h-full">
@@ -42,9 +44,10 @@ export default function ContentCard({
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.55, ease: easeOut }}
         >
-          {imageUrl ? (
-            <SafeImage
+          {hasMedia ? (
+            <SafeMedia
               src={imageUrl}
+              videoUrl={videoUrl}
               alt={title || ""}
               className={`h-full w-full ${
                 contain ? "object-contain p-4" : "object-cover"

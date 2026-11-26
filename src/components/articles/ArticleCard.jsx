@@ -7,6 +7,7 @@ import { UI } from "@/data/uiCopy";
 export default function ArticleCard({
   to,
   imageUrl,
+  videoUrl = "",
   title,
   body,
   meta,
@@ -20,6 +21,7 @@ export default function ArticleCard({
     <CurtainCard
       to={to}
       imageUrl={imageUrl}
+      videoUrl={videoUrl}
       imageAlt={title}
       label={label}
       title={title}

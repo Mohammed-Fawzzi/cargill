@@ -17,6 +17,7 @@ import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 const SPROUT = [0.22, 1, 0.36, 1];
 const INTRO_EASE = [0.76, 0, 0.24, 1];
+const IMAGE_HOLD_MS = 5200;
 
 function HeadlineReveal({ text, reducedMotion, active }) {
   const lines = useMemo(() => {
@@ -90,6 +91,8 @@ export default function HeroSection({ section, entranceReady = true }) {
     want: false,
     visible: false,
     failed: false,
+    finished: false,
+    index: 0,
     src: "",
     raw: "",
   });
@@ -99,15 +102,49 @@ export default function HeroSection({ section, entranceReady = true }) {
     () => slides.map((item) => item?.imageUrl).filter(Boolean),
     [slides],
   );
-  const poster = useMemo(
-    () => images[0] || section?.data?.imageUrl || "",
-    [images, section?.data?.imageUrl],
+  const videoItems = useMemo(() => {
+    const fromSlides = slides
+      .map((item, index) => {
+        const videoUrl =
+          typeof item?.videoUrl === "string" ? item.videoUrl.trim() : "";
+        if (!videoUrl) return null;
+        const imageUrl =
+          typeof item?.imageUrl === "string" ? item.imageUrl.trim() : "";
+        return { videoUrl, imageUrl, index };
+      })
+      .filter(Boolean);
+    if (fromSlides.length) return fromSlides;
+    const fromSection =
+      typeof section?.data?.videoUrl === "string"
+        ? section.data.videoUrl.trim()
+        : "";
+    if (fromSection) {
+      return [
+        {
+          videoUrl: fromSection,
+          imageUrl: section?.data?.imageUrl || "",
+          index: -1,
+        },
+      ];
+    }
+    if (HERO_VIDEO_URL) {
+      return [{ videoUrl: HERO_VIDEO_URL, imageUrl: "", index: -1 }];
+    }
+    return [];
+  }, [slides, section?.data?.videoUrl, section?.data?.imageUrl]);
+  const videoUrls = useMemo(
+    () => videoItems.map((item) => item.videoUrl),
+    [videoItems],
   );
-  const rawVideo = useMemo(() => {
-    const fromSlides = slides.map((item) => item?.videoUrl).find(Boolean) || "";
-    const fromSection = section?.data?.videoUrl || "";
-    return fromSlides || fromSection || HERO_VIDEO_URL || "";
-  }, [slides, section?.data?.videoUrl]);
+  const poster = useMemo(() => {
+    const current = videoItems[media.index || 0];
+    return (
+      current?.imageUrl ||
+      images[0] ||
+      section?.data?.imageUrl ||
+      ""
+    );
+  }, [videoItems, media.index, images, section?.data?.imageUrl]);
   const headlineSlide = slides.find((item) => t(item?.title, locale)) || slides[0];
   const title = t(headlineSlide?.title, locale);
   const body = t(headlineSlide?.body, locale);
@@ -130,7 +167,7 @@ export default function HeroSection({ section, entranceReady = true }) {
     }
     const timer = window.setInterval(() => {
       setSlide((current) => (current + 1) % images.length);
-    }, 5200);
+    }, IMAGE_HOLD_MS);
     return () => window.clearInterval(timer);
   }, [images.length, reducedMotion, entered, wantVideo]);
 
@@ -146,7 +183,7 @@ export default function HeroSection({ section, entranceReady = true }) {
     return () => window.clearTimeout(timer);
   }, [reducedMotion, entered]);
 
-  if (!title && !body && !images.length && !rawVideo) return null;
+  if (!title && !body && !images.length && !videoUrls.length) return null;
 
   const delay = reducedMotion || !entered ? 0 : 0.12;
   const showMotion = entered && !reducedMotion;
@@ -204,7 +241,7 @@ export default function HeroSection({ section, entranceReady = true }) {
             </AnimatePresence>
           )}
           <HeroMedia
-            videoUrl={rawVideo}
+            videoUrls={videoUrls}
             posterUrl={poster}
             ready={entered}
             slot="home"

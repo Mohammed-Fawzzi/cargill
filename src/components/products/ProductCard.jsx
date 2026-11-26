@@ -8,6 +8,7 @@ import { UI } from "@/data/uiCopy";
 export default function ProductCard({
   to,
   imageUrl,
+  videoUrl = "",
   title,
   subcategory,
   category,
@@ -22,6 +23,7 @@ export default function ProductCard({
     <CurtainCard
       to={to}
       imageUrl={imageUrl}
+      videoUrl={videoUrl}
       imageAlt={title}
       label={label}
       title={title}

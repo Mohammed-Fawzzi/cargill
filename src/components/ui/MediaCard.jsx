@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { useLocale } from "@/context/LocaleContext";
@@ -8,6 +8,7 @@ import { useLocale } from "@/context/LocaleContext";
 export default function MediaCard({
   to,
   imageUrl,
+  videoUrl = "",
   title,
   body,
   meta,
@@ -17,6 +18,7 @@ export default function MediaCard({
   const { locale } = useLocale();
   const number = `${String(index + 1).padStart(2, "0")}.`;
   const mediaH = "11.5rem";
+  const hasMedia = Boolean(imageUrl || videoUrl);
 
   return (
     <article className="h-full">
@@ -29,9 +31,10 @@ export default function MediaCard({
           className="ix-card__media bg-surface-muted"
           style={{ height: mediaH }}
         >
-          {imageUrl ? (
-            <SafeImage
+          {hasMedia ? (
+            <SafeMedia
               src={imageUrl}
+              videoUrl={videoUrl}
               alt={title}
               className="h-full w-full object-cover"
             />

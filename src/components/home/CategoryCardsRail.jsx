@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import SectionIntro from "@/components/ui/SectionIntro";
 import { useLocale } from "@/context/LocaleContext";
 import { getCategories, getProducts } from "@/services/cms/products";
@@ -41,11 +41,14 @@ export default function CategoryCardsRail() {
     const products = productsQuery.data || [];
     return list.map((category) => {
       const cover = products.find(
-        (product) => product.sectionId === category.id && product.imageUrl,
+        (product) =>
+          product.sectionId === category.id &&
+          (product.imageUrl || product.videoUrl),
       );
       return {
         ...category,
         imageUrl: category.imageUrl || cover?.imageUrl || "",
+        videoUrl: category.videoUrl || cover?.videoUrl || "",
       };
     });
   }, [categoriesQuery.data, productsQuery.data]);
@@ -92,9 +95,10 @@ export default function CategoryCardsRail() {
                   className="group relative flex h-96 flex-col justify-between overflow-hidden rounded-2xl border border-white/8 bg-[#110E33] p-6 transition-colors duration-300 hover:border-brand-lime/50"
                 >
                   <div className="absolute inset-0 z-0">
-                    {category.imageUrl ? (
-                      <SafeImage
+                    {category.imageUrl || category.videoUrl ? (
+                      <SafeMedia
                         src={category.imageUrl}
+                        videoUrl={category.videoUrl || ""}
                         alt={name}
                         width={640}
                         className="h-full w-full object-cover opacity-35 transition-transform duration-500 group-hover:scale-[1.04]"

@@ -312,6 +312,7 @@ export default function ArticleDetails() {
                         <ArticleCard
                           to={`/articles/${item.id}`}
                           imageUrl={item.imageUrl}
+                          videoUrl={item.videoUrl || ""}
                           title={t(item.title, locale)}
                           body={t(item.excerpt, locale)}
                           meta={formatMillis(item.createdAt, locale)}

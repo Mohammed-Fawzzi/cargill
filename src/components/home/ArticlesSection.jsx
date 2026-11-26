@@ -1,7 +1,7 @@
 import React, { useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import ParallaxImage from "@/components/ui/ParallaxImage";
 import SectionIntro from "@/components/ui/SectionIntro";
 import { SplitBtnLabel } from "@/components/ui/SplitArrowButton";
@@ -82,9 +82,10 @@ function FieldCard({ item, locale, large, index, reducedMotion }) {
         }}
       >
         <div className={frameClass}>
-          {item.imageUrl ? (
-            <SafeImage
+          {item.imageUrl || item.videoUrl ? (
+            <SafeMedia
               src={item.imageUrl}
+              videoUrl={item.videoUrl || ""}
               alt={title}
               width={large ? 1200 : 640}
               className="absolute inset-0 h-full w-full object-cover"
@@ -92,14 +93,24 @@ function FieldCard({ item, locale, large, index, reducedMotion }) {
           ) : (
             <div className="absolute inset-0 bg-[#0A0820]" />
           )}
-          {item.imageUrl ? (
+          {item.imageUrl || item.videoUrl ? (
             <div className="curtain-card__cover">
-              <ParallaxImage
-                src={item.imageUrl}
-                alt=""
-                width={large ? 1200 : 640}
-                className="curtain-card__photo"
-              />
+              {item.videoUrl ? (
+                <SafeMedia
+                  src={item.imageUrl}
+                  videoUrl={item.videoUrl || ""}
+                  alt=""
+                  width={large ? 1200 : 640}
+                  className="curtain-card__photo"
+                />
+              ) : (
+                <ParallaxImage
+                  src={item.imageUrl}
+                  alt=""
+                  width={large ? 1200 : 640}
+                  className="curtain-card__photo"
+                />
+              )}
               <div className="curtain-card__shade" />
             </div>
           ) : null}

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import { useLocale } from "@/context/LocaleContext";
 import { eventDayKey } from "@/lib/time";
 import { t } from "@/lib/i18n";
@@ -61,9 +61,10 @@ function EventRow({ item, locale, single }) {
     >
       <div className="grid grid-cols-1 gap-5 md:hidden">
         <div className="curtain-frame overflow-hidden rounded-md bg-surface-muted">
-          {item.imageUrl ? (
-            <SafeImage
+          {item.imageUrl || item.videoUrl ? (
+            <SafeMedia
               src={item.imageUrl}
+              videoUrl={item.videoUrl || ""}
               alt={title}
               width={900}
               loading="lazy"
@@ -74,10 +75,11 @@ function EventRow({ item, locale, single }) {
               {title}
             </div>
           )}
-          {item.imageUrl ? (
+          {item.imageUrl || item.videoUrl ? (
             <div className="curtain-card__cover">
-              <SafeImage
+              <SafeMedia
                 src={item.imageUrl}
+                videoUrl={item.videoUrl || ""}
                 alt=""
                 width={900}
                 className="curtain-card__photo is-cover"
@@ -142,9 +144,10 @@ function EventRow({ item, locale, single }) {
 
         <div className={single ? "md:col-span-6" : "md:col-span-4"}>
           <div className="curtain-frame overflow-hidden rounded-md bg-page">
-            {item.imageUrl ? (
-              <SafeImage
+            {item.imageUrl || item.videoUrl ? (
+              <SafeMedia
                 src={item.imageUrl}
+                videoUrl={item.videoUrl || ""}
                 alt={title}
                 width={single ? 1100 : 720}
                 loading="lazy"
@@ -155,10 +158,11 @@ function EventRow({ item, locale, single }) {
                 {title}
               </div>
             )}
-            {item.imageUrl ? (
+            {item.imageUrl || item.videoUrl ? (
               <div className="curtain-card__cover">
-                <SafeImage
+                <SafeMedia
                   src={item.imageUrl}
+                  videoUrl={item.videoUrl || ""}
                   alt=""
                   width={single ? 1100 : 720}
                   className="curtain-card__photo is-cover"

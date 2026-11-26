@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import { useLocale } from "@/context/LocaleContext";
 import { getCategories, getProducts } from "@/services/cms/products";
 import { t } from "@/lib/i18n";
@@ -37,12 +37,15 @@ export default function CategoryStrip({ ready = true }) {
       .slice(0, 3)
       .map((category) => {
         const cover = products.find(
-          (product) => product.sectionId === category.id && product.imageUrl,
+          (product) =>
+            product.sectionId === category.id &&
+            (product.imageUrl || product.videoUrl),
         );
         return {
           id: category.id,
           name: t(category.name, locale),
           imageUrl: category.imageUrl || cover?.imageUrl || "",
+          videoUrl: category.videoUrl || cover?.videoUrl || "",
         };
       });
   }, [categoriesQuery.data, productsQuery.data, locale]);
@@ -75,9 +78,10 @@ export default function CategoryStrip({ ready = true }) {
                 transitionDuration: reducedMotion ? "0ms" : "500ms",
               }}
             >
-              {tile.imageUrl ? (
-                <SafeImage
+              {tile.imageUrl || tile.videoUrl ? (
+                <SafeMedia
                   src={tile.imageUrl}
+                  videoUrl={tile.videoUrl || ""}
                   alt=""
                   width={isActive ? 900 : 480}
                   className="absolute inset-0 h-full w-full object-cover"

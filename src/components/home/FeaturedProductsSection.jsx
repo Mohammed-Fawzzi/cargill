@@ -66,6 +66,7 @@ function ProductStageCard({
       <CurtainCard
         titleTo={`/products/${item.id}`}
         imageUrl={item.imageUrl}
+        videoUrl={item.videoUrl || ""}
         imageAlt={name}
         label={categoryName}
         title={name}

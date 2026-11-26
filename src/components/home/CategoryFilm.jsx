@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import SplitArrowButton from "@/components/ui/SplitArrowButton";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
@@ -45,11 +45,12 @@ function buildSlides(categories, products) {
       const rows = (products || []).filter(
         (product) => product.sectionId === category.id,
       );
-      const image =
-        category.imageUrl ||
-        rows.find((product) => product.imageUrl)?.imageUrl ||
-        "";
-      if (!image) return null;
+      const cover = rows.find(
+        (product) => product.imageUrl || product.videoUrl,
+      );
+      const image = category.imageUrl || cover?.imageUrl || "";
+      const video = category.videoUrl || cover?.videoUrl || "";
+      if (!image && !video) return null;
       const overview =
         rows.find((product) => plainText(product.overview?.ar || product.overview?.en))
           ?.overview || null;
@@ -58,6 +59,7 @@ function buildSlides(categories, products) {
         name: category.name,
         overview,
         image,
+        video,
       };
     })
     .filter(Boolean);
@@ -132,8 +134,9 @@ function FilmStage({ slides, locale, phone, live = false }) {
           className="absolute inset-0"
           style={{ opacity: !live || index === 0 ? 1 : 0 }}
         >
-          <SafeImage
+          <SafeMedia
             src={slide.image}
+            videoUrl={slide.video || ""}
             alt={t(slide.name, locale)}
             width={1600}
             loading={index === 0 ? "eager" : "lazy"}

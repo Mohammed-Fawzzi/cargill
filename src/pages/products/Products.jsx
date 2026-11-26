@@ -397,6 +397,7 @@ export default function Products() {
                     <ProductCard
                       to={`/products/${item.id}`}
                       imageUrl={item.imageUrl}
+                      videoUrl={item.videoUrl || ""}
                       title={t(item.name, locale)}
                       subcategory={t(item._subName, locale)}
                       category={t(item._categoryName, locale)}

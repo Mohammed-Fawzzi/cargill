@@ -10,6 +10,7 @@ const VIDEO_FAIL_MS = 12000;
 
 export default function HeroMedia({
   videoUrl = "",
+  videoUrls,
   posterUrl = "",
   ready = true,
   slot = "hero",
@@ -21,14 +22,27 @@ export default function HeroMedia({
   const failTimerRef = useRef(0);
   const stallTimerRef = useRef(0);
   const settledRef = useRef(false);
+  const fadeOutTimerRef = useRef(0);
+  const indexRef = useRef(0);
+  const [index, setIndex] = useState(0);
   const [allowed, setAllowed] = useState(false);
   const [failed, setFailed] = useState(false);
   const [finished, setFinished] = useState(false);
   const [visible, setVisible] = useState(false);
   const [inView, setInView] = useState(true);
-  const fadeOutTimerRef = useRef(0);
 
-  const rawVideo = typeof videoUrl === "string" ? videoUrl.trim() : "";
+  const list = useMemo(() => {
+    if (Array.isArray(videoUrls) && videoUrls.length) {
+      return videoUrls
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter(Boolean);
+    }
+    const one = typeof videoUrl === "string" ? videoUrl.trim() : "";
+    return one ? [one] : [];
+  }, [videoUrl, videoUrls]);
+
+  const listKey = list.join("\n");
+  const rawVideo = list[index] || "";
   const videoSrc = useMemo(() => resolvePlayableVideoUrl(rawVideo), [rawVideo]);
   const posterSrc = useMemo(
     () =>
@@ -42,13 +56,28 @@ export default function HeroMedia({
   );
 
   useEffect(() => {
+    indexRef.current = index;
+  }, [index]);
+
+  useEffect(() => {
+    setIndex(0);
+    indexRef.current = 0;
+    settledRef.current = false;
+    setFailed(false);
+    setFinished(false);
+    setVisible(false);
+    setAllowed(false);
+  }, [listKey]);
+
+  useEffect(() => {
     if (!import.meta.env.DEV) return;
     const masked = videoSrc
       ? videoSrc.replace(/key=[^&]+/i, "key=***")
       : "(empty)";
     console.log(`[hero-video] ${slot} raw:`, rawVideo || "(empty)");
     console.log(`[hero-video] ${slot} src:`, masked);
-  }, [slot, rawVideo, videoSrc]);
+    console.log(`[hero-video] ${slot} playlist:`, list.length, "index:", index);
+  }, [slot, rawVideo, videoSrc, list.length, index]);
 
   useEffect(() => {
     onStateChange?.({
@@ -58,8 +87,20 @@ export default function HeroMedia({
       finished,
       src: videoSrc,
       raw: rawVideo,
+      index,
+      total: list.length,
     });
-  }, [wantVideo, visible, failed, finished, videoSrc, rawVideo, onStateChange]);
+  }, [
+    wantVideo,
+    visible,
+    failed,
+    finished,
+    videoSrc,
+    rawVideo,
+    index,
+    list.length,
+    onStateChange,
+  ]);
 
   useEffect(() => {
     settledRef.current = false;
@@ -88,7 +129,7 @@ export default function HeroMedia({
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [wantVideo]);
+  }, [wantVideo, videoSrc]);
 
   useEffect(() => {
     const node = videoRef.current;
@@ -99,15 +140,33 @@ export default function HeroMedia({
       window.clearTimeout(stallTimerRef.current);
     };
 
+    const advanceOrFinish = () => {
+      const current = indexRef.current;
+      if (current < list.length - 1) {
+        settledRef.current = false;
+        setIndex(current + 1);
+        return;
+      }
+      setFinished(true);
+    };
+
     const fail = () => {
       if (settledRef.current) return;
       settledRef.current = true;
       clearTimers();
       setVisible(false);
-      setFailed(true);
       try {
         node.pause();
       } catch {}
+      window.clearTimeout(fadeOutTimerRef.current);
+      fadeOutTimerRef.current = window.setTimeout(() => {
+        if (indexRef.current < list.length - 1) {
+          settledRef.current = false;
+          setIndex(indexRef.current + 1);
+        } else {
+          setFailed(true);
+        }
+      }, VIDEO_FADE_MS);
     };
 
     const succeed = () => {
@@ -141,7 +200,7 @@ export default function HeroMedia({
       } catch {}
       window.clearTimeout(fadeOutTimerRef.current);
       fadeOutTimerRef.current = window.setTimeout(() => {
-        setFinished(true);
+        advanceOrFinish();
       }, VIDEO_FADE_MS);
     };
     const onStalled = () => {
@@ -164,6 +223,7 @@ export default function HeroMedia({
     }, VIDEO_FAIL_MS);
 
     try {
+      node.load();
       if (node.readyState >= 2) {
         succeed();
       } else {
@@ -188,7 +248,7 @@ export default function HeroMedia({
         node.pause();
       } catch {}
     };
-  }, [wantVideo, videoSrc]);
+  }, [wantVideo, videoSrc, list.length]);
 
   useEffect(() => {
     const node = videoRef.current;
@@ -209,6 +269,7 @@ export default function HeroMedia({
     <div className={className || "absolute inset-0 overflow-hidden"}>
       {wantVideo ? (
         <video
+          key={videoSrc}
           ref={videoRef}
           className={
             videoClassName ||

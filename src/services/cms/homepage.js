@@ -87,11 +87,13 @@ export async function loadHomePage() {
         (category) => {
           const cover = products.find(
             (product) =>
-              product.sectionId === category.id && product.imageUrl,
+              product.sectionId === category.id &&
+              (product.imageUrl || product.videoUrl),
           );
           return {
             ...category,
             imageUrl: category.imageUrl || cover?.imageUrl || "",
+            videoUrl: category.videoUrl || cover?.videoUrl || "",
           };
         },
       );

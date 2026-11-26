@@ -146,7 +146,7 @@ export default function Contact() {
             title={heading}
             description={hoursLine || description}
             imageUrl={contactImage}
-            videoUrl={section?.videoUrl || ""}
+            videoUrl={section?.videoUrl || contact?.videoUrl || ""}
             sideImages={contactSides}
             size="mid"
             crumbs={[

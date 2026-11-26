@@ -161,6 +161,7 @@ export function mapProduct(id, data = {}) {
     sectionId: asString(data.sectionId),
     subcategoryId: asString(data.subcategoryId),
     imageUrl: asString(data.imageUrl),
+    videoUrl: asString(data.videoUrl || data.heroVideoUrl),
     images: gallery,
     registrationNumber:
       asString(data.registrationNumber) ||

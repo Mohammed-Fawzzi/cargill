@@ -116,6 +116,7 @@ export default function EventAgendaRow({
       <CurtainCard
         titleTo={showImage ? `/events/${item.id}` : ""}
         imageUrl={showImage ? item.imageUrl : ""}
+        videoUrl={showImage ? item.videoUrl || "" : ""}
         imageAlt={title}
         label={label}
         title={title}
