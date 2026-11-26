@@ -1,7 +1,11 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigationType } from "react-router-dom";
 import { animate, motion } from "framer-motion";
-import { buildImageSrcSet, normalizeImageUrl, warnMissingMedia } from "@/lib/image";
+import {
+  buildImageSrcSet,
+  normalizeImageUrl,
+  warnMissingMedia,
+} from "@/lib/image";
 import { easeOut } from "@/lib/motion";
 import { notePageSession, shouldPlayPageIntro } from "@/lib/pageIntro";
 import { useLenis } from "@/components/layout/LenisProvider";
@@ -30,7 +34,7 @@ function HeroTitle({ text, play }) {
         if (/^\s+$/.test(part)) {
           return <span key={`s-${index}`}>{part}</span>;
         }
-        const delay = word * 0.06;
+        const delay = word * 0.05;
         word += 1;
         if (!play) {
           return (
@@ -45,7 +49,7 @@ function HeroTitle({ text, play }) {
               className="page-hero__word-inner"
               initial={{ y: "110%" }}
               animate={{ y: "0%" }}
-              transition={{ duration: 0.45, delay, ease: easeOut }}
+              transition={{ duration: 0.4, delay, ease: easeOut }}
             >
               {part}
             </motion.span>
@@ -81,6 +85,7 @@ export default function PageHero({
   description = "",
   imageUrl = "",
   videoUrl = "",
+  videoUrls,
   sideImages = [],
   crumbs = [],
   kicker = "",
@@ -96,38 +101,53 @@ export default function PageHero({
   const mediaRef = useRef(null);
   const baseScale = useRef(1);
   const reduced = useMemo(() => reducedNow(), []);
-  const [showIntro, setShowIntro] = useState(() =>
-    shouldPlayPageIntro(navType, reduced),
+  const hasImage = Boolean(typeof imageUrl === "string" && imageUrl.trim());
+  const hasVideo = Boolean(
+    (typeof videoUrl === "string" && videoUrl.trim()) ||
+      (Array.isArray(videoUrls) && videoUrls.some(Boolean)),
   );
-  const [revealed, setRevealed] = useState(() => !shouldPlayPageIntro(navType, reduced) && !reduced);
-  const [copyOn, setCopyOn] = useState(() => !shouldPlayPageIntro(navType, reduced) && !reduced);
+  const [showIntro, setShowIntro] = useState(
+    () => hasImage && shouldPlayPageIntro(navType, reduced),
+  );
+  const [revealed, setRevealed] = useState(
+    () => !(hasImage && shouldPlayPageIntro(navType, reduced)) && !reduced,
+  );
+  const [instant, setInstant] = useState(
+    () => !(hasImage && shouldPlayPageIntro(navType, reduced)) && !reduced,
+  );
   const [loaded, setLoaded] = useState(false);
-  const [instant, setInstant] = useState(() => !shouldPlayPageIntro(navType, reduced) && !reduced);
+  const [copyOn, setCopyOn] = useState(
+    () => !(hasImage && shouldPlayPageIntro(navType, reduced)) && !reduced,
+  );
   const [activeAnchor, setActiveAnchor] = useState(anchors[0]?.id || "");
   const [media, setMedia] = useState({
     want: false,
     visible: false,
     failed: false,
+    finished: false,
   });
-  const videoReady = revealed && !showIntro;
   const videoActive = Boolean(media.want || media.visible);
+  const showCopy = revealed && !showIntro && copyOn;
+  const mediaReady = Boolean(
+    (hasImage && loaded) ||
+      (hasVideo && (media.visible || media.want)) ||
+      (!hasImage && !hasVideo),
+  );
 
-  const src = imageUrl
+  const src = hasImage
     ? normalizeImageUrl(imageUrl, { width: 1600, quality: 78 })
     : "";
-  const srcSet = imageUrl
-    ? buildImageSrcSet(imageUrl, { quality: 78 })
-    : "";
+  const srcSet = hasImage ? buildImageSrcSet(imageUrl, { quality: 78 }) : "";
   const wordCount = String(title || "")
     .trim()
     .split(/\s+/)
     .filter(Boolean).length;
-  const descDelay = wordCount * 0.06 + 0.12;
-  const actionDelay = descDelay + (description ? 0.28 : 0.08);
+  const descDelay = wordCount * 0.05 + 0.08;
+  const actionDelay = descDelay + (description ? 0.16 : 0.06);
 
   useEffect(() => {
-    warnMissingMedia("page-hero", imageUrl);
-  }, [imageUrl]);
+    warnMissingMedia("page-hero", imageUrl || videoUrl);
+  }, [imageUrl, videoUrl]);
 
   const applyMedia = () => {
     const hero = rootRef.current;
@@ -153,7 +173,7 @@ export default function PageHero({
 
   useEffect(() => {
     if (!src) {
-      setLoaded(false);
+      setLoaded(!hasImage);
       return undefined;
     }
     let alive = true;
@@ -168,12 +188,12 @@ export default function PageHero({
     return () => {
       alive = false;
     };
-  }, [src]);
+  }, [src, hasImage]);
 
   useEffect(() => {
     if (!reduced || showIntro) return undefined;
     const frame = requestAnimationFrame(() => setRevealed(true));
-    const copy = window.setTimeout(() => setCopyOn(true), 300);
+    const copy = window.setTimeout(() => setCopyOn(true), 200);
     return () => {
       cancelAnimationFrame(frame);
       window.clearTimeout(copy);
@@ -181,14 +201,14 @@ export default function PageHero({
   }, [reduced, showIntro]);
 
   useEffect(() => {
-    if (!loaded) return undefined;
+    if (!hasImage || !loaded) return undefined;
     const onScroll = () => applyMedia();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [loaded]);
+  }, [loaded, hasImage]);
 
   useLayoutEffect(() => {
-    if (!revealed || !loaded) return undefined;
+    if (!revealed || !hasImage || !loaded) return undefined;
     const img = mediaRef.current;
     if (!img) return undefined;
     if (instant || reduced) {
@@ -207,7 +227,7 @@ export default function PageHero({
       },
     });
     return () => run.stop();
-  }, [revealed, loaded, instant, reduced]);
+  }, [revealed, loaded, instant, reduced, hasImage]);
 
   useEffect(() => {
     if (!anchors.length) return undefined;
@@ -242,7 +262,7 @@ export default function PageHero({
       return;
     }
     setRevealed(true);
-    window.setTimeout(() => setCopyOn(true), 400);
+    window.setTimeout(() => setCopyOn(true), 180);
   };
 
   const scrollNext = () => {
@@ -256,6 +276,7 @@ export default function PageHero({
   };
 
   const shadeClass = `page-hero__shade${revealed ? " is-on" : ""}${instant ? " is-instant" : ""}${reduced && !instant ? " is-fade" : ""}`;
+  const photoVisible = hasImage && revealed && loaded && !media.visible;
 
   return (
     <>
@@ -276,14 +297,15 @@ export default function PageHero({
                 loading="eager"
                 fetchPriority="high"
                 className={`page-hero__photo${(reduced && !instant) || (revealed && !loaded) ? " is-fade" : ""}`}
-                style={{ opacity: revealed && loaded ? 1 : 0 }}
+                style={{ opacity: photoVisible ? 1 : 0 }}
                 draggable={false}
               />
             ) : null}
             <HeroMedia
               videoUrl={videoUrl}
+              videoUrls={videoUrls}
               posterUrl={imageUrl}
-              ready={videoReady}
+              ready={hasVideo}
               slot="page-hero"
               videoClassName="page-hero__photo absolute inset-0 h-full w-full object-cover object-center transition-opacity ease-out"
               onStateChange={setMedia}
@@ -291,20 +313,19 @@ export default function PageHero({
             <div
               className="page-hero__panel"
               style={{
-                opacity:
-                  (src && revealed && loaded) || videoActive ? 0 : 1,
+                opacity: mediaReady || videoActive ? 0 : 1,
               }}
             />
             <div className={shadeClass} />
           </div>
 
-          <div className={`page-hero__copy${copyOn ? " is-on" : ""}`}>
-            {copyOn ? (
+          <div className={`page-hero__copy${showCopy ? " is-on" : ""}`}>
+            {showCopy ? (
               <>
                 <motion.div
                   initial={instant || reduced ? false : { opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, ease: easeOut }}
+                  transition={{ duration: 0.3, ease: easeOut }}
                 >
                   {kicker ? <p className="page-hero__kicker">{kicker}</p> : <Crumbs items={crumbs} />}
                 </motion.div>
@@ -317,7 +338,11 @@ export default function PageHero({
                       className="page-hero__desc"
                       initial={instant || reduced ? false : { y: "110%", opacity: 0 }}
                       animate={{ y: "0%", opacity: 1 }}
-                      transition={{ duration: 0.45, delay: instant ? 0 : descDelay, ease: easeOut }}
+                      transition={{
+                        duration: 0.4,
+                        delay: instant ? 0 : descDelay,
+                        ease: easeOut,
+                      }}
                     >
                       {description}
                     </motion.p>
@@ -325,19 +350,23 @@ export default function PageHero({
                 ) : null}
               </>
             ) : (
-              <>
+              <div className="invisible" aria-hidden="true">
                 {kicker ? <p className="page-hero__kicker">{kicker}</p> : <Crumbs items={crumbs} />}
                 {title ? <h1 className="page-hero__title">{title}</h1> : null}
                 {description ? <p className="page-hero__desc">{description}</p> : null}
-              </>
+              </div>
             )}
             {actions ? (
               <div ref={actionsRef} className="page-hero__actions">
-                {copyOn ? (
+                {showCopy ? (
                   <motion.div
                     initial={instant || reduced ? false : { y: 18, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.45, delay: instant ? 0 : actionDelay, ease: easeOut }}
+                    transition={{
+                      duration: 0.4,
+                      delay: instant ? 0 : actionDelay,
+                      ease: easeOut,
+                    }}
                   >
                     {actions}
                   </motion.div>
@@ -350,7 +379,7 @@ export default function PageHero({
 
           <button
             type="button"
-            className={`page-hero__chevron${copyOn ? " is-on" : ""}`}
+            className={`page-hero__chevron${showCopy ? " is-on" : ""}`}
             onClick={scrollNext}
             aria-label={title || ""}
           >

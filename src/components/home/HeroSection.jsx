@@ -12,13 +12,12 @@ import { toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
-import { shouldPlayHeroVideo, warnMissingMedia } from "@/lib/image";
+import { warnMissingMedia } from "@/lib/image";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 const SPROUT = [0.22, 1, 0.36, 1];
 const INTRO_EASE = [0.76, 0, 0.24, 1];
 const IMAGE_HOLD_MS = 5200;
-const VIDEO_COPY_WAIT_MS = 5000;
 
 function HeadlineReveal({ text, reducedMotion, active }) {
   const lines = useMemo(() => {
@@ -88,7 +87,6 @@ export default function HeroSection({ section, entranceReady = true }) {
   const [slide, setSlide] = useState(0);
   const [ready, setReady] = useState(false);
   const [entered, setEntered] = useState(Boolean(entranceReady));
-  const [copyReady, setCopyReady] = useState(false);
   const [media, setMedia] = useState({
     want: false,
     visible: false,
@@ -154,7 +152,6 @@ export default function HeroSection({ section, entranceReady = true }) {
   const waHref = toWhatsAppHref(phone, t(UI.askAgronomistMessage, locale));
   const wantVideo = Boolean(media.want || media.visible);
   const useSlideshow = !wantVideo && images.length > 0;
-  const showCopy = entered && copyReady;
 
   useEffect(() => {
     if (entranceReady) setEntered(true);
@@ -163,26 +160,6 @@ export default function HeroSection({ section, entranceReady = true }) {
   useEffect(() => {
     warnMissingMedia("homepage/hero.images", images[0] || section?.data?.imageUrl);
   }, [images, section?.data?.imageUrl]);
-
-  useEffect(() => {
-    if (!videoUrls.length || reducedMotion || !shouldPlayHeroVideo()) {
-      setCopyReady(true);
-      return undefined;
-    }
-    if (media.visible || media.failed || media.finished) {
-      setCopyReady(true);
-      return undefined;
-    }
-    setCopyReady(false);
-    const timer = window.setTimeout(() => setCopyReady(true), VIDEO_COPY_WAIT_MS);
-    return () => window.clearTimeout(timer);
-  }, [
-    videoUrls.length,
-    reducedMotion,
-    media.visible,
-    media.failed,
-    media.finished,
-  ]);
 
   useEffect(() => {
     if (!entered || reducedMotion || wantVideo || images.length < 2) {
@@ -195,7 +172,7 @@ export default function HeroSection({ section, entranceReady = true }) {
   }, [images.length, reducedMotion, entered, wantVideo]);
 
   useEffect(() => {
-    if (!showCopy) {
+    if (!entered) {
       setReady(false);
       return undefined;
     }
@@ -204,12 +181,12 @@ export default function HeroSection({ section, entranceReady = true }) {
       reducedMotion ? 0 : 900,
     );
     return () => window.clearTimeout(timer);
-  }, [reducedMotion, showCopy]);
+  }, [reducedMotion, entered]);
 
   if (!title && !body && !images.length && !videoUrls.length) return null;
 
-  const delay = reducedMotion || !showCopy ? 0 : 0.05;
-  const showMotion = showCopy && !reducedMotion;
+  const delay = reducedMotion || !entered ? 0 : 0.05;
+  const showMotion = entered && !reducedMotion;
   const slideSrc = images[slide] || poster;
 
   return (
@@ -274,14 +251,14 @@ export default function HeroSection({ section, entranceReady = true }) {
             className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,8,32,0.92)_0%,rgba(10,8,32,0.4)_55%,rgba(10,8,32,0.15)_100%)]"
             aria-hidden="true"
             initial={false}
-            animate={{ opacity: showCopy ? 1 : 0 }}
+            animate={{ opacity: entered ? 1 : 0 }}
             transition={{ duration: 0.35, ease: INTRO_EASE }}
           />
           <motion.div
             className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,8,32,0.25)_0%,transparent_28%,transparent_50%,#0A0820_100%)]"
             aria-hidden="true"
             initial={false}
-            animate={{ opacity: showCopy ? 1 : 0 }}
+            animate={{ opacity: entered ? 1 : 0 }}
             transition={{ duration: 0.35, ease: INTRO_EASE }}
           />
         </div>
@@ -292,7 +269,7 @@ export default function HeroSection({ section, entranceReady = true }) {
             dir="ltr"
             initial={false}
             animate={
-              showCopy
+              entered
                 ? { opacity: 1, y: 0 }
                 : { opacity: 0, y: 12 }
             }
@@ -305,7 +282,7 @@ export default function HeroSection({ section, entranceReady = true }) {
             <HeadlineReveal
               text={title}
               reducedMotion={reducedMotion}
-              active={showCopy}
+              active={entered}
             />
           ) : null}
 
@@ -314,7 +291,7 @@ export default function HeroSection({ section, entranceReady = true }) {
               className="mt-5 max-w-[34rem] text-[16px] leading-[1.7] text-white/78 sm:mt-6 sm:text-[19px] md:text-[21px]"
               initial={false}
               animate={
-                showCopy
+                entered
                   ? { opacity: 1, y: 0 }
                   : { opacity: 0, y: 14 }
               }
@@ -332,7 +309,7 @@ export default function HeroSection({ section, entranceReady = true }) {
             className="mt-7 flex flex-wrap gap-3.5 sm:mt-8"
             initial={false}
             animate={
-              showCopy
+              entered
                 ? { opacity: 1, y: 0 }
                 : { opacity: 0, y: 14 }
             }
