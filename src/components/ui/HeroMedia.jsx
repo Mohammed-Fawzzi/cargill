@@ -6,7 +6,7 @@ import {
 } from "@/lib/image";
 
 const VIDEO_FADE_MS = 600;
-const VIDEO_FAIL_MS = 8000;
+const VIDEO_FAIL_MS = 12000;
 
 export default function HeroMedia({
   videoUrl = "",
@@ -134,19 +134,23 @@ export default function HeroMedia({
     };
 
     node.addEventListener("canplay", onCanPlay);
+    node.addEventListener("loadeddata", onCanPlay);
     node.addEventListener("playing", onPlaying);
     node.addEventListener("error", onError);
     node.addEventListener("stalled", onStalled);
     node.addEventListener("waiting", onStalled);
 
     failTimerRef.current = window.setTimeout(() => {
-      if (node.readyState < 3) fail();
+      if (node.readyState < 2) fail();
     }, VIDEO_FAIL_MS);
 
     try {
-      node.load();
-      const run = node.play();
-      if (run?.catch) run.catch(() => {});
+      if (node.readyState >= 2) {
+        succeed();
+      } else {
+        const run = node.play();
+        if (run?.catch) run.catch(() => {});
+      }
     } catch {
       fail();
     }
@@ -154,6 +158,7 @@ export default function HeroMedia({
     return () => {
       clearTimers();
       node.removeEventListener("canplay", onCanPlay);
+      node.removeEventListener("loadeddata", onCanPlay);
       node.removeEventListener("playing", onPlaying);
       node.removeEventListener("error", onError);
       node.removeEventListener("stalled", onStalled);
@@ -192,16 +197,15 @@ export default function HeroMedia({
             opacity: visible ? 1 : 0,
             transitionDuration: `${VIDEO_FADE_MS}ms`,
           }}
+          src={videoSrc}
           muted
           loop
           playsInline
           autoPlay
-          preload="metadata"
+          preload="auto"
           poster={posterSrc || undefined}
           aria-hidden="true"
-        >
-          <source src={videoSrc} type="video/mp4" />
-        </video>
+        />
       ) : null}
     </div>
   );

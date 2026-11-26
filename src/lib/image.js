@@ -103,11 +103,23 @@ export function getDriveApiMediaUrl(url) {
   return `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?alt=media&key=${encodeURIComponent(key)}`;
 }
 
+export function getDriveUserContentUrl(url) {
+  const id = getDriveFileId(url);
+  if (!id) return "";
+  return `https://drive.usercontent.google.com/download?id=${encodeURIComponent(id)}&export=download&confirm=t`;
+}
+
+export function getDriveProxyUrl(url) {
+  const id = getDriveFileId(url);
+  if (!id) return "";
+  return `/api/drive-media?id=${encodeURIComponent(id)}`;
+}
+
 export function resolvePlayableVideoUrl(url) {
   const source = typeof url === "string" ? url.trim() : "";
   if (!source) return "";
   const id = getDriveFileId(source);
-  if (id) return getDriveApiMediaUrl(source);
+  if (id) return getDriveProxyUrl(source);
   try {
     const parsed = new URL(source);
     const host = parsed.hostname.toLowerCase();
