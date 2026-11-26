@@ -196,7 +196,7 @@ export default function HeroSection({ section, entranceReady = true }) {
           data-home-hero-media
           className="absolute inset-0 overflow-hidden"
         >
-          {wantVideo ? (
+          {wantVideo || videoUrls.length ? (
             <div className="absolute inset-0 overflow-hidden">
               <HeroPoster
                 src={poster || slideSrc}
@@ -244,6 +244,7 @@ export default function HeroSection({ section, entranceReady = true }) {
             videoUrls={videoUrls}
             posterUrl={poster}
             ready={Boolean(videoUrls.length)}
+            playWhen={entered}
             slot="home"
             onStateChange={setMedia}
           />

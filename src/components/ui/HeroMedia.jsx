@@ -50,6 +50,7 @@ export default function HeroMedia({
   videoUrls,
   posterUrl = "",
   ready = true,
+  playWhen = true,
   slot = "hero",
   className = "",
   videoClassName = "",
@@ -59,8 +60,10 @@ export default function HeroMedia({
   const bRef = useRef(null);
   const indexRef = useRef(0);
   const activeRef = useRef(0);
-  const playedRef = useRef(false);
+  const framedRef = useRef(false);
+  const playingRef = useRef(false);
   const busyRef = useRef(false);
+  const playWhenRef = useRef(playWhen);
   const coverRef = useRef([false, false]);
   const [index, setIndex] = useState(0);
   const [active, setActive] = useState(0);
@@ -82,6 +85,8 @@ export default function HeroMedia({
     videoClassName ||
     "absolute inset-0 h-full w-full object-cover object-center";
 
+  playWhenRef.current = playWhen;
+
   const setSlotCover = (slotIndex, on) => {
     const next = coverRef.current.slice();
     next[slotIndex] = on;
@@ -92,7 +97,8 @@ export default function HeroMedia({
   useEffect(() => {
     indexRef.current = 0;
     activeRef.current = 0;
-    playedRef.current = false;
+    framedRef.current = false;
+    playingRef.current = false;
     busyRef.current = false;
     coverRef.current = [false, false];
     setIndex(0);
@@ -176,7 +182,7 @@ export default function HeroMedia({
     };
 
     const failHard = () => {
-      if (cancelled || playedRef.current) return;
+      if (cancelled || framedRef.current) return;
       clearFailTimer();
       busyRef.current = false;
       setVisible(false);
@@ -193,28 +199,26 @@ export default function HeroMedia({
       return true;
     };
 
-    const waitCanPlay = (node) =>
+    const waitFrame = (node) =>
       new Promise((resolve, reject) => {
         let done = false;
         const finish = (ok) => {
           if (done) return;
           done = true;
-          node.removeEventListener("canplay", onReady);
           node.removeEventListener("loadeddata", onReady);
-          node.removeEventListener("playing", onReady);
+          node.removeEventListener("canplay", onReady);
           node.removeEventListener("error", onErr);
           if (ok) resolve();
           else reject(new Error("not-ready"));
         };
         const onReady = () => finish(true);
         const onErr = () => finish(false);
-        if (node.readyState >= 3) {
+        if (node.readyState >= 2) {
           finish(true);
           return;
         }
-        node.addEventListener("canplay", onReady);
         node.addEventListener("loadeddata", onReady);
-        node.addEventListener("playing", onReady);
+        node.addEventListener("canplay", onReady);
         node.addEventListener("error", onErr);
         window.setTimeout(() => {
           if (node.readyState >= 2) finish(true);
@@ -236,7 +240,37 @@ export default function HeroMedia({
       } catch {}
     };
 
-    const reveal = async (slotIndex, clipIndex) => {
+    const showFrame = (slotIndex, clipIndex) => {
+      if (cancelled) return;
+      const node = nodes[slotIndex];
+      node.style.opacity = "1";
+      node.style.zIndex = "3";
+      setSlotCover(slotIndex, true);
+      syncIndex(clipIndex);
+      syncActive(slotIndex);
+      framedRef.current = true;
+      setVisible(true);
+      clearFailTimer();
+    };
+
+    const startPlayback = async () => {
+      if (cancelled || playingRef.current || !framedRef.current) return;
+      if (!playWhenRef.current) return;
+      const node = nodes[activeRef.current];
+      if (!node) return;
+      try {
+        const run = node.play();
+        if (run?.catch) await run.catch(() => {});
+        if (cancelled) return;
+        if (!node.paused) {
+          playingRef.current = true;
+          busyRef.current = false;
+          prefetch(indexRef.current);
+        }
+      } catch {}
+    };
+
+    const revealNext = async (slotIndex, clipIndex) => {
       if (cancelled) return;
       const node = nodes[slotIndex];
       const prevSlot = activeRef.current;
@@ -247,7 +281,8 @@ export default function HeroMedia({
       setSlotCover(slotIndex, true);
       syncIndex(clipIndex);
       syncActive(slotIndex);
-      playedRef.current = true;
+      framedRef.current = true;
+      playingRef.current = true;
       setVisible(true);
       clearFailTimer();
 
@@ -272,19 +307,19 @@ export default function HeroMedia({
       if (cancelled || !list.length) return;
       if (busyRef.current && !fromHandoff) return;
       if (nextIndex < 0 || nextIndex >= list.length) {
-        if (playedRef.current) {
-          playAt(0);
+        if (framedRef.current) {
+          playAt(0, { fromHandoff });
           return;
         }
         failHard();
         return;
       }
 
-      if (!playedRef.current && tried.has(nextIndex)) {
+      if (!framedRef.current && tried.has(nextIndex)) {
         failHard();
         return;
       }
-      if (!playedRef.current) tried.add(nextIndex);
+      if (!framedRef.current) tried.add(nextIndex);
 
       busyRef.current = true;
       clearFailTimer();
@@ -292,23 +327,20 @@ export default function HeroMedia({
       const src = list[nextIndex];
       const currentSlot = activeRef.current;
       let slotIndex = currentSlot;
-
-      if (multi) {
-        const idleSlot = currentSlot === 0 ? 1 : 0;
-        slotIndex = playedRef.current ? idleSlot : currentSlot;
+      if (multi && playingRef.current) {
+        slotIndex = currentSlot === 0 ? 1 : 0;
       }
 
       const node = nodes[slotIndex];
-      const prev = nodes[currentSlot];
       if (!node) {
         busyRef.current = false;
         failHard();
         return;
       }
 
-      if (!playedRef.current) {
+      if (!framedRef.current) {
         failTimer = window.setTimeout(() => {
-          if (cancelled || playedRef.current) return;
+          if (cancelled || framedRef.current) return;
           busyRef.current = false;
           const fallback = (nextIndex + 1) % list.length;
           if (fallback !== nextIndex) playAt(fallback);
@@ -318,41 +350,25 @@ export default function HeroMedia({
 
       try {
         assignSrc(node, src);
-        await waitCanPlay(node);
+        await waitFrame(node);
         if (cancelled) return;
 
         try {
+          node.pause();
           if (node.currentTime > 0.02) node.currentTime = 0;
         } catch {}
+
+        if (!playingRef.current) {
+          showFrame(slotIndex, nextIndex);
+          busyRef.current = false;
+          await startPlayback();
+          return;
+        }
 
         const run = node.play();
         if (run?.catch) await run.catch(() => {});
         if (cancelled) return;
-
-        if (node.paused && node.readyState < 2) {
-          busyRef.current = false;
-          clearFailTimer();
-          const fallback = (nextIndex + 1) % list.length;
-          if (fallback !== nextIndex) {
-            playAt(fallback);
-            return;
-          }
-          if (!playedRef.current) failHard();
-          return;
-        }
-
-        if (prev && prev !== node && !prev.paused) {
-          try {
-            if (
-              Number.isFinite(prev.duration) &&
-              prev.duration - prev.currentTime < 0.2
-            ) {
-              prev.pause();
-            }
-          } catch {}
-        }
-
-        await reveal(slotIndex, nextIndex);
+        await revealNext(slotIndex, nextIndex);
       } catch {
         busyRef.current = false;
         clearFailTimer();
@@ -362,12 +378,13 @@ export default function HeroMedia({
           playAt(fallback);
           return;
         }
-        if (!playedRef.current) failHard();
+        if (!framedRef.current) failHard();
       }
     };
 
     const startHandoff = () => {
       if (!multi || cancelled || busyRef.current || handoff) return;
+      if (!playingRef.current) return;
       handoff = true;
       const next = (indexRef.current + 1) % list.length;
       playAt(next, { fromHandoff: true });
@@ -375,6 +392,7 @@ export default function HeroMedia({
 
     const onTimeUpdate = (event) => {
       if (!multi || cancelled || busyRef.current || handoff) return;
+      if (!playingRef.current) return;
       const node = event.currentTarget;
       if (node !== nodes[activeRef.current]) return;
       const duration = node.duration;
@@ -385,7 +403,7 @@ export default function HeroMedia({
     };
 
     const onEnded = (event) => {
-      if (!multi || cancelled) return;
+      if (!multi || cancelled || !playingRef.current) return;
       const node = event.currentTarget;
       if (node !== nodes[activeRef.current]) return;
       if (busyRef.current || handoff) return;
@@ -401,7 +419,7 @@ export default function HeroMedia({
       if (node !== nodes[activeRef.current]) return;
       const fallback = (indexRef.current + 1) % list.length;
       if (fallback === indexRef.current) {
-        if (!playedRef.current) failHard();
+        if (!framedRef.current) failHard();
         return;
       }
       playAt(fallback);
@@ -428,8 +446,26 @@ export default function HeroMedia({
   }, [wantVideo, listKey, multi]);
 
   useEffect(() => {
+    if (!wantVideo || !visible || !framedRef.current) return;
+    if (playingRef.current) return;
+    if (!playWhen) return;
     const node = active === 0 ? aRef.current : bRef.current;
-    if (!node || !wantVideo || !visible || !playedRef.current) return;
+    if (!node) return;
+    const run = node.play();
+    if (run?.then) {
+      run
+        .then(() => {
+          playingRef.current = true;
+        })
+        .catch(() => {});
+    } else {
+      playingRef.current = true;
+    }
+  }, [playWhen, wantVideo, visible, active]);
+
+  useEffect(() => {
+    const node = active === 0 ? aRef.current : bRef.current;
+    if (!node || !wantVideo || !visible || !playingRef.current) return;
     if (busyRef.current) return;
     try {
       if (inView) {
@@ -455,10 +491,8 @@ export default function HeroMedia({
         }}
         muted
         playsInline
-        autoPlay={slotIndex === 0}
         loop={!multi}
         preload="auto"
-        poster={undefined}
         aria-hidden="true"
       />
     );
