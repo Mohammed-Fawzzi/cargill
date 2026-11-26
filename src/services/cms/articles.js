@@ -19,6 +19,7 @@ export function mapArticle(id, data = {}) {
     },
     content: readLocalized(data, "content"),
     imageUrl: asString(data.imageUrl),
+    videoUrl: asString(data.videoUrl || data.heroVideoUrl),
     category,
     caption: {
       ar: caption.ar || imageCaption.ar,

@@ -594,6 +594,7 @@ export default function About() {
   const hasContent = Boolean(about || vision || mission || categories.length);
   const usePinned = !reducedMotion && storySteps.length > 1;
   const aboutImage = aboutImages[0]?.src || contact?.logoUrl || "";
+  const aboutVideo = contact?.aboutVideoUrl || contact?.videoUrl || "";
   const heroSides = useMemo(() => {
     return storyImages.filter(
       (src, index, list) => src && src !== aboutImage && list.indexOf(src) === index,
@@ -619,6 +620,7 @@ export default function About() {
             title={titleText}
             description={about}
             imageUrl={aboutImage}
+            videoUrl={aboutVideo}
             sideImages={heroSides}
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },

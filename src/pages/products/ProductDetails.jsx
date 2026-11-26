@@ -293,6 +293,7 @@ export default function ProductDetails() {
     t(UI.askAgronomistMessage, locale),
   );
   const heroImage = section?.imageUrl || "";
+  const heroVideo = section?.videoUrl || "";
   useEffect(() => {
     warnMissingMedia(
       `product_categories.sections[${section?.id || "?"}].imageUrl`,
@@ -351,6 +352,7 @@ export default function ProductDetails() {
             title={name}
             description={overview}
             imageUrl={heroImage}
+            videoUrl={heroVideo}
             sideImages={sideImages}
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },

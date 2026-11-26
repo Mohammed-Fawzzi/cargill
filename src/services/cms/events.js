@@ -18,6 +18,7 @@ export function mapEvent(id, data = {}) {
       en: details.en || description.en,
     },
     imageUrl: asString(data.imageUrl),
+    videoUrl: asString(data.videoUrl || data.heroVideoUrl),
     images: gallery,
     date: asString(data.date),
     time: asString(data.time),
