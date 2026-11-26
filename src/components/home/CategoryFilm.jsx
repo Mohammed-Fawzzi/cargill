@@ -46,8 +46,8 @@ function buildSlides(categories, products) {
         (product) => product.sectionId === category.id,
       );
       const image =
-        rows.find((product) => product.imageUrl)?.imageUrl ||
         category.imageUrl ||
+        rows.find((product) => product.imageUrl)?.imageUrl ||
         "";
       if (!image) return null;
       const overview =

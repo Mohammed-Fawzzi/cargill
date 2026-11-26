@@ -1,11 +1,12 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigationType } from "react-router-dom";
 import { animate, motion } from "framer-motion";
-import { normalizeImageUrl } from "@/lib/image";
+import { buildImageSrcSet, normalizeImageUrl, warnMissingMedia } from "@/lib/image";
 import { easeOut } from "@/lib/motion";
 import { notePageSession, shouldPlayPageIntro } from "@/lib/pageIntro";
 import { useLenis } from "@/components/layout/LenisProvider";
 import InnerPageIntro from "@/components/ui/InnerPageIntro";
+import HeroMedia from "@/components/ui/HeroMedia";
 
 const EASE = [0.76, 0, 0.24, 1];
 
@@ -79,6 +80,7 @@ export default function PageHero({
   title,
   description = "",
   imageUrl = "",
+  videoUrl = "",
   sideImages = [],
   crumbs = [],
   kicker = "",
@@ -102,9 +104,19 @@ export default function PageHero({
   const [loaded, setLoaded] = useState(false);
   const [instant, setInstant] = useState(() => !shouldPlayPageIntro(navType, reduced) && !reduced);
   const [activeAnchor, setActiveAnchor] = useState(anchors[0]?.id || "");
+  const [media, setMedia] = useState({
+    want: false,
+    visible: false,
+    failed: false,
+  });
+  const videoReady = revealed && !showIntro;
+  const videoActive = Boolean(media.want || media.visible);
 
   const src = imageUrl
     ? normalizeImageUrl(imageUrl, { width: 1600, quality: 78 })
+    : "";
+  const srcSet = imageUrl
+    ? buildImageSrcSet(imageUrl, { quality: 78 })
     : "";
   const wordCount = String(title || "")
     .trim()
@@ -112,6 +124,10 @@ export default function PageHero({
     .filter(Boolean).length;
   const descDelay = wordCount * 0.06 + 0.12;
   const actionDelay = descDelay + (description ? 0.28 : 0.08);
+
+  useEffect(() => {
+    warnMissingMedia("page-hero", imageUrl);
+  }, [imageUrl]);
 
   const applyMedia = () => {
     const hero = rootRef.current;
@@ -254,15 +270,30 @@ export default function PageHero({
                 ref={mediaRef}
                 data-page-hero-photo
                 src={src}
+                srcSet={srcSet || undefined}
+                sizes={srcSet ? "100vw" : undefined}
                 alt=""
+                loading="eager"
+                fetchPriority="high"
                 className={`page-hero__photo${(reduced && !instant) || (revealed && !loaded) ? " is-fade" : ""}`}
                 style={{ opacity: revealed && loaded ? 1 : 0 }}
                 draggable={false}
               />
             ) : null}
+            <HeroMedia
+              videoUrl={videoUrl}
+              posterUrl={imageUrl}
+              ready={videoReady}
+              slot="page-hero"
+              videoClassName="page-hero__photo absolute inset-0 h-full w-full object-cover object-center transition-opacity ease-out"
+              onStateChange={setMedia}
+            />
             <div
               className="page-hero__panel"
-              style={{ opacity: src && revealed && loaded ? 0 : 1 }}
+              style={{
+                opacity:
+                  (src && revealed && loaded) || videoActive ? 0 : 1,
+              }}
             />
             <div className={shadeClass} />
           </div>

@@ -7,7 +7,7 @@ import SafeImage from "@/components/ui/SafeImage";
 import LanguageSwitch from "@/components/layout/LanguageSwitch";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
-import { getCategories, getProducts } from "@/services/cms/products";
+import { getCategories, getCategoriesPage, getProducts } from "@/services/cms/products";
 import { getArticles } from "@/services/cms/articles";
 import { getEvents } from "@/services/cms/events";
 import { useHomepageSection } from "@/hooks/useHomepageSection";
@@ -16,7 +16,7 @@ import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
 
-function pickPesticidesImage(categories = [], products = []) {
+function pickCategoryImage(categories = [], products = []) {
   const match =
     categories.find((category) => {
       const ar = String(category?.name?.ar || "").toLowerCase();
@@ -70,6 +70,13 @@ export default function FullscreenMenu({
     staleTime: 1000 * 60 * 5,
   });
   const heroQuery = useHomepageSection("hero");
+  const eventsSectionQuery = useHomepageSection("events");
+  const contactSectionQuery = useHomepageSection("contact");
+  const categoriesPageQuery = useQuery({
+    queryKey: ["cms", "categories-page"],
+    queryFn: getCategoriesPage,
+    staleTime: 1000 * 60 * 5,
+  });
 
   useEffect(() => {
     const media = window.matchMedia("(min-width: 768px)");
@@ -107,12 +114,18 @@ export default function FullscreenMenu({
 
     return {
       "/": heroImage,
-      "/products": pickPesticidesImage(categories, products),
+      "/products":
+        categoriesPageQuery.data?.imageUrl ||
+        pickCategoryImage(categories, products),
       "/articles": articles.find((item) => item.imageUrl)?.imageUrl || "",
-      "/events": events.find((item) => item.imageUrl)?.imageUrl || "",
+      "/events":
+        eventsSectionQuery.data?.imageUrl ||
+        events.find((item) => item.imageUrl)?.imageUrl ||
+        "",
       "/about": contact?.logoUrl || "",
-      "/contact": contact?.bannerUrl || "",
-      "/finder": pickPesticidesImage(categories, products),
+      "/contact":
+        contactSectionQuery.data?.imageUrl || contact?.bannerUrl || "",
+      "/finder": pickCategoryImage(categories, products),
     };
   }, [
     categoriesQuery.data,
@@ -120,6 +133,9 @@ export default function FullscreenMenu({
     articlesQuery.data,
     eventsQuery.data,
     heroQuery.data,
+    categoriesPageQuery.data,
+    eventsSectionQuery.data,
+    contactSectionQuery.data,
     contact?.bannerUrl,
     contact?.logoUrl,
   ]);

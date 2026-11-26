@@ -58,12 +58,30 @@ export function isSeedsCategory(category) {
   );
 }
 
-async function readAllSections() {
+async function readCategoriesPage() {
   const snap = await getDoc(doc(db, "product_categories", "page"));
-  const sections = Array.isArray(snap.data()?.sections)
-    ? snap.data().sections
+  const data = snap.exists() ? snap.data() || {} : {};
+  const sections = Array.isArray(data.sections)
+    ? data.sections.map(parseSection).filter(Boolean)
     : [];
-  return sections.map(parseSection).filter(Boolean);
+  return {
+    imageUrl: asString(data.imageUrl),
+    videoUrl: asString(data.videoUrl || data.heroVideoUrl),
+    sections,
+  };
+}
+
+async function readAllSections() {
+  const page = await readCategoriesPage();
+  return page.sections;
+}
+
+export async function getCategoriesPage() {
+  const page = await readCategoriesPage();
+  return {
+    imageUrl: page.imageUrl,
+    videoUrl: page.videoUrl,
+  };
 }
 
 export async function getCategories() {

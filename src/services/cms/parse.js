@@ -71,6 +71,7 @@ export function parseSlide(value, index = 0) {
     title: parseLocalized(value.title),
     body: parseLocalized(value.body ?? value.description),
     imageUrl: asString(value.imageUrl || value.image),
+    videoUrl: asString(value.videoUrl || value.heroVideoUrl || value.video),
     cta: parseCta(ctaSource),
   };
 }
@@ -81,6 +82,7 @@ export function parseHomepageSection(id, data = {}) {
     title: parseLocalized(data.title),
     body: parseLocalized(data.body),
     imageUrl: asString(data.imageUrl),
+    videoUrl: asString(data.videoUrl || data.heroVideoUrl || data.video),
     cta: parseCta(data.cta),
     mapEmbedUrl: asString(data.mapEmbedUrl),
     limit: typeof data.limit === "number" ? data.limit : 0,

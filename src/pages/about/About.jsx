@@ -12,13 +12,12 @@ import useMotionPrefs from "@/hooks/useMotionPrefs";
 import useCountUp from "@/hooks/useCountUp";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
 import { getCategories, getProducts } from "@/services/cms/products";
-import { useHomepageSection } from "@/hooks/useHomepageSection";
-import { categoryCoverImages, homepageSlideImages } from "@/lib/homeIntro";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
+import { warnMissingMedia } from "@/lib/image";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
 const BrandTriangle3D = lazyWithRetry(() => import("@/components/ui/BrandTriangle3D"));
@@ -523,7 +522,6 @@ export default function About() {
   const { contact, isPending, isError } = useSiteData();
   const isMobile = useIsMobile();
 
-  const heroQuery = useHomepageSection("hero");
   const categoriesQuery = useQuery({
     queryKey: ["cms", "categories"],
     queryFn: getCategories,
@@ -574,24 +572,19 @@ export default function About() {
     return steps;
   }, [about, vision, mission, locale, titleText]);
 
-  const storyMedia = useMemo(() => {
-    const products = productsQuery.data || [];
-    const items = [];
-    if (bannerUrl) {
-      items.push({ src: bannerUrl, alt: titleText || "" });
-    }
-    categories.forEach((category) => {
-      const src =
-        category.imageUrl ||
-        products.find(
-          (product) => product.sectionId === category.id && product.imageUrl,
-        )?.imageUrl ||
-        "";
-      if (!src) return;
-      items.push({ src, alt: t(category.name, locale) || "" });
-    });
-    return items.slice(0, 8);
-  }, [bannerUrl, categories, productsQuery.data, titleText, locale]);
+  const aboutImages = useMemo(() => {
+    const list = [];
+    const push = (src, alt = "") => {
+      const value = String(src || "").trim();
+      if (!value || list.some((item) => item.src === value)) return;
+      list.push({ src: value, alt });
+    };
+    push(contact?.logoUrl, titleText || "");
+    push(bannerUrl, titleText || "");
+    return list;
+  }, [contact?.logoUrl, bannerUrl, titleText]);
+
+  const storyMedia = useMemo(() => aboutImages, [aboutImages]);
 
   const storyImages = useMemo(
     () => storyMedia.map((item) => item.src),
@@ -600,17 +593,16 @@ export default function About() {
 
   const hasContent = Boolean(about || vision || mission || categories.length);
   const usePinned = !reducedMotion && storySteps.length > 1;
-  const heroSlides = useMemo(
-    () => homepageSlideImages(heroQuery.data),
-    [heroQuery.data],
-  );
-  const aboutImage = contact?.logoUrl || "";
+  const aboutImage = aboutImages[0]?.src || contact?.logoUrl || "";
   const heroSides = useMemo(() => {
-    const covers = categoryCoverImages(categories, productsQuery.data || []);
-    return [...heroSlides.slice(1), bannerUrl, ...storyImages, ...covers].filter(
+    return storyImages.filter(
       (src, index, list) => src && src !== aboutImage && list.indexOf(src) === index,
     );
-  }, [heroSlides, bannerUrl, storyImages, categories, productsQuery.data, aboutImage]);
+  }, [storyImages, aboutImage]);
+
+  useEffect(() => {
+    warnMissingMedia("contact/page.logoUrl", aboutImage);
+  }, [aboutImage]);
 
   return (
     <>

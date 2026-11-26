@@ -42,7 +42,7 @@ export default function CategoryStrip({ ready = true }) {
         return {
           id: category.id,
           name: t(category.name, locale),
-          imageUrl: cover?.imageUrl || "",
+          imageUrl: category.imageUrl || cover?.imageUrl || "",
         };
       });
   }, [categoriesQuery.data, productsQuery.data, locale]);

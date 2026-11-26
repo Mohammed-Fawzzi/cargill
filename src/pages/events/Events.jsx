@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Seo from "@/components/seo/Seo";
@@ -12,6 +12,7 @@ import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { resolvePageHero } from "@/lib/pageHero";
+import { warnMissingMedia } from "@/lib/image";
 import { eventDayKey } from "@/lib/time";
 import { resolveCompanySocial } from "@/utils/social";
 import { t } from "@/lib/i18n";
@@ -113,16 +114,12 @@ export default function Events() {
         ? t(UI.noPastEvents, locale)
         : t(UI.noEvents, locale);
 
-  const latestEvent = useMemo(() => {
-    return [...events]
-      .sort(
-        (a, b) =>
-          (b.createdAt || 0) - (a.createdAt || 0) ||
-          (b.updatedAt || 0) - (a.updatedAt || 0),
-      )
-      .find((item) => item.imageUrl) || null;
-  }, [events]);
   const eventCovers = events.map((item) => item.imageUrl).filter(Boolean);
+  const heroImage = sectionQuery.data?.imageUrl || "";
+  const heroVideo = sectionQuery.data?.videoUrl || "";
+  useEffect(() => {
+    warnMissingMedia("homepage/events.imageUrl", heroImage);
+  }, [heroImage]);
   const pending = eventsQuery.isPending;
   const error = eventsQuery.isError;
   const showSplit = filter === "all";
@@ -144,8 +141,9 @@ export default function Events() {
           <PageHero
             title={hero.title}
             description={hero.subtitle}
-            imageUrl={latestEvent?.imageUrl || ""}
-            sideImages={eventCovers.filter((src) => src !== latestEvent?.imageUrl)}
+            imageUrl={heroImage}
+            videoUrl={heroVideo}
+            sideImages={eventCovers.filter((src) => src !== heroImage)}
             size="mid"
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },

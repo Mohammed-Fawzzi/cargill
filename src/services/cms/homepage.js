@@ -91,7 +91,7 @@ export async function loadHomePage() {
           );
           return {
             ...category,
-            imageUrl: cover?.imageUrl || "",
+            imageUrl: category.imageUrl || cover?.imageUrl || "",
           };
         },
       );

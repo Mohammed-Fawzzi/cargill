@@ -72,13 +72,20 @@ export function homepageSlideImages(source) {
   return list;
 }
 
+function resolveCategoryCover(category, products) {
+  return (
+    category?.imageUrl ||
+    (products || []).find(
+      (product) => product.sectionId === category?.id && product.imageUrl,
+    )?.imageUrl ||
+    ""
+  );
+}
+
 export function categoryCoverImages(categories, products) {
   const list = [];
   (categories || []).forEach((category) => {
-    const cover =
-      (products || []).find(
-        (product) => product.sectionId === category.id && product.imageUrl,
-      )?.imageUrl || "";
+    const cover = resolveCategoryCover(category, products);
     if (cover && !list.includes(cover)) list.push(cover);
   });
   return list;
@@ -86,13 +93,10 @@ export function categoryCoverImages(categories, products) {
 
 export function matchedCategoryCover(categories, products, matcherId) {
   const matcher = CATEGORY_MATCHERS.find((item) => item.id === matcherId);
-  const withImages = (categories || []).map((category) => {
-    const cover =
-      (products || []).find(
-        (product) => product.sectionId === category.id && product.imageUrl,
-      )?.imageUrl || "";
-    return { ...category, imageUrl: cover };
-  });
+  const withImages = (categories || []).map((category) => ({
+    ...category,
+    imageUrl: resolveCategoryCover(category, products),
+  }));
   if (matcher) {
     const found = findCategoryImage(withImages, matcher);
     if (found) return found;
@@ -109,15 +113,10 @@ export function buildHomeIntroTiles({
 }) {
   if (!heroImage) return [];
 
-  const categoriesWithImages = (categories || []).map((category) => {
-    const cover = (products || []).find(
-      (product) => product.sectionId === category.id && product.imageUrl,
-    );
-    return {
-      ...category,
-      imageUrl: cover?.imageUrl || "",
-    };
-  });
+  const categoriesWithImages = (categories || []).map((category) => ({
+    ...category,
+    imageUrl: resolveCategoryCover(category, products),
+  }));
 
   const matched = CATEGORY_MATCHERS.map((matcher) => ({
     id: matcher.id,

@@ -385,7 +385,7 @@ export default function Navbar() {
         );
         return {
           ...category,
-          imageUrl: cover?.imageUrl || "",
+          imageUrl: category.imageUrl || cover?.imageUrl || "",
         };
       });
   }, [categoriesQuery.data, productsQuery.data]);

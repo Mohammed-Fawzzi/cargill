@@ -70,7 +70,10 @@ export default function Contact() {
     [heroQuery.data],
   );
   const contactImage = section?.imageUrl || contact?.bannerUrl || "";
-  const contactSides = heroSlides.filter((src) => src && src !== contactImage);
+  const contactSides = [contact?.bannerUrl, ...heroSlides].filter(
+    (src, index, list) =>
+      src && src !== contactImage && list.indexOf(src) === index,
+  );
 
   const heading =
     t(contact?.heading, locale) ||
@@ -143,6 +146,7 @@ export default function Contact() {
             title={heading}
             description={hoursLine || description}
             imageUrl={contactImage}
+            videoUrl={section?.videoUrl || ""}
             sideImages={contactSides}
             size="mid"
             crumbs={[

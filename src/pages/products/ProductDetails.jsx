@@ -17,6 +17,7 @@ import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { toWhatsAppHref } from "@/lib/phone";
 import { easeOut } from "@/lib/motion";
+import { warnMissingMedia } from "@/lib/image";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
@@ -291,13 +292,17 @@ export default function ProductDetails() {
     phone,
     t(UI.askAgronomistMessage, locale),
   );
-  const heroImage = section?.imageUrl || product?.imageUrl || images[0] || "";
-  const sideImages = (productsQuery.data || [])
+  const heroImage = section?.imageUrl || "";
+  useEffect(() => {
+    warnMissingMedia(
+      `product_categories.sections[${section?.id || "?"}].imageUrl`,
+      heroImage,
+    );
+  }, [section?.id, heroImage]);
+  const sideImages = categories
     .filter(
       (item) =>
-        item.id !== product?.id &&
-        item.sectionId &&
-        item.sectionId === product?.sectionId &&
+        item.id !== section?.id &&
         item.imageUrl &&
         item.imageUrl !== heroImage,
     )

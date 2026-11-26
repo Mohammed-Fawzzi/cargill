@@ -4,12 +4,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import SafeImage from "@/components/ui/SafeImage";
 import AccentHeading from "@/components/ui/AccentHeading";
 import CategoryStrip from "@/components/home/CategoryStrip";
+import HeroMedia from "@/components/ui/HeroMedia";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
+import { HERO_VIDEO_URL } from "@/config/media";
 import { toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import { easeOut } from "@/lib/motion";
+import { warnMissingMedia } from "@/lib/image";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
 const SPROUT = [0.22, 1, 0.36, 1];
@@ -51,6 +54,31 @@ function HeadlineReveal({ text, reducedMotion, active }) {
   );
 }
 
+function HeroPoster({ src, animate, entered, reducedMotion }) {
+  if (!src) return <div className="absolute inset-0 bg-[#0A0820]" />;
+  return (
+    <motion.div
+      className="absolute inset-0 origin-center will-change-transform backface-hidden"
+      initial={animate && entered && !reducedMotion ? { scale: 1 } : false}
+      animate={{ scale: animate && entered && !reducedMotion ? 1.06 : 1 }}
+      transition={{
+        duration: animate && entered && !reducedMotion ? 5.6 : 0,
+        ease: [0.25, 0.1, 0.25, 1],
+      }}
+    >
+      <SafeImage
+        src={src}
+        alt=""
+        width={1920}
+        loading="eager"
+        fetchPriority="high"
+        className="h-full w-full object-cover object-center"
+        aria-hidden="true"
+      />
+    </motion.div>
+  );
+}
+
 export default function HeroSection({ section, entranceReady = true }) {
   const { locale } = useLocale();
   const { contact } = useSiteData();
@@ -58,29 +86,53 @@ export default function HeroSection({ section, entranceReady = true }) {
   const [slide, setSlide] = useState(0);
   const [ready, setReady] = useState(false);
   const [entered, setEntered] = useState(Boolean(entranceReady));
+  const [media, setMedia] = useState({
+    want: false,
+    visible: false,
+    failed: false,
+    src: "",
+    raw: "",
+  });
 
   const slides = useMemo(() => section?.data?.slides || [], [section?.data?.slides]);
   const images = useMemo(
-    () => slides.map((item) => item?.imageUrl).filter(Boolean).slice(0, 3),
+    () => slides.map((item) => item?.imageUrl).filter(Boolean),
     [slides],
   );
+  const poster = useMemo(
+    () => images[0] || section?.data?.imageUrl || "",
+    [images, section?.data?.imageUrl],
+  );
+  const rawVideo = useMemo(() => {
+    const fromSlides = slides.map((item) => item?.videoUrl).find(Boolean) || "";
+    const fromSection = section?.data?.videoUrl || "";
+    return fromSlides || fromSection || HERO_VIDEO_URL || "";
+  }, [slides, section?.data?.videoUrl]);
   const headlineSlide = slides.find((item) => t(item?.title, locale)) || slides[0];
   const title = t(headlineSlide?.title, locale);
   const body = t(headlineSlide?.body, locale);
   const phone = contact?.phones?.[0] || "";
   const waHref = toWhatsAppHref(phone, t(UI.askAgronomistMessage, locale));
+  const wantVideo = Boolean(media.want || media.visible);
+  const useSlideshow = !wantVideo && images.length > 0;
 
   useEffect(() => {
     if (entranceReady) setEntered(true);
   }, [entranceReady]);
 
   useEffect(() => {
-    if (!entered || reducedMotion || images.length < 2) return undefined;
+    warnMissingMedia("homepage/hero.images", images[0] || section?.data?.imageUrl);
+  }, [images, section?.data?.imageUrl]);
+
+  useEffect(() => {
+    if (!entered || reducedMotion || wantVideo || images.length < 2) {
+      return undefined;
+    }
     const timer = window.setInterval(() => {
       setSlide((current) => (current + 1) % images.length);
     }, 5200);
     return () => window.clearInterval(timer);
-  }, [images.length, reducedMotion, entered]);
+  }, [images.length, reducedMotion, entered, wantVideo]);
 
   useEffect(() => {
     if (!entered) {
@@ -94,10 +146,11 @@ export default function HeroSection({ section, entranceReady = true }) {
     return () => window.clearTimeout(timer);
   }, [reducedMotion, entered]);
 
-  if (!title && !body && !images.length) return null;
+  if (!title && !body && !images.length && !rawVideo) return null;
 
   const delay = reducedMotion || !entered ? 0 : 0.12;
   const showMotion = entered && !reducedMotion;
+  const slideSrc = images[slide] || poster;
 
   return (
     <>
@@ -106,49 +159,57 @@ export default function HeroSection({ section, entranceReady = true }) {
           data-home-hero-media
           className="absolute inset-0 overflow-hidden"
         >
-          <AnimatePresence mode="sync" initial={false}>
-            {images.length ? (
-              <motion.div
-                key={images[slide] || "hero"}
-                className="absolute inset-0 overflow-hidden"
-                initial={showMotion ? { opacity: 0 } : false}
-                animate={{ opacity: 1 }}
-                exit={showMotion ? { opacity: 0 } : undefined}
-                transition={{
-                  duration: showMotion ? 0.9 : 0,
-                  ease: easeOut,
-                }}
-              >
+          {wantVideo ? (
+            <div className="absolute inset-0 overflow-hidden">
+              <HeroPoster
+                src={poster || slideSrc}
+                animate={false}
+                entered={entered}
+                reducedMotion={reducedMotion}
+              />
+            </div>
+          ) : (
+            <AnimatePresence mode="sync" initial={false}>
+              {useSlideshow ? (
                 <motion.div
-                  className="absolute inset-0 origin-center will-change-transform backface-hidden"
-                  initial={
-                    entered && !reducedMotion
-                      ? { scale: 1 }
-                      : false
-                  }
-                  animate={{
-                    scale: entered && !reducedMotion ? 1.06 : 1,
-                  }}
+                  key={slideSrc || "hero"}
+                  className="absolute inset-0 overflow-hidden"
+                  initial={showMotion ? { opacity: 0 } : false}
+                  animate={{ opacity: 1 }}
+                  exit={showMotion ? { opacity: 0 } : undefined}
                   transition={{
-                    duration: entered && !reducedMotion ? 5.6 : 0,
-                    ease: [0.25, 0.1, 0.25, 1],
+                    duration: showMotion ? 0.9 : 0,
+                    ease: easeOut,
                   }}
                 >
-                  <SafeImage
-                    src={images[slide]}
-                    alt=""
-                    width={1920}
-                    loading="eager"
-                    fetchPriority="high"
-                    className="h-full w-full object-cover object-center"
-                    aria-hidden="true"
+                  <HeroPoster
+                    src={slideSrc}
+                    animate
+                    entered={entered}
+                    reducedMotion={reducedMotion}
                   />
                 </motion.div>
-              </motion.div>
-            ) : (
-              <div className="absolute inset-0 bg-[#0A0820]" />
-            )}
-          </AnimatePresence>
+              ) : poster ? (
+                <div className="absolute inset-0 overflow-hidden">
+                  <HeroPoster
+                    src={poster}
+                    animate
+                    entered={entered}
+                    reducedMotion={reducedMotion}
+                  />
+                </div>
+              ) : (
+                <div className="absolute inset-0 bg-[#0A0820]" />
+              )}
+            </AnimatePresence>
+          )}
+          <HeroMedia
+            videoUrl={rawVideo}
+            posterUrl={poster}
+            ready={entered}
+            slot="home"
+            onStateChange={setMedia}
+          />
           <motion.div
             className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,8,32,0.92)_0%,rgba(10,8,32,0.4)_55%,rgba(10,8,32,0.15)_100%)]"
             aria-hidden="true"

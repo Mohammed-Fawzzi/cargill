@@ -121,6 +121,7 @@ export default function Articles() {
             title={hero.title}
             description={hero.subtitle}
             imageUrl={latestArticle?.imageUrl || ""}
+            videoUrl={sectionQuery.data?.videoUrl || ""}
             sideImages={articles
               .map((item) => item.imageUrl)
               .filter((src) => src && src !== latestArticle?.imageUrl)}

@@ -8,16 +8,13 @@ import ProductCard from "@/components/products/ProductCard";
 import GrowTogetherBanner from "@/components/shared/GrowTogetherBanner";
 import PageHero from "@/components/ui/PageHero";
 import { EmptyState, ErrorState } from "@/components/ui/StatusMessage";
-import { getCategories, getProducts } from "@/services/cms/products";
+import { getCategories, getCategoriesPage, getProducts } from "@/services/cms/products";
 import { useHomepageSection } from "@/hooks/useHomepageSection";
 import { useLocale } from "@/context/LocaleContext";
 import { useSiteData } from "@/context/SiteDataContext";
 import { resolvePageHero } from "@/lib/pageHero";
-import {
-  categoryCoverImages,
-  homepageSlideImages,
-  matchedCategoryCover,
-} from "@/lib/homeIntro";
+import { categoryCoverImages } from "@/lib/homeIntro";
+import { warnMissingMedia } from "@/lib/image";
 import { toWhatsAppHref } from "@/lib/phone";
 import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
@@ -62,7 +59,6 @@ export default function Products() {
   const { contact } = useSiteData();
   const { reducedMotion } = useMotionPrefs();
   const sectionQuery = useHomepageSection("product_categories");
-  const heroQuery = useHomepageSection("hero");
   const [params, setParams] = useSearchParams();
   const sectionId = params.get("section") || "";
   const subcategoryId = params.get("sub") || "";
@@ -77,6 +73,11 @@ export default function Products() {
   const categoriesQuery = useQuery({
     queryKey: ["cms", "categories"],
     queryFn: getCategories,
+    staleTime: 1000 * 60 * 5,
+  });
+  const pageQuery = useQuery({
+    queryKey: ["cms", "categories-page"],
+    queryFn: getCategoriesPage,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -195,21 +196,24 @@ export default function Products() {
     fallbackImage: "",
   });
 
-  const heroSlides = useMemo(
-    () => homepageSlideImages(heroQuery.data),
-    [heroQuery.data],
-  );
   const heroImage =
-    matchedCategoryCover(categories, products, "fertilizers") ||
-    categoryCoverImages(categories, products)[0] ||
+    pageQuery.data?.imageUrl ||
     sectionQuery.data?.imageUrl ||
     "";
+  const heroVideo =
+    pageQuery.data?.videoUrl ||
+    sectionQuery.data?.videoUrl ||
+    "";
+  useEffect(() => {
+    warnMissingMedia("product_categories/page.imageUrl", heroImage);
+  }, [heroImage]);
   const heroSides = useMemo(() => {
     const covers = categoryCoverImages(categories, products);
-    return [...heroSlides, ...covers].filter(
+    const sectionImage = sectionQuery.data?.imageUrl || "";
+    return [sectionImage, ...covers].filter(
       (src, index, list) => src && src !== heroImage && list.indexOf(src) === index,
     );
-  }, [heroSlides, categories, products, heroImage]);
+  }, [sectionQuery.data?.imageUrl, categories, products, heroImage]);
   const phone = contact?.phones?.[0] || "";
   const askSearchHref = toWhatsAppHref(
     phone,
@@ -241,6 +245,7 @@ export default function Products() {
             title={hero.title}
             description={hero.subtitle}
             imageUrl={heroImage}
+            videoUrl={heroVideo}
             sideImages={heroSides}
             size="mid"
             crumbs={[

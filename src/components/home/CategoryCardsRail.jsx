@@ -45,7 +45,7 @@ export default function CategoryCardsRail() {
       );
       return {
         ...category,
-        imageUrl: cover?.imageUrl || "",
+        imageUrl: category.imageUrl || cover?.imageUrl || "",
       };
     });
   }, [categoriesQuery.data, productsQuery.data]);
