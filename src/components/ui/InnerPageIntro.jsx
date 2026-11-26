@@ -152,7 +152,7 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
   }, []);
 
   useEffect(() => {
-    if (!armed || phase !== "in") return undefined;
+    if (!armed) return undefined;
     const timers = [];
     timers.push(
       window.setTimeout(() => setPhase("hold"), schedule.enterEndMs),
@@ -161,101 +161,122 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
       window.setTimeout(() => setPhase("focus"), schedule.focusAtMs),
     );
     timers.push(
-      window.setTimeout(() => setExpanding(true), schedule.expandAtMs),
+      window.setTimeout(() => {
+        setPhase("expand");
+        setExpanding(true);
+      }, schedule.expandAtMs),
     );
     return () => timers.forEach((id) => window.clearTimeout(id));
-  }, [armed, phase, schedule]);
+  }, [armed, schedule]);
 
   useLayoutEffect(() => {
     if (!expanding || doneRef.current) return undefined;
 
-    const tileNode = centerRef.current;
-    const heroImg =
-      document.querySelector("[data-page-hero-photo]") ||
-      document.querySelector("[data-page-hero-media]");
-    const clone = cloneRef.current;
-    const cloneImg = cloneImgRef.current;
-    if (!tileNode || !heroImg || !clone || !cloneImg) {
-      finish("panel");
-      return undefined;
-    }
+    let stopped = false;
+    let run = null;
+    let tries = 0;
 
-    const first = tileNode.getBoundingClientRect();
-    const last = heroImg.getBoundingClientRect();
-    const lastW = Math.max(last.width, 1);
-    const lastH = Math.max(last.height, 1);
-    const sx = first.width / lastW;
-    const sy = first.height / lastH;
-    const dx =
-      first.left + first.width / 2 - (last.left + last.width / 2);
-    const dy =
-      first.top + first.height / 2 - (last.top + last.height / 2);
-    const endScale = timings.endHeroScale;
-    const objectPosition =
-      getComputedStyle(heroImg).objectPosition || "center center";
-    const radius = timings.radiusPx;
+    const startExpand = () => {
+      if (stopped || doneRef.current) return;
+      const tileNode = centerRef.current;
+      const heroImg =
+        document.querySelector("[data-page-hero-photo]") ||
+        document.querySelector("[data-page-hero-media]");
+      const clone = cloneRef.current;
+      const cloneImg = cloneImgRef.current;
+      if (!tileNode || !heroImg || !clone || !cloneImg) {
+        tries += 1;
+        if (tries < 8) {
+          requestAnimationFrame(startExpand);
+          return;
+        }
+        finish("panel");
+        return;
+      }
 
-    clone.style.position = "fixed";
-    clone.style.left = `${last.left}px`;
-    clone.style.top = `${last.top}px`;
-    clone.style.width = `${last.width}px`;
-    clone.style.height = `${last.height}px`;
-    clone.style.margin = "0";
-    clone.style.overflow = "hidden";
-    clone.style.transformOrigin = "center center";
-    clone.style.zIndex = "122";
-    clone.style.willChange = "transform, clip-path, opacity";
-    clone.style.clipPath = `inset(0 round ${radius}px)`;
-    clone.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`;
-    clone.style.opacity = "1";
+      const first = tileNode.getBoundingClientRect();
+      const last = heroImg.getBoundingClientRect();
+      const lastW = Math.max(last.width, 1);
+      const lastH = Math.max(last.height, 1);
+      const sx = first.width / lastW;
+      const sy = first.height / lastH;
+      const dx =
+        first.left + first.width / 2 - (last.left + last.width / 2);
+      const dy =
+        first.top + first.height / 2 - (last.top + last.height / 2);
+      const endScale = timings.endHeroScale;
+      const objectPosition =
+        getComputedStyle(heroImg).objectPosition || "center center";
+      const radius = timings.radiusPx;
+      const imgStart = Math.max(
+        1 / Math.max(sx, 0.001),
+        1 / Math.max(sy, 0.001),
+      );
 
-    cloneImg.style.width = "100%";
-    cloneImg.style.height = "100%";
-    cloneImg.style.objectFit = "cover";
-    cloneImg.style.objectPosition = objectPosition;
-    cloneImg.style.transformOrigin = "center center";
-    cloneImg.style.willChange = "transform";
-    cloneImg.style.transform = `scale(${Math.max(1 / Math.max(sx, 0.001), 1 / Math.max(sy, 0.001))})`;
+      clone.style.position = "fixed";
+      clone.style.left = `${last.left}px`;
+      clone.style.top = `${last.top}px`;
+      clone.style.width = `${last.width}px`;
+      clone.style.height = `${last.height}px`;
+      clone.style.margin = "0";
+      clone.style.overflow = "hidden";
+      clone.style.transformOrigin = "center center";
+      clone.style.zIndex = "122";
+      clone.style.willChange = "transform, clip-path, opacity";
+      clone.style.clipPath = `inset(0 round ${radius}px)`;
+      clone.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`;
+      clone.style.opacity = "1";
 
-    const heroPhoto = document.querySelector("[data-page-hero-photo]");
-    if (heroPhoto) {
-      heroPhoto.style.opacity = "0";
-      heroPhoto.style.transformOrigin = "center center";
-    }
+      cloneImg.style.width = "100%";
+      cloneImg.style.height = "100%";
+      cloneImg.style.objectFit = "cover";
+      cloneImg.style.objectPosition = objectPosition;
+      cloneImg.style.transformOrigin = "center center";
+      cloneImg.style.willChange = "transform";
+      cloneImg.style.transform = `scale(${imgStart})`;
 
-    const run = animate(0, 1, {
-      duration: timings.expandMs / 1000,
-      ease: timings.expandEase,
-      onUpdate: (t) => {
-        const tx = dx * (1 - t);
-        const ty = dy * (1 - t);
-        const scaleX = sx + (endScale - sx) * t;
-        const scaleY = sy + (endScale - sy) * t;
-        const r = radius * (1 - t);
-        const imgScale =
-          Math.max(1 / Math.max(sx, 0.001), 1 / Math.max(sy, 0.001)) *
-            (1 - t) +
-          1 * t;
-        clone.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scaleX}, ${scaleY})`;
-        clone.style.clipPath = `inset(0 round ${r}px)`;
-        cloneImg.style.transform = `scale(${imgScale})`;
-      },
-      onComplete: () => {
-        requestAnimationFrame(() => {
-          if (heroPhoto) {
-            heroPhoto.style.opacity = "1";
-            heroPhoto.style.transform = `translate3d(0, 0, 0) scale(${endScale})`;
-          }
-          clone.style.opacity = "0";
-          finish("photo");
+      const heroPhoto = document.querySelector("[data-page-hero-photo]");
+      if (heroPhoto) {
+        heroPhoto.style.opacity = "0";
+        heroPhoto.style.transformOrigin = "center center";
+      }
+
+      run = animate(0, 1, {
+        duration: timings.expandMs / 1000,
+        ease: timings.expandEase,
+        onUpdate: (t) => {
+          const tx = dx * (1 - t);
+          const ty = dy * (1 - t);
+          const scaleX = sx + (endScale - sx) * t;
+          const scaleY = sy + (endScale - sy) * t;
+          const r = radius * (1 - t);
+          const imgScale = imgStart * (1 - t) + t;
+          clone.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scaleX}, ${scaleY})`;
+          clone.style.clipPath = `inset(0 round ${r}px)`;
+          cloneImg.style.transform = `scale(${imgScale})`;
+        },
+        onComplete: () => {
           requestAnimationFrame(() => {
-            if (clone.parentNode) clone.style.display = "none";
+            if (heroPhoto) {
+              heroPhoto.style.opacity = "1";
+              heroPhoto.style.transform = `translate3d(0, 0, 0) scale(${endScale})`;
+            }
+            clone.style.opacity = "0";
+            finish("photo");
+            requestAnimationFrame(() => {
+              if (clone.parentNode) clone.style.display = "none";
+            });
           });
-        });
-      },
-    });
+        },
+      });
+    };
 
-    return () => run.stop();
+    startExpand();
+
+    return () => {
+      stopped = true;
+      run?.stop?.();
+    };
   }, [expanding, timings]);
 
   if (!portalReady) return null;
