@@ -173,11 +173,17 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
 
     const first = tileNode.getBoundingClientRect();
     const last = heroImg.getBoundingClientRect();
-
-    const dx = first.left - last.left;
-    const dy = first.top - last.top;
-    const sx = first.width / Math.max(last.width, 1);
-    const sy = first.height / Math.max(last.height, 1);
+    const lastW = Math.max(last.width, 1);
+    const lastH = Math.max(last.height, 1);
+    const sx = first.width / lastW;
+    const sy = first.height / lastH;
+    const dx =
+      first.left + first.width / 2 - (last.left + last.width / 2);
+    const dy =
+      first.top + first.height / 2 - (last.top + last.height / 2);
+    const endScale = 1.08;
+    const objectPosition =
+      getComputedStyle(heroImg).objectPosition || "center center";
 
     clone.style.position = "fixed";
     clone.style.left = `${last.left}px`;
@@ -186,8 +192,8 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
     clone.style.height = `${last.height}px`;
     clone.style.margin = "0";
     clone.style.objectFit = "cover";
-    clone.style.objectPosition = "center";
-    clone.style.transformOrigin = "top left";
+    clone.style.objectPosition = objectPosition;
+    clone.style.transformOrigin = "center center";
     clone.style.borderRadius = "12px";
     clone.style.zIndex = "122";
     clone.style.willChange = "transform, border-radius";
@@ -195,7 +201,10 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
     clone.style.opacity = "1";
 
     const heroPhoto = document.querySelector("[data-page-hero-photo]");
-    if (heroPhoto) heroPhoto.style.opacity = "0";
+    if (heroPhoto) {
+      heroPhoto.style.opacity = "0";
+      heroPhoto.style.transformOrigin = "center center";
+    }
 
     const run = animate(0, 1, {
       duration: INTRO_EXPAND_MS / 1000,
@@ -203,8 +212,8 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
       onUpdate: (t) => {
         const tx = dx * (1 - t);
         const ty = dy * (1 - t);
-        const scaleX = sx + (1.08 - sx) * t;
-        const scaleY = sy + (1.08 - sy) * t;
+        const scaleX = sx + (endScale - sx) * t;
+        const scaleY = sy + (endScale - sy) * t;
         const radius = 12 * (1 - t);
         clone.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scaleX}, ${scaleY})`;
         clone.style.borderRadius = `${radius}px`;
@@ -213,7 +222,7 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
         requestAnimationFrame(() => {
           if (heroPhoto) {
             heroPhoto.style.opacity = "1";
-            heroPhoto.style.transform = "translate3d(0, 0, 0) scale(1.08)";
+            heroPhoto.style.transform = `translate3d(0, 0, 0) scale(${endScale})`;
           }
           clone.style.opacity = "0";
           finish("photo");

@@ -52,6 +52,7 @@ export default function Home() {
     typeof window !== "undefined" ? window.innerWidth < 768 : false,
   );
   const [videoPoster, setVideoPoster] = useState("");
+  const [posterReady, setPosterReady] = useState(false);
 
   useEffect(() => {
     const sync = () => setIsMobile(window.innerWidth < 768);
@@ -94,16 +95,23 @@ export default function Home() {
     let alive = true;
     if (!heroVideoUrl) {
       setVideoPoster("");
+      setPosterReady(true);
       return undefined;
     }
+    setPosterReady(false);
     const quick = getDrivePosterUrl(heroVideoUrl);
     if (quick) setVideoPoster(quick);
+    const failSafe = window.setTimeout(() => {
+      if (alive) setPosterReady(true);
+    }, 700);
     captureVideoFrame(heroVideoUrl).then((frame) => {
-      if (!alive || !frame) return;
-      setVideoPoster(frame);
+      if (!alive) return;
+      if (frame) setVideoPoster(frame);
+      setPosterReady(true);
     });
     return () => {
       alive = false;
+      window.clearTimeout(failSafe);
     };
   }, [heroVideoUrl]);
 
@@ -131,6 +139,7 @@ export default function Home() {
     !isError &&
     hasContent &&
     catalogReady &&
+    posterReady &&
     introTiles.some((tile) => tile.isHero && tile.src);
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 import {
+  getDriveFileId,
   getDrivePosterUrl,
   normalizeImageUrl,
   resolvePlayableVideoUrl,
@@ -14,14 +15,49 @@ export const INTRO_OVERLAY_MS = 400;
 export const INTRO_NAV_DELAY_MS = 100;
 export const INTRO_COPY_DELAY_MS = 200;
 
+export function introImageKey(src = "") {
+  const value = String(src || "").trim();
+  if (!value) return "";
+  if (value.startsWith("data:")) return value.slice(0, 96);
+
+  const driveId = getDriveFileId(value);
+  if (driveId) return `drive:${driveId}`;
+
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.toLowerCase();
+    if (host.includes("googleusercontent.com") || host.includes("ggpht.com")) {
+      const id = parsed.pathname.split("/").filter(Boolean)[0] || parsed.pathname;
+      return `guc:${id}`;
+    }
+    if (host.includes("res.cloudinary.com")) {
+      const clean = parsed.pathname.replace(
+        /\/upload\/(?:[^/]*?[a-z]_[\w.,:-]+\/)+/i,
+        "/upload/",
+      );
+      return `cloud:${clean}`;
+    }
+    parsed.searchParams.delete("w");
+    parsed.searchParams.delete("width");
+    parsed.searchParams.delete("q");
+    parsed.searchParams.delete("quality");
+    parsed.searchParams.delete("auto");
+    parsed.searchParams.delete("fit");
+    return `${parsed.origin}${parsed.pathname}?${parsed.searchParams.toString()}`;
+  } catch {
+    return value.split("?")[0];
+  }
+}
+
 export function uniqueImages(values = [], exclude = "") {
-  const ban = String(exclude || "").trim();
+  const ban = introImageKey(exclude);
   const seen = new Set(ban ? [ban] : []);
   const out = [];
   values.forEach((value) => {
     const src = String(value || "").trim();
-    if (!src || seen.has(src)) return;
-    seen.add(src);
+    const key = introImageKey(src);
+    if (!src || !key || seen.has(key)) return;
+    seen.add(key);
     out.push(src);
   });
   return out;

@@ -123,12 +123,13 @@ html[data-home-intro="playing"] .site-chrome {
   pointer-events: none;
 }
 
+html[data-home-intro="revealing"] .site-chrome,
 html[data-home-intro="done"] .site-chrome {
   opacity: 1;
   transform: none;
   transition:
-    opacity 0.45s cubic-bezier(0.76, 0, 0.24, 1),
-    transform 0.45s cubic-bezier(0.76, 0, 0.24, 1);
+    opacity 400ms cubic-bezier(0.22, 1, 0.36, 1) 100ms,
+    transform 400ms cubic-bezier(0.22, 1, 0.36, 1) 100ms;
 }
 
 html[data-home-intro="playing"] .site-float {
@@ -154,12 +155,13 @@ html[data-page-intro="playing"] .site-chrome {
   transition: none;
 }
 
+html[data-page-intro="revealing"] .site-chrome,
 html[data-page-intro="done"] .site-chrome {
   opacity: 1;
   transform: none;
   transition:
-    opacity 400ms cubic-bezier(0.76, 0, 0.24, 1),
-    transform 400ms cubic-bezier(0.76, 0, 0.24, 1);
+    opacity 400ms cubic-bezier(0.22, 1, 0.36, 1) 100ms,
+    transform 400ms cubic-bezier(0.22, 1, 0.36, 1) 100ms;
 }
 
 html[data-page-hero="on"] .nav-glass:not(.is-scrolled) {

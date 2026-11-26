@@ -55,17 +55,19 @@ export default function HomepageIntro({ tiles, onComplete }) {
   const [expanding, setExpanding] = useState(false);
   const [portalReady, setPortalReady] = useState(false);
   const [armed, setArmed] = useState(false);
-  const [frozenTiles] = useState(() => tiles || []);
+  const [frozenTiles, setFrozenTiles] = useState(null);
 
   onCompleteRef.current = onComplete;
 
+  const liveTiles = frozenTiles || tiles || [];
+
   const tileSources = useMemo(
     () =>
-      frozenTiles.map((tile) => ({
+      liveTiles.map((tile) => ({
         ...tile,
         src: normalizeIntroSrc(tile.src, tile.isHero ? 1600 : 720),
       })),
-    [frozenTiles],
+    [liveTiles],
   );
 
   const isMobileStrip = tileSources.length <= 3;
@@ -112,15 +114,23 @@ export default function HomepageIntro({ tiles, onComplete }) {
   }, [lenis]);
 
   useEffect(() => {
+    if (frozenTiles || !(tiles || []).some((tile) => tile.isHero && tile.src)) {
+      return undefined;
+    }
     let alive = true;
-    const sources = tileSources.map((tile) => tile.src).filter(Boolean);
+    const next = tiles || [];
+    const sources = next
+      .map((tile) => normalizeIntroSrc(tile.src, tile.isHero ? 1600 : 720))
+      .filter(Boolean);
     preloadImages(sources, INTRO_PRELOAD_MAX_MS).finally(() => {
-      if (alive) setArmed(true);
+      if (!alive) return;
+      setFrozenTiles(next);
+      setArmed(true);
     });
     return () => {
       alive = false;
     };
-  }, [tileSources]);
+  }, [tiles, frozenTiles]);
 
   useEffect(() => {
     if (!armed) return undefined;
@@ -148,10 +158,22 @@ export default function HomepageIntro({ tiles, onComplete }) {
 
     const first = tileNode.getBoundingClientRect();
     const last = measureHeroTarget();
-    const dx = first.left - last.left;
-    const dy = first.top - last.top;
-    const sx = first.width / Math.max(last.width, 1);
-    const sy = first.height / Math.max(last.height, 1);
+    const lastW = Math.max(last.width, 1);
+    const lastH = Math.max(last.height, 1);
+    const sx = first.width / lastW;
+    const sy = first.height / lastH;
+    const dx =
+      first.left + first.width / 2 - (last.left + last.width / 2);
+    const dy =
+      first.top + first.height / 2 - (last.top + last.height / 2);
+
+    const heroNode =
+      document.querySelector("[data-home-hero-media] img") ||
+      document.querySelector("[data-home-hero-media] video") ||
+      document.querySelector("[data-home-hero-media]");
+    const objectPosition = heroNode
+      ? getComputedStyle(heroNode).objectPosition || "center center"
+      : "center center";
 
     clone.style.position = "fixed";
     clone.style.left = `${last.left}px`;
@@ -159,12 +181,14 @@ export default function HomepageIntro({ tiles, onComplete }) {
     clone.style.width = `${last.width}px`;
     clone.style.height = `${last.height}px`;
     clone.style.objectFit = "cover";
-    clone.style.objectPosition = "center";
-    clone.style.transformOrigin = "top left";
+    clone.style.objectPosition = objectPosition;
+    clone.style.transformOrigin = "center center";
     clone.style.borderRadius = "6px";
     clone.style.zIndex = "122";
     clone.style.willChange = "transform, border-radius";
     clone.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`;
+
+    if (heroNode) heroNode.style.opacity = "0";
 
     const run = animate(0, 1, {
       duration: INTRO_EXPAND_MS / 1000,
@@ -179,6 +203,7 @@ export default function HomepageIntro({ tiles, onComplete }) {
       },
       onComplete: () => {
         requestAnimationFrame(() => {
+          if (heroNode) heroNode.style.opacity = "1";
           clone.style.opacity = "0";
           finish();
           requestAnimationFrame(() => {
