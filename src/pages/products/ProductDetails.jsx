@@ -354,6 +354,7 @@ export default function ProductDetails() {
             description={overview}
             imageUrl={heroImage}
             videoUrl={heroVideo}
+            videoUrls={[heroVideo, section?.videoUrl, product?.videoUrl].filter(Boolean)}
             sideImages={sideImages}
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },

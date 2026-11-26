@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import Seo from "@/components/seo/Seo";
-import SafeImage from "@/components/ui/SafeImage";
+import SafeMedia from "@/components/ui/SafeMedia";
 import MonoLabel from "@/components/ui/MonoLabel";
 import Loading from "@/components/loading/Loading";
 import { ErrorState } from "@/components/ui/StatusMessage";
@@ -139,9 +139,10 @@ export default function Finder() {
                       className="group overflow-hidden border border-line/12 bg-surface text-start transition-colors hover:border-brand-lime focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime"
                     >
                       <div className="relative aspect-[4/3] bg-brand-navy">
-                        {item.imageUrl ? (
-                          <SafeImage
+                        {item.imageUrl || item.videoUrl ? (
+                          <SafeMedia
                             src={item.imageUrl}
+                            videoUrl={item.videoUrl || ""}
                             alt=""
                             className="cinema-grade h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
@@ -215,10 +216,11 @@ export default function Finder() {
                           key={`${match.productId}-${match.diseaseKey}-${match.dose}`}
                           className="grid grid-cols-1 gap-4 border border-line/12 bg-surface p-4 sm:grid-cols-[7rem_1fr] sm:p-5"
                         >
-                          <div className="aspect-square overflow-hidden bg-page">
-                            {match.product.imageUrl ? (
-                              <SafeImage
+                          <div className="relative aspect-square overflow-hidden bg-page">
+                            {match.product.imageUrl || match.product.videoUrl ? (
+                              <SafeMedia
                                 src={match.product.imageUrl}
+                                videoUrl={match.product.videoUrl || ""}
                                 alt={name}
                                 className="h-full w-full object-contain p-2"
                               />

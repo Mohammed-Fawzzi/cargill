@@ -195,6 +195,7 @@ export default function EventDetails() {
             description={details}
             imageUrl={event.imageUrl || ""}
             videoUrl={event.videoUrl || ""}
+            videoUrls={[event.videoUrl].filter(Boolean)}
             sideImages={(eventsQuery.data || [])
               .filter((item) => item.id !== id && item.imageUrl)
               .map((item) => item.imageUrl)}

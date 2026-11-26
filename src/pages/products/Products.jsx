@@ -193,17 +193,17 @@ export default function Products() {
     locale,
     fallbackTitle: t(UI.nav.products, locale),
     fallbackSubtitle: t(UI.productsIntro, locale),
-    fallbackImage: "",
+    fallbackImage: pageQuery.data?.imageUrl || "",
+    fallbackVideo: pageQuery.data?.videoUrl || "",
+    videoCandidates: [
+      ...(categories || []).map((item) => item.videoUrl),
+      ...(products || []).map((item) => item.videoUrl),
+    ],
   });
 
-  const heroImage =
-    pageQuery.data?.imageUrl ||
-    sectionQuery.data?.imageUrl ||
-    "";
-  const heroVideo =
-    pageQuery.data?.videoUrl ||
-    sectionQuery.data?.videoUrl ||
-    "";
+  const heroImage = hero.imageUrl || pageQuery.data?.imageUrl || "";
+  const heroVideo = hero.videoUrl;
+  const heroVideos = hero.videoUrls;
   useEffect(() => {
     warnMissingMedia("product_categories/page.imageUrl", heroImage);
   }, [heroImage]);
@@ -246,6 +246,7 @@ export default function Products() {
             description={hero.subtitle}
             imageUrl={heroImage}
             videoUrl={heroVideo}
+            videoUrls={heroVideos}
             sideImages={heroSides}
             size="mid"
             crumbs={[

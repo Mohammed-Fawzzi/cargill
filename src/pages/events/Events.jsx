@@ -101,6 +101,7 @@ export default function Events() {
     fallbackTitle: t(UI.nav.events, locale),
     fallbackSubtitle: t(UI.eventsIntro, locale),
     fallbackImage: "",
+    videoCandidates: events.map((item) => item.videoUrl),
   });
 
   const facebook = resolveCompanySocial(contact?.social).find(
@@ -115,11 +116,9 @@ export default function Events() {
         : t(UI.noEvents, locale);
 
   const eventCovers = events.map((item) => item.imageUrl).filter(Boolean);
-  const heroImage = sectionQuery.data?.imageUrl || "";
-  const heroVideo =
-    sectionQuery.data?.videoUrl ||
-    events.find((item) => item.videoUrl)?.videoUrl ||
-    "";
+  const heroImage = hero.imageUrl;
+  const heroVideo = hero.videoUrl;
+  const heroVideos = hero.videoUrls;
   useEffect(() => {
     warnMissingMedia("homepage/events.imageUrl", heroImage);
   }, [heroImage]);
@@ -146,6 +145,7 @@ export default function Events() {
             description={hero.subtitle}
             imageUrl={heroImage}
             videoUrl={heroVideo}
+            videoUrls={heroVideos}
             sideImages={eventCovers.filter((src) => src !== heroImage)}
             size="mid"
             crumbs={[

@@ -70,7 +70,7 @@ export default function Articles() {
           (b.createdAt || 0) - (a.createdAt || 0) ||
           (b.updatedAt || 0) - (a.updatedAt || 0),
       )
-      .find((item) => item.imageUrl) || null;
+      .find((item) => item.imageUrl || item.videoUrl) || null;
   }, [articles]);
   const featured = filtered[0] || null;
   const rest = featured ? filtered.slice(1) : [];
@@ -92,7 +92,9 @@ export default function Articles() {
     fallbackTitle: t(UI.knowledgeTitle, locale),
     fallbackSubtitle:
       t(UI.articlesIntro, locale) || t(UI.knowledgeBody, locale),
-    fallbackImage: "",
+    fallbackImage: latestArticle?.imageUrl || "",
+    fallbackVideo: latestArticle?.videoUrl || "",
+    videoCandidates: articles.map((item) => item.videoUrl),
   });
 
   const pending = articlesQuery.isPending;
@@ -120,13 +122,12 @@ export default function Articles() {
           <PageHero
             title={hero.title}
             description={hero.subtitle}
-            imageUrl={latestArticle?.imageUrl || ""}
-            videoUrl={
-              sectionQuery.data?.videoUrl || latestArticle?.videoUrl || ""
-            }
+            imageUrl={hero.imageUrl}
+            videoUrl={hero.videoUrl}
+            videoUrls={hero.videoUrls}
             sideImages={articles
               .map((item) => item.imageUrl)
-              .filter((src) => src && src !== latestArticle?.imageUrl)}
+              .filter((src) => src && src !== hero.imageUrl)}
             size="mid"
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },

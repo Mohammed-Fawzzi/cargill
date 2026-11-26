@@ -621,6 +621,7 @@ export default function About() {
             description={about}
             imageUrl={aboutImage}
             videoUrl={aboutVideo}
+            videoUrls={[aboutVideo, contact?.videoUrl, contact?.aboutVideoUrl].filter(Boolean)}
             sideImages={heroSides}
             crumbs={[
               { label: t(UI.nav.home, locale), to: "/" },

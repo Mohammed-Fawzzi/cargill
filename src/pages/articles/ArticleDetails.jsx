@@ -182,6 +182,7 @@ export default function ArticleDetails() {
             description={excerpt}
             imageUrl={article.imageUrl}
             videoUrl={article.videoUrl || ""}
+            videoUrls={[article.videoUrl].filter(Boolean)}
             sideImages={(articlesQuery.data || [])
               .filter((item) => item.id !== id && item.imageUrl)
               .map((item) => item.imageUrl)}
