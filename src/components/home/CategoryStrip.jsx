@@ -59,7 +59,7 @@ export default function CategoryStrip({ ready = true }) {
       animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
       transition={{ duration: 0.55, ease: easeOut, delay: reducedMotion ? 0 : 0.15 }}
     >
-      <div className="flex flex-col gap-2.5 md:h-[300px] md:flex-row md:gap-2.5">
+      <div className="flex h-[200px] flex-row gap-2 sm:h-[240px] md:h-[300px] md:gap-2.5">
         {tiles.map((tile, index) => {
           const isActive = active === index;
           return (
@@ -68,10 +68,16 @@ export default function CategoryStrip({ ready = true }) {
               to={`/products?section=${encodeURIComponent(tile.id)}`}
               onMouseEnter={() => setActive(index)}
               onFocus={() => setActive(index)}
-              className={`group relative flex h-[140px] flex-col justify-between overflow-hidden rounded-[14px] border p-6 text-white transition-[flex,border-color] ease-out md:h-full md:p-7 ${
+              onClick={(event) => {
+                if (active !== index) {
+                  event.preventDefault();
+                  setActive(index);
+                }
+              }}
+              className={`group relative flex h-full min-w-0 flex-col justify-between overflow-hidden rounded-[14px] border p-4 text-white transition-[flex,border-color] ease-out sm:p-6 md:p-7 ${
                 isActive
-                  ? "border-brand-lime/40 md:flex-[2]"
-                  : "border-white/10 md:flex-1"
+                  ? "flex-[2.2] border-brand-lime/40"
+                  : "flex-1 border-white/10"
               }`}
               style={{
                 background: "#110E33",
@@ -97,7 +103,7 @@ export default function CategoryStrip({ ready = true }) {
               ) : null}
 
               <span
-                className="relative font-mono text-[13px] text-brand-lime"
+                className="relative font-mono text-[11px] text-brand-lime sm:text-[13px]"
                 dir="ltr"
               >
                 {String(index + 1).padStart(2, "0")}
@@ -105,7 +111,9 @@ export default function CategoryStrip({ ready = true }) {
               <div className="relative">
                 <p
                   className={`break-words font-display font-extrabold leading-tight transition-colors group-hover:text-brand-lime ${
-                    isActive ? "text-[26px] sm:text-[40px]" : "text-xl sm:text-[26px]"
+                    isActive
+                      ? "text-lg sm:text-[26px] md:text-[40px]"
+                      : "text-sm sm:text-xl md:text-[26px]"
                   }`}
                 >
                   {tile.name}
