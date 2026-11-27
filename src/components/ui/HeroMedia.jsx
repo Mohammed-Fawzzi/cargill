@@ -136,6 +136,15 @@ export default function HeroMedia({
     const nodes = [aRef.current, bRef.current];
     if (!nodes[0] || !nodes[1]) return undefined;
 
+    nodes.forEach((node) => {
+      node.muted = true;
+      node.defaultMuted = true;
+      node.playsInline = true;
+      node.setAttribute("playsinline", "");
+      node.setAttribute("webkit-playsinline", "");
+      node.setAttribute("muted", "");
+    });
+
     let cancelled = false;
 
     const syncIndex = (next) => {
@@ -497,6 +506,7 @@ export default function HeroMedia({
         }}
         poster={posterSrc || undefined}
         muted
+        autoPlay
         playsInline
         loop={!multi}
         preload="auto"
@@ -511,6 +521,7 @@ export default function HeroMedia({
           zIndex: active === 1 ? 3 : cover[1] ? 2 : 1,
         }}
         muted
+        autoPlay
         playsInline
         loop={!multi}
         preload="auto"
