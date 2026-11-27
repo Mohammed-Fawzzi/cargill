@@ -74,7 +74,7 @@ export const UI = {
   of: { ar: "من", en: "of" },
   noProducts: { ar: "لا توجد منتجات في هذا التصنيف.", en: "No products in this category." },
   noSearchResults: {
-    ar: "مفيش منتجات بالاسم ده",
+    ar: "لا توجد منتجات بهذا الاسم",
     en: "No products with that name",
   },
   downloadDatasheet: {
@@ -110,7 +110,7 @@ export const UI = {
     en: "All products",
   },
   askAboutSearchMessage: {
-    ar: "مرحباً، بدوّر على منتج: {q}",
+    ar: "مرحباً، أبحث عن منتج: {q}",
     en: "Hi, I'm looking for a product: {q}",
   },
   noArticles: { ar: "لا توجد مقالات حالياً.", en: "No articles yet." },
@@ -121,7 +121,7 @@ export const UI = {
   backToArticles: { ar: "كل المقالات", en: "All articles" },
   relatedArticles: { ar: "مقالات ذات صلة", en: "Related articles" },
   moreFieldArticles: {
-    ar: "مقالات تانية من الحقل",
+    ar: "مقالات أخرى من الحقل",
     en: "More field articles",
   },
   readArticle: { ar: "اقرأ المقال", en: "Read article" },
@@ -132,9 +132,9 @@ export const UI = {
   shareFacebook: { ar: "فيسبوك", en: "Facebook" },
   copyLink: { ar: "نسخ الرابط", en: "Copy link" },
   linkCopied: { ar: "تم النسخ", en: "Copied" },
-  readingMinutes: { ar: "د قراءة", en: "min read" },
+  readingMinutes: { ar: "دقيقة قراءة", en: "min read" },
   askAboutArticleMessage: {
-    ar: "مرحباً، عندي سؤال بعد قراءة المقال: {title}",
+    ar: "مرحباً، لدي سؤال بعد قراءة المقال: {title}",
     en: "Hi, I have a question after reading this article: {title}",
   },
   noSearchArticles: {
@@ -152,14 +152,14 @@ export const UI = {
     en: "Upcoming field activities and agricultural events.",
   },
   backToEvents: { ar: "كل الفعاليات", en: "All events" },
-  relatedEvents: { ar: "فعاليات تانية", en: "More events" },
+  relatedEvents: { ar: "فعاليات أخرى", en: "More events" },
   pastEventsLabel: { ar: "فعاليات سابقة", en: "Past events" },
   noFilteredEvents: {
     ar: "لا توجد فعاليات في هذا التصنيف.",
     en: "No events in this filter.",
   },
   noUpcomingEvents: {
-    ar: "مفيش فعاليات قادمة دلوقتي — تابعنا على فيسبوك عشان تعرف أول بأول",
+    ar: "لا توجد فعاليات قادمة حالياً — تابعنا على فيسبوك لمعرفة المستجدات أولاً بأول",
     en: "No upcoming events right now — follow us on Facebook for updates",
   },
   noPastEvents: {
@@ -173,7 +173,7 @@ export const UI = {
     en: "Book your spot on WhatsApp",
   },
   bookEventMessage: {
-    ar: "مرحباً، حابب أحجز مكان في فعالية: {title} — {date}",
+    ar: "مرحباً، أودّ حجز مكان في فعالية: {title} — {date}",
     en: "Hi, I'd like to book a spot at: {title} — {date}",
   },
   addToCalendar: { ar: "أضف للتقويم", en: "Add to calendar" },
@@ -183,16 +183,16 @@ export const UI = {
   openInMapsLink: { ar: "افتح في خرائط جوجل", en: "Open in Google Maps" },
   followFacebook: { ar: "فيسبوك", en: "Facebook" },
 
-  notFoundTitle: { ar: "الصفحة دي مش موجودة", en: "This page isn't here" },
+  notFoundTitle: { ar: "هذه الصفحة غير موجودة", en: "This page isn't here" },
   notFoundBody: {
     ar: "عذراً، الصفحة التي تبحث عنها غير متوفرة.",
     en: "Sorry, the page you are looking for is not available.",
   },
   backHome: { ar: "العودة إلى الصفحة الرئيسية", en: "Back to homepage" },
-  daysLeft: { ar: "باقي {n} يوم", en: "{n} days left" },
-  dayLeft: { ar: "باقي يوم واحد", en: "1 day left" },
+  daysLeft: { ar: "يتبقى {n} يوم", en: "{n} days left" },
+  dayLeft: { ar: "يتبقى يوم واحد", en: "1 day left" },
   formSuccessTitle: {
-    ar: "وصلتنا رسالتك، هنكلمك قريب.",
+    ar: "تلقّينا رسالتك، وسنتواصل معك قريباً.",
     en: "We got your message — we'll call you soon.",
   },
   aboutIntro: {
@@ -204,14 +204,14 @@ export const UI = {
   whoWeAre: { ar: "من نحن", en: "Who we are" },
   ourVision: { ar: "الرؤية", en: "Vision" },
   ourMission: { ar: "الرسالة", en: "Mission" },
-  howWeWork: { ar: "بنشتغل ازاي؟", en: "How we work" },
-  whatWeOffer: { ar: "بنقدم ايه؟", en: "What we offer" },
+  howWeWork: { ar: "كيف نعمل؟", en: "How we work" },
+  whatWeOffer: { ar: "ماذا نقدّم؟", en: "What we offer" },
   contactUsCta: { ar: "تواصل معنا", en: "Contact us" },
-  callUs: { ar: "اتصل بينا", en: "Call us" },
-  sendEmail: { ar: "ابعت إيميل", en: "Send email" },
+  callUs: { ar: "اتصل بنا", en: "Call us" },
+  sendEmail: { ar: "أرسل بريداً إلكترونياً", en: "Send email" },
   contactDetails: { ar: "بيانات التواصل", en: "Contact details" },
-  sendUsMessage: { ar: "ابعتلنا رسالة", en: "Send us a message" },
-  otherPhones: { ar: "أرقام تانية", en: "Other numbers" },
+  sendUsMessage: { ar: "أرسل لنا رسالة", en: "Send us a message" },
+  otherPhones: { ar: "أرقام أخرى", en: "Other numbers" },
   workingHours: { ar: "المواعيد", en: "Hours" },
   alexMapAddress: {
     ar: "الكيلو 13، طريق الإسكندرية–القاهرة الزراعي، بجوار مدرسة مصر الحديثة، الإسكندرية",
@@ -262,14 +262,14 @@ export const UI = {
   storyEyebrow: { ar: "من الحقل", en: "From the field" },
   readTheStory: { ar: "اقرأ القصة", en: "Read the story" },
   discoverEyebrow: { ar: "اكتشف", en: "Discover" },
-  knowMore: { ar: "اعرف المزيد", en: "Know more" },
+  knowMore: { ar: "تعرّف على المزيد", en: "Know more" },
   knowledgeTitle: { ar: "معرفة من الحقل", en: "Field knowledge" },
   knowledgeBody: {
     ar: "أسئلة وإجابات عملية تساعد المزارع على اتخاذ قرار أوضح.",
     en: "Practical Q&A that helps growers make clearer decisions.",
   },
   mediaReleases: { ar: "من الإعلام", en: "Media releases" },
-  findOutMore: { ar: "اعرف التفاصيل", en: "Find out more" },
+  findOutMore: { ar: "تعرّف على التفاصيل", en: "Find out more" },
   allMedia: { ar: "كل المقالات", en: "All articles" },
   allNews: { ar: "كل الأخبار", en: "All news" },
   allEventsLink: { ar: "كل الفعاليات", en: "All events" },
@@ -302,11 +302,11 @@ export const UI = {
   whatsapp: { ar: "واتساب", en: "WhatsApp" },
   askAgronomist: { ar: "اسأل مهندس زراعي", en: "Ask an agronomist" },
   askAgronomistMessage: {
-    ar: "مرحباً، محتاج أسأل مهندس زراعي عن محصولي.",
+    ar: "مرحباً، أودّ استشارة مهندس زراعي بشأن محصولي.",
     en: "Hi, I'd like to ask an agronomist about my crop.",
   },
   imInterested: { ar: "أنا مهتم", en: "I'm interested" },
-  needHelp: { ar: "محتاج مساعدة؟", en: "Need help?" },
+  needHelp: { ar: "هل تحتاج مساعدة؟", en: "Need help?" },
   featuredBadge: { ar: "مميز", en: "Featured" },
   featuredLabel: { ar: "منتجات مميزة", en: "Featured products" },
   featuredHeading: {
@@ -320,13 +320,13 @@ export const UI = {
     en: "Ask about it on WhatsApp",
   },
   askAboutProductMessage: {
-    ar: "مرحباً، محتاج تفاصيل عن المنتج: {name}",
+    ar: "مرحباً، أودّ الحصول على تفاصيل عن المنتج: {name}",
     en: "Hi, I'd like details about this product: {name}",
   },
   newlyLaunched: { ar: "حل مميز", en: "Featured solution" },
   productHighlights: { ar: "أبرز المزايا", en: "Product highlights" },
   cropsCovered: { ar: "محاصيل", en: "Crops" },
-  learnMoreProduct: { ar: "اعرف المزيد", en: "Learn more" },
+  learnMoreProduct: { ar: "تعرّف على المزيد", en: "Learn more" },
 
   valuesEyebrow: { ar: "قيمنا في الحقل", en: "Our field values" },
   valuesTitle: {
@@ -336,7 +336,7 @@ export const UI = {
   valuesTagField: { ar: "خبرة ميدانية", en: "Field expertise" },
   valuesTagVision: { ar: "توجه مستدام", en: "Sustainable direction" },
   valuesTagMission: { ar: "التزام بالجودة", en: "Quality commitment" },
-  learnMoreAbout: { ar: "اعرف المزيد عن الشركة", en: "Learn more about us" },
+  learnMoreAbout: { ar: "تعرّف على المزيد عن الشركة", en: "Learn more about us" },
   whyEyebrow: { ar: "لماذا نحن", en: "Why choose us" },
   whyTitle: { ar: "لماذا {brand}", en: "Why {brand}" },
   whyBody: {
@@ -373,7 +373,7 @@ export const UI = {
     en: "Cargill for Agricultural Solutions",
   },
   cropQuestion: {
-    ar: "عندك سؤال عن محصولك؟",
+    ar: "هل لديك سؤال عن محصولك؟",
     en: "Got a question about your crop?",
   },
   experienceYears: { ar: "+20", en: "+20" },
@@ -411,13 +411,13 @@ export const UI = {
   heroMonoLabel: { ar: "FIELD PROFILE", en: "FIELD PROFILE" },
   productsIndexLabel: { ar: "المنتجات", en: "Products" },
 
-  findSolution: { ar: "لاقي الحل", en: "Find a solution" },
-  finderStepCrop: { ar: "بتزرع إيه؟", en: "What do you grow?" },
-  finderStepIssue: { ar: "المشكلة إيه؟", en: "What's the issue?" },
+  findSolution: { ar: "اعثر على الحل", en: "Find a solution" },
+  finderStepCrop: { ar: "ماذا تزرع؟", en: "What do you grow?" },
+  finderStepIssue: { ar: "ما المشكلة؟", en: "What's the issue?" },
   finderStepResults: { ar: "المنتجات المناسبة", en: "Matching products" },
   finderBack: { ar: "رجوع", en: "Back" },
   finderNoMatch: {
-    ar: "ملقيناش منتج للحالة دي — ابعت صورة للمهندس على واتساب",
+    ar: "لم نجد منتجاً لهذه الحالة — أرسل صورة للمهندس عبر واتساب",
     en: "No product for this case — send a photo to the agronomist on WhatsApp",
   },
   finderAskWa: {
@@ -425,23 +425,23 @@ export const UI = {
     en: "Ask the agronomist on WhatsApp",
   },
   finderAskMessage: {
-    ar: "عندي [المحصول] وفيه [المشكلة]، محتاج أعرف عن [المنتج]",
+    ar: "لدي [المحصول] وفيه [المشكلة]، وأودّ معرفة المزيد عن [المنتج]",
     en: "I grow [المحصول] with [المشكلة], I need details about [المنتج]",
   },
   finderNoMatchMessage: {
-    ar: "مرحباً، ملقيناش منتج للحالة دي. عندي محصول ومشكلة محتاج رأي المهندس — هبعت صورة.",
+    ar: "مرحباً، لم نجد منتجاً لهذه الحالة. لدي محصول ومشكلة وأحتاج رأي المهندس — سأرسل صورة.",
     en: "Hi, no product matched my case. I need an agronomist's advice — I'll send a photo.",
   },
   megaByCategory: { ar: "حسب الفئة", en: "By category" },
   megaByCrop: { ar: "حسب المحصول", en: "By crop" },
   megaByIssue: { ar: "حسب المشكلة", en: "By issue" },
-  distributorsTitle: { ar: "الموزعين", en: "Distributors" },
+  distributorsTitle: { ar: "الموزعون", en: "Distributors" },
   distributorsTeaser: {
-    ar: "دور على أقرب موزّع لمحافظتك",
+    ar: "ابحث عن أقرب موزّع في محافظتك",
     en: "Find a distributor in your governorate",
   },
   distributorsEmptyGov: {
-    ar: "مفيش موزّع مسجّل في المحافظة دي حالياً",
+    ar: "لا يوجد موزّع مسجّل في هذه المحافظة حالياً",
     en: "No distributor listed for this governorate yet",
   },
   registrationBadge: {
