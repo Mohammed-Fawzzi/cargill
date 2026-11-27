@@ -74,7 +74,7 @@ export default function CategoryStrip({ ready = true }) {
                   setActive(index);
                 }
               }}
-              className={`group relative flex h-full min-w-0 flex-col justify-between overflow-hidden rounded-[14px] border p-4 text-white transition-[flex,border-color] ease-out sm:p-6 md:p-7 ${
+              className={`group relative flex h-full min-w-0 flex-col justify-between overflow-hidden rounded-[14px] border p-3 text-white transition-[flex,border-color] ease-out sm:p-6 md:p-7 ${
                 isActive
                   ? "flex-[2.2] border-brand-lime/40"
                   : "flex-1 border-white/10"
@@ -103,17 +103,17 @@ export default function CategoryStrip({ ready = true }) {
               ) : null}
 
               <span
-                className="relative font-mono text-[11px] text-brand-lime sm:text-[13px]"
+                className="relative font-mono text-[10px] text-brand-lime sm:text-[13px]"
                 dir="ltr"
               >
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <div className="relative">
+              <div className="relative min-w-0">
                 <p
-                  className={`break-words font-display font-extrabold leading-tight transition-colors group-hover:text-brand-lime ${
+                  className={`font-display font-extrabold leading-snug transition-colors group-hover:text-brand-lime ${
                     isActive
-                      ? "text-lg sm:text-[26px] md:text-[40px]"
-                      : "text-sm sm:text-xl md:text-[26px]"
+                      ? "text-[13px] sm:text-[26px] md:text-[40px]"
+                      : "text-[11px] sm:text-xl md:text-[26px]"
                   }`}
                 >
                   {tile.name}
