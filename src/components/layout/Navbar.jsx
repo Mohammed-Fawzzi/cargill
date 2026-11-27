@@ -52,14 +52,14 @@ function AskAgronomistButton({ href, label, className = "", onClick }) {
   );
 }
 
-function ProductsMegaMenu({ categories = [], locale, onNavigate }) {
-  const tiles = categories.slice(0, 4);
+function ProductsMegaMenu({ tiles = [], locale, onNavigate }) {
+  const list = tiles.slice(0, 4);
   const cols =
-    tiles.length >= 4
+    list.length >= 4
       ? "grid-cols-2 lg:grid-cols-4"
-      : tiles.length === 3
+      : list.length === 3
         ? "grid-cols-2 lg:grid-cols-3"
-        : tiles.length === 2
+        : list.length === 2
           ? "grid-cols-2"
           : "grid-cols-1";
 
@@ -78,7 +78,7 @@ function ProductsMegaMenu({ categories = [], locale, onNavigate }) {
         <div className="mb-2 flex items-end justify-between gap-3 border-b border-line/10 pb-2">
           <div>
             <p className="font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-ink/45">
-              Categories
+              {t(UI.featuredLabel, locale)}
             </p>
             <p className="mt-0.5 text-sm font-bold text-ink">
               {t(UI.nav.products, locale)}
@@ -93,18 +93,19 @@ function ProductsMegaMenu({ categories = [], locale, onNavigate }) {
           </Link>
         </div>
         <div className={`grid gap-2 ${cols}`}>
-          {tiles.map((category, index) => {
-            const name = t(category.name, locale);
+          {list.map((tile, index) => {
+            const name = t(tile.name, locale);
+            const categoryName = t(tile.categoryName, locale);
             return (
               <Link
-                key={category.id}
-                to={`/products?section=${encodeURIComponent(category.id)}`}
+                key={tile.id}
+                to={`/products/${encodeURIComponent(tile.id)}`}
                 onClick={onNavigate}
                 className="group relative aspect-[5/4] overflow-hidden border border-line/10 bg-brand-navy"
               >
-                {category.imageUrl ? (
+                {tile.imageUrl ? (
                   <SafeImage
-                    src={category.imageUrl}
+                    src={tile.imageUrl}
                     alt={name}
                     width={480}
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -116,6 +117,7 @@ function ProductsMegaMenu({ categories = [], locale, onNavigate }) {
                 <div className="absolute inset-x-0 bottom-0 p-2.5">
                   <p className="mb-0.5 font-mono text-[10px] font-medium tracking-[0.18em] text-brand-lime">
                     {String(index + 1).padStart(2, "0")}
+                    {categoryName ? ` · ${categoryName}` : ""}
                   </p>
                   <p className="text-[13px] font-extrabold leading-snug text-white sm:text-sm">
                     {name}
@@ -367,10 +369,10 @@ export default function Navbar() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const categories = useMemo(() => {
-    const list = categoriesQuery.data || [];
+  const megaProducts = useMemo(() => {
+    const categories = categoriesQuery.data || [];
     const products = productsQuery.data || [];
-    return list
+    return categories
       .filter((category) => {
         const ar = String(category?.name?.ar || "").toLowerCase();
         const en = String(category?.name?.en || "").toLowerCase();
@@ -380,14 +382,22 @@ export default function Navbar() {
         );
       })
       .map((category) => {
-        const cover = products.find(
-          (product) => product.sectionId === category.id && product.imageUrl,
-        );
+        const cover =
+          products.find(
+            (product) =>
+              product.sectionId === category.id &&
+              (product.imageUrl || product.videoUrl),
+          ) || products.find((product) => product.sectionId === category.id);
+        if (!cover?.id) return null;
         return {
-          ...category,
-          imageUrl: category.imageUrl || cover?.imageUrl || "",
+          id: cover.id,
+          name: cover.name,
+          imageUrl: cover.imageUrl || category.imageUrl || "",
+          categoryName: category.name,
         };
-      });
+      })
+      .filter(Boolean)
+      .slice(0, 4);
   }, [categoriesQuery.data, productsQuery.data]);
 
   useEffect(() => {
@@ -503,7 +513,7 @@ export default function Navbar() {
                     onNavigate={closeMenu}
                   >
                     <ProductsMegaMenu
-                      categories={categories}
+                      tiles={megaProducts}
                       locale={locale}
                       onNavigate={closeMenu}
                     />
