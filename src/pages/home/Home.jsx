@@ -122,9 +122,9 @@ export default function Home() {
         products: productsQuery.data || [],
         heroImage,
         heroSlides,
-        mobile: isMobile,
+        mobile: false,
       }),
-    [categoriesQuery.data, productsQuery.data, heroImage, heroSlides, isMobile],
+    [categoriesQuery.data, productsQuery.data, heroImage, heroSlides],
   );
 
   const catalogReady =

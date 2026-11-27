@@ -48,7 +48,7 @@ export default function ScrollWords({
 
   if (!text) return null;
 
-  if (reducedMotion || mobile) {
+  if (reducedMotion) {
     return (
       <p className={className}>
         {words.map((word, index) => {

@@ -44,25 +44,10 @@ function StatValue({ target, reducedMotion }) {
   );
 }
 
-function useIsMobile(breakpoint = 768) {
-  const [mobile, setMobile] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
-    const sync = () => setMobile(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, [breakpoint]);
-
-  return mobile;
-}
-
 export default function ValuesTrio() {
   const { locale } = useLocale();
   const { contact } = useSiteData();
   const { reducedMotion } = useMotionPrefs();
-  const isMobile = useIsMobile();
   const paragraphRef = useRef(null);
   const cardRef = useRef(null);
   const [active, setActive] = useState(false);
@@ -169,7 +154,7 @@ export default function ValuesTrio() {
                     className="h-full w-full"
                     softLight
                     spin={0.18}
-                    followMouse={!isMobile}
+                    followMouse
                   />
                 </Suspense>
               )}
@@ -245,7 +230,6 @@ export default function ValuesTrio() {
                   text={about}
                   progress={scrollYProgress}
                   reducedMotion={reducedMotion}
-                  mobile={isMobile}
                   accentPhrase
                   className="text-base font-medium leading-relaxed text-white/62 md:text-lg"
                 />

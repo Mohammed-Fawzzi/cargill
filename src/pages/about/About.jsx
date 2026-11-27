@@ -22,21 +22,7 @@ import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
 const BrandTriangle3D = lazyWithRetry(() => import("@/components/ui/BrandTriangle3D"));
 
-function useIsMobile(breakpoint = 768) {
-  const [mobile, setMobile] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
-    const sync = () => setMobile(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, [breakpoint]);
-
-  return mobile;
-}
-
-function ExperienceCard({ locale, reducedMotion, isMobile, productCount = 0 }) {
+function ExperienceCard({ locale, reducedMotion, productCount = 0 }) {
   const cardRef = useRef(null);
   const [active, setActive] = useState(false);
   const target = productCount > 0 ? productCount : 0;
@@ -77,7 +63,7 @@ function ExperienceCard({ locale, reducedMotion, isMobile, productCount = 0 }) {
               className="h-[70%] w-[75%] max-w-[220px]"
               softLight
               spin={0.16}
-              followMouse={!isMobile}
+              followMouse
             />
           </Suspense>
         )}
@@ -520,8 +506,6 @@ export default function About() {
   const { locale } = useLocale();
   const { reducedMotion } = useMotionPrefs();
   const { contact, isPending, isError } = useSiteData();
-  const isMobile = useIsMobile();
-
   const categoriesQuery = useQuery({
     queryKey: ["cms", "categories"],
     queryFn: getCategories,
@@ -682,7 +666,6 @@ export default function About() {
                       <ExperienceCard
                         locale={locale}
                         reducedMotion={reducedMotion}
-                        isMobile={isMobile}
                         productCount={productsQuery.data?.length || 0}
                       />
                     </div>
@@ -717,7 +700,6 @@ export default function About() {
                           <ExperienceCard
                             locale={locale}
                             reducedMotion={reducedMotion}
-                            isMobile={isMobile}
                             productCount={productsQuery.data?.length || 0}
                           />
                         </div>

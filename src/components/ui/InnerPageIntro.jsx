@@ -42,16 +42,7 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
   const [expanding, setExpanding] = useState(false);
   const [portalReady, setPortalReady] = useState(false);
   const [armed, setArmed] = useState(false);
-  const [mobile] = useState(() =>
-    typeof window !== "undefined"
-      ? window.matchMedia("(max-width: 767px)").matches
-      : false,
-  );
-
-  const timings = useMemo(
-    () => getIntroTimings({ home: false, mobile }),
-    [mobile],
-  );
+  const timings = useMemo(() => getIntroTimings({ home: false }), []);
 
   onDoneRef.current = onDone;
 
@@ -71,7 +62,7 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
     return buildIntroTiles({
       centerSrc,
       sideImages: pool.map((src) => normalizeIntroSrc(src, 900)),
-      mobile,
+      mobile: false,
     });
   }, [
     centerSrc,
@@ -80,7 +71,6 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
     contact,
     categoriesQuery.data,
     productsQuery.data,
-    mobile,
   ]);
 
   const centerIndex = Math.floor(tiles.length / 2);
@@ -290,7 +280,7 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
           <div
             className="flex items-center justify-center"
             dir="ltr"
-            style={{ gap: mobile ? 16 : 24 }}
+            style={{ gap: 24 }}
           >
             {tiles.map((tile, index) => {
               const isCenter = tile.hero;
@@ -305,7 +295,7 @@ export default function InnerPageIntro({ imageUrl, sideImages = [], onDone }) {
                   ref={isCenter ? centerRef : undefined}
                   className="relative shrink-0 overflow-hidden bg-[#181060]"
                   style={{
-                    width: mobile ? "42vw" : "18vw",
+                    width: "18vw",
                     aspectRatio: "3 / 4",
                     borderRadius: timings.radiusPx,
                     willChange: "transform, opacity, filter",

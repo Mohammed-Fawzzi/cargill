@@ -50,16 +50,7 @@ export default function HomepageIntro({ tiles, onComplete }) {
   const [portalReady, setPortalReady] = useState(false);
   const [armed, setArmed] = useState(false);
   const [frozenTiles, setFrozenTiles] = useState(null);
-  const [mobile] = useState(() =>
-    typeof window !== "undefined"
-      ? window.matchMedia("(max-width: 767px)").matches
-      : false,
-  );
-
-  const timings = useMemo(
-    () => getIntroTimings({ home: true, mobile }),
-    [mobile],
-  );
+  const timings = useMemo(() => getIntroTimings({ home: true }), []);
 
   onCompleteRef.current = onComplete;
 

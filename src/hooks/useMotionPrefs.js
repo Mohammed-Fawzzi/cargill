@@ -9,7 +9,7 @@ function readPrefs() {
   return {
     reducedMotion,
     finePointer,
-    canTilt: finePointer && !reducedMotion,
+    canTilt: !reducedMotion,
   };
 }
 

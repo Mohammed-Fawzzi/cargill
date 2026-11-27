@@ -37,7 +37,7 @@ export default function useDragRail() {
   const cursor = useRef({ x: 0, y: 0, tx: 0, ty: 0, visible: false });
   const rafRef = useRef(0);
   const [cursorOn, setCursorOn] = useState(false);
-  const enabled = finePointer && !reducedMotion;
+  const enabled = !reducedMotion;
 
   const setCursorVisible = (visible) => {
     cursor.current.visible = visible;
@@ -92,7 +92,7 @@ export default function useDragRail() {
 
       const overCard = isCardTarget(event.target);
       const overAction = isActionTarget(event.target);
-      setCursorVisible(overCard && !overAction);
+      setCursorVisible(finePointer && overCard && !overAction);
 
       if (!drag.current.active) return;
       const dx = event.clientX - drag.current.startX;
@@ -144,7 +144,7 @@ export default function useDragRail() {
       node.removeEventListener("click", onClickCapture, true);
       node.removeEventListener("pointerleave", onLeave);
     };
-  }, [enabled]);
+  }, [enabled, finePointer]);
 
   return { railRef, cursorRef, cursorOn, enabled };
 }

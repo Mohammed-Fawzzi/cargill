@@ -1265,11 +1265,6 @@ html[dir="ltr"] .split-btn:focus-visible:not(:disabled) .split-btn__arrow,
 }
 
 @media (hover: none), (pointer: coarse) {
-  .split-btn__label,
-  .split-btn__arrow {
-    transition: none;
-  }
-
   .split-btn:active:not(:disabled) .split-btn__label {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
@@ -1657,45 +1652,57 @@ html[dir="ltr"] .cover-cta__glyph:last-child,
   opacity: 0;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .group:hover .cover-cta,
-  .group:focus-visible .cover-cta,
-  .curtain-frame:hover > .cover-cta {
-    opacity: 1;
-    transform: none;
-  }
+.group:hover .cover-cta,
+.group:focus-visible .cover-cta,
+.group:active .cover-cta,
+.curtain-frame:hover > .cover-cta,
+.curtain-frame:active > .cover-cta {
+  opacity: 1;
+  transform: none;
+}
 
-  .group:hover .cover-cta__glyph:first-child,
-  .group:focus-visible .cover-cta__glyph:first-child,
-  .curtain-frame:hover > .cover-cta .cover-cta__glyph:first-child {
-    transform: translateX(-1.4em);
-    opacity: 0;
-  }
+.group:hover .cover-cta__glyph:first-child,
+.group:focus-visible .cover-cta__glyph:first-child,
+.group:active .cover-cta__glyph:first-child,
+.curtain-frame:hover > .cover-cta .cover-cta__glyph:first-child,
+.curtain-frame:active > .cover-cta .cover-cta__glyph:first-child {
+  transform: translateX(-1.4em);
+  opacity: 0;
+}
 
-  .group:hover .cover-cta__glyph:last-child,
-  .group:focus-visible .cover-cta__glyph:last-child,
-  .curtain-frame:hover > .cover-cta .cover-cta__glyph:last-child {
-    transform: translateX(0);
-    opacity: 1;
-  }
+.group:hover .cover-cta__glyph:last-child,
+.group:focus-visible .cover-cta__glyph:last-child,
+.group:active .cover-cta__glyph:last-child,
+.curtain-frame:hover > .cover-cta .cover-cta__glyph:last-child,
+.curtain-frame:active > .cover-cta .cover-cta__glyph:last-child {
+  transform: translateX(0);
+  opacity: 1;
+}
 
-  html[dir="ltr"] .group:hover .cover-cta__glyph:first-child,
-  html[dir="ltr"] .group:focus-visible .cover-cta__glyph:first-child,
-  html[dir="ltr"] .curtain-frame:hover > .cover-cta .cover-cta__glyph:first-child,
-  [dir="ltr"] .group:hover .cover-cta__glyph:first-child,
-  [dir="ltr"] .group:focus-visible .cover-cta__glyph:first-child,
-  [dir="ltr"] .curtain-frame:hover > .cover-cta .cover-cta__glyph:first-child {
-    transform: scaleX(-1) translateX(1.4em);
-  }
+html[dir="ltr"] .group:hover .cover-cta__glyph:first-child,
+html[dir="ltr"] .group:focus-visible .cover-cta__glyph:first-child,
+html[dir="ltr"] .group:active .cover-cta__glyph:first-child,
+html[dir="ltr"] .curtain-frame:hover > .cover-cta .cover-cta__glyph:first-child,
+html[dir="ltr"] .curtain-frame:active > .cover-cta .cover-cta__glyph:first-child,
+[dir="ltr"] .group:hover .cover-cta__glyph:first-child,
+[dir="ltr"] .group:focus-visible .cover-cta__glyph:first-child,
+[dir="ltr"] .group:active .cover-cta__glyph:first-child,
+[dir="ltr"] .curtain-frame:hover > .cover-cta .cover-cta__glyph:first-child,
+[dir="ltr"] .curtain-frame:active > .cover-cta .cover-cta__glyph:first-child {
+  transform: scaleX(-1) translateX(1.4em);
+}
 
-  html[dir="ltr"] .group:hover .cover-cta__glyph:last-child,
-  html[dir="ltr"] .group:focus-visible .cover-cta__glyph:last-child,
-  html[dir="ltr"] .curtain-frame:hover > .cover-cta .cover-cta__glyph:last-child,
-  [dir="ltr"] .group:hover .cover-cta__glyph:last-child,
-  [dir="ltr"] .group:focus-visible .cover-cta__glyph:last-child,
-  [dir="ltr"] .curtain-frame:hover > .cover-cta .cover-cta__glyph:last-child {
-    transform: scaleX(-1);
-  }
+html[dir="ltr"] .group:hover .cover-cta__glyph:last-child,
+html[dir="ltr"] .group:focus-visible .cover-cta__glyph:last-child,
+html[dir="ltr"] .group:active .cover-cta__glyph:last-child,
+html[dir="ltr"] .curtain-frame:hover > .cover-cta .cover-cta__glyph:last-child,
+html[dir="ltr"] .curtain-frame:active > .cover-cta .cover-cta__glyph:last-child,
+[dir="ltr"] .group:hover .cover-cta__glyph:last-child,
+[dir="ltr"] .group:focus-visible .cover-cta__glyph:last-child,
+[dir="ltr"] .group:active .cover-cta__glyph:last-child,
+[dir="ltr"] .curtain-frame:hover > .cover-cta .cover-cta__glyph:last-child,
+[dir="ltr"] .curtain-frame:active > .cover-cta .cover-cta__glyph:last-child {
+  transform: scaleX(-1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1705,40 +1712,47 @@ html[dir="ltr"] .cover-cta__glyph:last-child,
   }
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .curtain-card:hover .curtain-card__cover,
-  .curtain-card:focus-visible .curtain-card__cover,
-  .curtain-card:focus-within .curtain-card__cover,
-  .curtain-frame:hover .curtain-card__cover,
-  .group:hover .curtain-frame .curtain-card__cover {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-    transition-duration: 900ms;
-  }
+.curtain-card:hover .curtain-card__cover,
+.curtain-card:focus-visible .curtain-card__cover,
+.curtain-card:focus-within .curtain-card__cover,
+.curtain-card:active .curtain-card__cover,
+.curtain-frame:hover .curtain-card__cover,
+.curtain-frame:active .curtain-card__cover,
+.group:hover .curtain-frame .curtain-card__cover,
+.group:active .curtain-frame .curtain-card__cover {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  transition-duration: 900ms;
+}
 
-  .curtain-card:hover .curtain-card__photo,
-  .curtain-card:focus-visible .curtain-card__photo,
-  .curtain-card:focus-within .curtain-card__photo,
-  .curtain-frame:hover .curtain-card__photo,
-  .group:hover .curtain-frame .curtain-card__photo {
-    transform: scale(1);
-    transition-duration: 900ms;
-  }
+.curtain-card:hover .curtain-card__photo,
+.curtain-card:focus-visible .curtain-card__photo,
+.curtain-card:focus-within .curtain-card__photo,
+.curtain-card:active .curtain-card__photo,
+.curtain-frame:hover .curtain-card__photo,
+.curtain-frame:active .curtain-card__photo,
+.group:hover .curtain-frame .curtain-card__photo,
+.group:active .curtain-frame .curtain-card__photo {
+  transform: scale(1);
+  transition-duration: 900ms;
+}
 
-  .curtain-card:hover .curtain-card__desc,
-  .curtain-card:focus-visible .curtain-card__desc,
-  .curtain-card:focus-within .curtain-card__desc,
-  .group:hover .curtain-card__desc,
-  .group:focus-visible .curtain-card__desc {
-    max-height: 5.25em;
-    margin-top: 0.45rem;
-    opacity: 0.9;
-  }
+.curtain-card:hover .curtain-card__desc,
+.curtain-card:focus-visible .curtain-card__desc,
+.curtain-card:focus-within .curtain-card__desc,
+.curtain-card:active .curtain-card__desc,
+.group:hover .curtain-card__desc,
+.group:focus-visible .curtain-card__desc,
+.group:active .curtain-card__desc {
+  max-height: 5.25em;
+  margin-top: 0.45rem;
+  opacity: 0.9;
+}
 
-  .curtain-card:hover .curtain-card__label,
-  .curtain-card:focus-visible .curtain-card__label,
-  .curtain-card:focus-within .curtain-card__label {
-    color: #8cc63f;
-  }
+.curtain-card:hover .curtain-card__label,
+.curtain-card:focus-visible .curtain-card__label,
+.curtain-card:focus-within .curtain-card__label,
+.curtain-card:active .curtain-card__label {
+  color: #8cc63f;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1777,14 +1791,6 @@ html[dir="ltr"] .cover-cta__glyph:last-child,
     margin-top: 0.45rem;
     opacity: 0.6;
     transition: none;
-  }
-}
-
-@media (hover: none), (pointer: coarse) {
-  .curtain-card__desc {
-    max-height: 5.25em;
-    margin-top: 0.45rem;
-    opacity: 0.6;
   }
 }
 

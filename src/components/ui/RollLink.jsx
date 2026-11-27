@@ -63,7 +63,7 @@ export default function RollLink({
   rel,
   onClick,
 }) {
-  const { reducedMotion, finePointer } = useMotionPrefs();
+  const { reducedMotion } = useMotionPrefs();
   const runningRef = useRef(false);
   const wordRefs = useRef([]);
   const text = useMemo(() => toText(children), [children]);
@@ -71,7 +71,7 @@ export default function RollLink({
 
   const play = () => {
     if (runningRef.current) return;
-    if (reducedMotion || !finePointer) return;
+    if (reducedMotion) return;
     const words = wordRefs.current.filter(Boolean);
     if (!words.length) return;
 
@@ -87,10 +87,8 @@ export default function RollLink({
     className: `ix-footer-link ${className}`.trim(),
     dir,
     onClick,
-    onPointerEnter: (event) => {
-      if (event.pointerType === "mouse" || event.pointerType === "pen") {
-        play();
-      }
+    onPointerEnter: () => {
+      play();
     },
     onFocus: (event) => {
       if (event.currentTarget.matches(":focus-visible")) {

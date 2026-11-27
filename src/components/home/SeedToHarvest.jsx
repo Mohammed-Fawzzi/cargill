@@ -9,22 +9,9 @@ import { t } from "@/lib/i18n";
 import { UI } from "@/data/uiCopy";
 import useMotionPrefs from "@/hooks/useMotionPrefs";
 
-function useIsMobile(breakpoint = 768) {
-  const [mobile, setMobile] = useState(false);
-  useEffect(() => {
-    const media = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
-    const sync = () => setMobile(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, [breakpoint]);
-  return mobile;
-}
-
 export default function SeedToHarvest() {
   const { locale } = useLocale();
   const { reducedMotion } = useMotionPrefs();
-  const isMobile = useIsMobile();
   const pinRef = useRef(null);
   const query = useQuery({
     queryKey: ["cms", "editorial", "seed_to_harvest"],
@@ -44,7 +31,7 @@ export default function SeedToHarvest() {
 
   const [active, setActive] = useState(0);
   useEffect(() => {
-    if (reducedMotion || isMobile || stages.length < 3) return undefined;
+    if (reducedMotion || stages.length < 3) return undefined;
     return scrollYProgress.on("change", (value) => {
       const index = Math.min(
         stages.length - 1,
@@ -52,13 +39,13 @@ export default function SeedToHarvest() {
       );
       setActive(index);
     });
-  }, [scrollYProgress, stages.length, reducedMotion, isMobile]);
+  }, [scrollYProgress, stages.length, reducedMotion]);
 
   const lineScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
   if (stages.length < 3) return null;
 
-  if (isMobile || reducedMotion) {
+  if (reducedMotion) {
     return (
       <section className="bg-page py-[4.5rem] lg:py-[7rem]">
         <div className="container mx-auto px-4 lg:px-8">

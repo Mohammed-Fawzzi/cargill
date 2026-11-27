@@ -93,7 +93,7 @@ export const SplitBtnLabel = forwardRef(function SplitBtnLabel(
   { children, className = "" },
   ref,
 ) {
-  const { reducedMotion, finePointer } = useMotionPrefs();
+  const { reducedMotion } = useMotionPrefs();
   const runningRef = useRef(false);
   const labelRef = useRef(null);
   const wordRefs = useRef([]);
@@ -105,7 +105,7 @@ export const SplitBtnLabel = forwardRef(function SplitBtnLabel(
 
   const play = () => {
     if (runningRef.current) return;
-    if (reducedMotion || !finePointer) return;
+    if (reducedMotion) return;
     const words = wordRefs.current.filter(Boolean);
     if (!words.length) return;
 
@@ -193,10 +193,8 @@ export default function SplitArrowButton({
     variant === "secondary" ? "split-btn--secondary" : "split-btn--primary";
   const labelRef = useRef(null);
 
-  const onPointerEnter = (event) => {
-    if (event.pointerType === "mouse" || event.pointerType === "pen") {
-      labelRef.current?.play();
-    }
+  const onPointerEnter = () => {
+    labelRef.current?.play();
   };
 
   return (
