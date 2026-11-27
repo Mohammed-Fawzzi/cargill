@@ -293,23 +293,33 @@ export default function ProductDetails() {
     phone,
     t(UI.askAgronomistMessage, locale),
   );
-  const heroImage = section?.imageUrl || "";
+  const heroImage =
+    section?.imageUrl ||
+    product?.imageUrl ||
+    images[0] ||
+    "";
   const heroVideo = section?.videoUrl || product?.videoUrl || "";
   useEffect(() => {
     warnMissingMedia(
-      `product_categories.sections[${section?.id || "?"}].imageUrl`,
+      `products/${product?.id || "unknown"}.imageUrl`,
       heroImage,
     );
-  }, [section?.id, heroImage]);
-  const sideImages = categories
-    .filter(
-      (item) =>
-        item.id !== section?.id &&
-        item.imageUrl &&
-        item.imageUrl !== heroImage,
-    )
-    .map((item) => item.imageUrl);
-  const currentImage = images[Math.min(activeImage, Math.max(images.length - 1, 0))];
+  }, [product?.id, heroImage]);
+  const sideImages = [
+    ...images.filter((src) => src && src !== heroImage),
+    ...categories
+      .filter(
+        (item) =>
+          item.id !== section?.id &&
+          item.imageUrl &&
+          item.imageUrl !== heroImage,
+      )
+      .map((item) => item.imageUrl),
+  ].filter((src, index, list) => src && list.indexOf(src) === index);
+  const currentImage =
+    images[Math.min(activeImage, Math.max(images.length - 1, 0))] ||
+    product?.imageUrl ||
+    "";
 
   useEffect(() => {
     const node = mainCtaRef.current;
@@ -389,17 +399,17 @@ export default function ProductDetails() {
             card={
               <div>
                 {currentImage || product?.videoUrl ? (
-                  <div className="relative flex h-48 items-center justify-center overflow-hidden">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#0A0820]">
                     <SafeMedia
                       src={currentImage}
                       videoUrl={
-                        currentImage === product?.imageUrl
+                        !currentImage || currentImage === product?.imageUrl
                           ? product?.videoUrl || ""
                           : ""
                       }
                       alt={name}
-                      width={480}
-                      className="max-h-44 max-w-full object-contain"
+                      width={640}
+                      className="absolute inset-0 h-full w-full object-cover"
                     />
                   </div>
                 ) : null}
@@ -419,7 +429,7 @@ export default function ProductDetails() {
                           src={src}
                           alt=""
                           width={96}
-                          className="h-full w-full object-contain"
+                          className="h-full w-full object-cover"
                         />
                       </button>
                     ))}

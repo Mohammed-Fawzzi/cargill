@@ -187,6 +187,10 @@ export default function Products() {
     updateParams({ sub: nextSub });
   };
 
+  const contentCovers = useMemo(
+    () => categoryCoverImages(categories, products),
+    [categories, products],
+  );
   const hero = resolvePageHero({
     section: sectionQuery.data,
     contact,
@@ -195,33 +199,31 @@ export default function Products() {
     fallbackSubtitle: t(UI.productsIntro, locale),
     fallbackImage: pageQuery.data?.imageUrl || "",
     fallbackVideo: pageQuery.data?.videoUrl || "",
+    imageCandidates: [
+      ...contentCovers,
+      ...(products || []).map((item) => item.imageUrl),
+    ],
     videoCandidates: [
       ...(categories || []).map((item) => item.videoUrl),
       ...(products || []).map((item) => item.videoUrl),
     ],
   });
 
-  const heroImage =
-    sectionQuery.data?.imageUrl ||
-    sectionQuery.data?.slides?.[0]?.imageUrl ||
-    pageQuery.data?.imageUrl ||
-    hero.imageUrl ||
-    "";
+  const heroImage = hero.imageUrl || "";
   const heroVideo = hero.videoUrl;
   const heroVideos = hero.videoUrls;
   useEffect(() => {
     warnMissingMedia(
       "homepage/product_categories.imageUrl",
-      sectionQuery.data?.imageUrl || pageQuery.data?.imageUrl,
+      heroImage,
     );
-  }, [sectionQuery.data?.imageUrl, pageQuery.data?.imageUrl]);
+  }, [heroImage]);
   const heroSides = useMemo(() => {
-    const covers = categoryCoverImages(categories, products);
     const pageImage = pageQuery.data?.imageUrl || "";
-    return [pageImage, ...covers].filter(
+    return [pageImage, ...contentCovers].filter(
       (src, index, list) => src && src !== heroImage && list.indexOf(src) === index,
     );
-  }, [pageQuery.data?.imageUrl, categories, products, heroImage]);
+  }, [pageQuery.data?.imageUrl, contentCovers, heroImage]);
   const phone = contact?.phones?.[0] || "";
   const askSearchHref = toWhatsAppHref(
     phone,

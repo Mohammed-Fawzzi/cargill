@@ -14,6 +14,18 @@ const DEFAULT_COLUMNS = [
   { id: "phi", name: { ar: "PHI", en: "PHI" } },
 ];
 
+function uniqueImageList(values = []) {
+  const seen = new Set();
+  const out = [];
+  values.forEach((value) => {
+    const src = asString(value);
+    if (!src || seen.has(src)) return;
+    seen.add(src);
+    out.push(src);
+  });
+  return out;
+}
+
 function parseSection(item) {
   if (!item || typeof item !== "object") return null;
   const id = asString(item.id);
@@ -154,15 +166,17 @@ export function mapProduct(id, data = {}) {
   const gallery = Array.isArray(data.images)
     ? data.images.map((item) => asString(item)).filter(Boolean)
     : [];
+  const imageUrl = asString(data.imageUrl) || gallery[0] || "";
+  const images = uniqueImageList([imageUrl, ...gallery]);
 
   return {
     id,
     name: readLocalized(data, "name"),
     sectionId: asString(data.sectionId),
     subcategoryId: asString(data.subcategoryId),
-    imageUrl: asString(data.imageUrl),
+    imageUrl,
     videoUrl: asString(data.videoUrl || data.heroVideoUrl),
-    images: gallery,
+    images,
     registrationNumber:
       asString(data.registrationNumber) ||
       asString(data.ministryRegistration) ||

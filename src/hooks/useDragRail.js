@@ -16,7 +16,7 @@ function isActionTarget(target) {
   if (!(target instanceof Element)) return false;
   return Boolean(
     target.closest(
-      ".split-btn, .ix-icon-btn, button, input, textarea, select, [role='button'], a[href^='http'], a[target='_blank']",
+      ".split-btn, .ix-icon-btn, button, input, textarea, select, [role='button'], a[href], a[to]",
     ),
   );
 }
@@ -76,6 +76,11 @@ export default function useDragRail() {
 
     const onPointerDown = (event) => {
       if (event.button !== 0) return;
+      if (isActionTarget(event.target)) {
+        drag.current.active = false;
+        drag.current.moved = false;
+        return;
+      }
       drag.current.active = true;
       drag.current.moved = false;
       drag.current.startX = event.clientX;
@@ -96,7 +101,8 @@ export default function useDragRail() {
 
       if (!drag.current.active) return;
       const dx = event.clientX - drag.current.startX;
-      if (Math.abs(dx) > 3) drag.current.moved = true;
+      if (Math.abs(dx) > 6) drag.current.moved = true;
+      if (!drag.current.moved) return;
       node.scrollLeft = drag.current.startScroll - dx;
 
       const now = performance.now();
@@ -111,17 +117,21 @@ export default function useDragRail() {
       drag.current.active = false;
       try {
         node.releasePointerCapture?.(event.pointerId);
-      } catch {
-        /* ignore */
-      }
+      } catch {}
+      window.setTimeout(() => {
+        drag.current.moved = false;
+      }, 0);
     };
 
     const onClickCapture = (event) => {
-      if (drag.current.moved) {
-        event.preventDefault();
-        event.stopPropagation();
+      if (!drag.current.moved) return;
+      if (isActionTarget(event.target)) {
         drag.current.moved = false;
+        return;
       }
+      event.preventDefault();
+      event.stopPropagation();
+      drag.current.moved = false;
     };
 
     const onLeave = () => {

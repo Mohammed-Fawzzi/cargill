@@ -73,6 +73,8 @@ export default function Contact() {
     section?.imageUrl ||
     section?.slides?.[0]?.imageUrl ||
     contact?.bannerUrl ||
+    contact?.aboutImageUrl ||
+    heroSlides[0] ||
     "";
   const contactSides = [
     contact?.bannerUrl,

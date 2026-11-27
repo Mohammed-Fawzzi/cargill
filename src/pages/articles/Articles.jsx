@@ -95,14 +95,11 @@ export default function Articles() {
       t(UI.articlesIntro, locale) || t(UI.knowledgeBody, locale),
     fallbackImage: latestArticle?.imageUrl || "",
     fallbackVideo: latestArticle?.videoUrl || "",
+    imageCandidates: articles.map((item) => item.imageUrl),
     videoCandidates: articles.map((item) => item.videoUrl),
   });
 
-  const heroImage =
-    sectionQuery.data?.imageUrl ||
-    sectionQuery.data?.slides?.[0]?.imageUrl ||
-    hero.imageUrl ||
-    "";
+  const heroImage = hero.imageUrl || "";
 
   useEffect(() => {
     warnMissingMedia("homepage/articles.imageUrl", sectionQuery.data?.imageUrl);

@@ -24,6 +24,7 @@ export function resolvePageHero({
   fallbackSubtitle,
   fallbackImage = "",
   fallbackVideo = "",
+  imageCandidates = [],
   videoCandidates = [],
 }) {
   const sectionTitle = t(section?.title, locale);
@@ -33,11 +34,12 @@ export function resolvePageHero({
   const contactDescription = t(contact?.description, locale);
 
   const sectionSlideImage = asTrimmed(section?.slides?.[0]?.imageUrl);
-  const imageUrl =
-    asTrimmed(section?.imageUrl) ||
-    sectionSlideImage ||
-    asTrimmed(fallbackImage) ||
-    "";
+  const imageUrls = uniqueMediaUrls([
+    section?.imageUrl,
+    sectionSlideImage,
+    fallbackImage,
+    ...imageCandidates,
+  ]);
 
   const videoUrls = uniqueMediaUrls([
     section?.videoUrl,
@@ -51,7 +53,8 @@ export function resolvePageHero({
     title: sectionTitle || contactHeading || fallbackTitle || "",
     subtitle:
       sectionBody || contactSubtitle || contactDescription || fallbackSubtitle || "",
-    imageUrl,
+    imageUrl: imageUrls[0] || "",
+    imageUrls,
     videoUrl: videoUrls[0] || "",
     videoUrls,
   };

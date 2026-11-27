@@ -102,6 +102,7 @@ export default function Events() {
     fallbackTitle: t(UI.nav.events, locale),
     fallbackSubtitle: t(UI.eventsIntro, locale),
     fallbackImage: eventCovers[0] || "",
+    imageCandidates: eventCovers,
     videoCandidates: events.map((item) => item.videoUrl),
   });
 
@@ -116,11 +117,7 @@ export default function Events() {
         ? t(UI.noPastEvents, locale)
         : t(UI.noEvents, locale);
 
-  const heroImage =
-    sectionQuery.data?.imageUrl ||
-    sectionQuery.data?.slides?.[0]?.imageUrl ||
-    hero.imageUrl ||
-    "";
+  const heroImage = hero.imageUrl || "";
   const heroVideo = hero.videoUrl;
   const heroVideos = hero.videoUrls;
   useEffect(() => {
