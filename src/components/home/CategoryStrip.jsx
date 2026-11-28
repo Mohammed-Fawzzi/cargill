@@ -94,10 +94,14 @@ export default function CategoryStrip({ ready = true }) {
                   aria-hidden="true"
                 />
               ) : null}
-              <div className="absolute inset-0 bg-[#0A0820]/72" />
+              <div className="absolute inset-0 bg-[#0A0820]/40" />
+              <div
+                className="absolute inset-0 bg-gradient-to-t from-[#0A0820]/75 via-[#0A0820]/15 to-transparent"
+                aria-hidden="true"
+              />
               {isActive ? (
                 <div
-                  className="absolute inset-0 bg-[radial-gradient(circle_at_75%_40%,rgba(140,198,63,0.22),transparent_55%)]"
+                  className="absolute inset-0 bg-[radial-gradient(circle_at_75%_40%,rgba(140,198,63,0.18),transparent_55%)]"
                   aria-hidden="true"
                 />
               ) : null}
